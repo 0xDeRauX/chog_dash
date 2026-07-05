@@ -4,92 +4,92 @@
     {
       "symbol": "CHOG",
       "query": "(\"CHOG\" OR \"$CHOG\") -is:retweet",
-      "startTime": "2026-07-04T14:11:26.526Z",
-      "mentionCount": 351,
+      "startTime": "2026-07-04T15:27:11.221Z",
+      "mentionCount": 349,
       "buckets": 25
     },
     {
       "symbol": "PEPE",
       "query": "(\"PEPE\" OR \"$PEPE\") -is:retweet",
-      "startTime": "2026-07-04T14:11:26.698Z",
-      "mentionCount": 17050,
+      "startTime": "2026-07-04T15:27:11.376Z",
+      "mentionCount": 17013,
       "buckets": 25
     },
     {
       "symbol": "WIF",
       "query": "(\"$WIF\" OR \"dogwifhat\") -is:retweet",
-      "startTime": "2026-07-04T14:11:26.851Z",
-      "mentionCount": 2466,
+      "startTime": "2026-07-04T15:27:11.462Z",
+      "mentionCount": 2393,
       "buckets": 25
     },
     {
       "symbol": "BONK",
       "query": "(\"BONK\" OR \"$BONK\") -is:retweet",
-      "startTime": "2026-07-04T14:11:26.943Z",
-      "mentionCount": 4525,
+      "startTime": "2026-07-04T15:27:11.540Z",
+      "mentionCount": 4556,
       "buckets": 25
     },
     {
       "symbol": "BRETT",
       "query": "(\"BRETT\" OR \"$BRETT\") -is:retweet",
-      "startTime": "2026-07-04T14:11:27.022Z",
-      "mentionCount": 10692,
+      "startTime": "2026-07-04T15:27:11.610Z",
+      "mentionCount": 10676,
       "buckets": 25
     },
     {
       "symbol": "BTC",
       "query": "(\"$BTC\" OR \"Bitcoin\") -is:retweet",
-      "startTime": "2026-07-04T14:11:27.091Z",
-      "mentionCount": 89831,
+      "startTime": "2026-07-04T15:27:11.694Z",
+      "mentionCount": 89261,
       "buckets": 25
     },
     {
       "symbol": "ETH",
       "query": "(\"$ETH\" OR \"Ethereum\") -is:retweet",
-      "startTime": "2026-07-04T14:11:27.189Z",
-      "mentionCount": 37573,
+      "startTime": "2026-07-04T15:27:11.768Z",
+      "mentionCount": 37414,
       "buckets": 25
     },
     {
       "symbol": "SOL",
       "query": "(\"$SOL\" OR \"Solana\") -is:retweet",
-      "startTime": "2026-07-04T14:11:27.263Z",
-      "mentionCount": 145048,
+      "startTime": "2026-07-04T15:27:11.845Z",
+      "mentionCount": 144361,
       "buckets": 25
     },
     {
       "symbol": "XRP",
       "query": "(\"$XRP\" OR \"Ripple\") -is:retweet",
-      "startTime": "2026-07-04T14:11:27.339Z",
-      "mentionCount": 19414,
+      "startTime": "2026-07-04T15:27:11.915Z",
+      "mentionCount": 18861,
       "buckets": 25
     },
     {
       "symbol": "SUI",
       "query": "(\"$SUI\" OR \"@SuiNetwork\") -is:retweet",
-      "startTime": "2026-07-04T14:11:27.465Z",
-      "mentionCount": 12552,
+      "startTime": "2026-07-04T15:27:11.991Z",
+      "mentionCount": 12516,
       "buckets": 25
     },
     {
       "symbol": "MON",
       "query": "(\"$MON\" OR \"Monad\") -is:retweet",
-      "startTime": "2026-07-04T14:11:27.577Z",
-      "mentionCount": 63802,
+      "startTime": "2026-07-04T15:27:12.066Z",
+      "mentionCount": 63870,
       "buckets": 25
     },
     {
       "symbol": "HYPE",
       "query": "(\"$HYPE\" OR \"Hyperliquid\") -is:retweet",
-      "startTime": "2026-07-04T14:11:27.664Z",
-      "mentionCount": 42402,
+      "startTime": "2026-07-04T15:27:12.138Z",
+      "mentionCount": 42496,
       "buckets": 25
     },
     {
       "symbol": "TAO",
       "query": "(\"$TAO\" OR \"Bittensor\") -is:retweet",
-      "startTime": "2026-07-04T14:11:27.744Z",
-      "mentionCount": 17396,
+      "startTime": "2026-07-04T15:27:12.228Z",
+      "mentionCount": 17447,
       "buckets": 25
     }
   ]

@@ -4,80 +4,80 @@
     {
       "symbol": "CHOG",
       "coingeckoId": "chog",
-      "priceUsd": 0.00148947,
-      "change24h": -8.112834158757334
+      "priceUsd": 0.00148656,
+      "change24h": 4.038387162242798
     },
     {
       "symbol": "PEPE",
       "coingeckoId": "pepe",
-      "priceUsd": 0.00000268,
-      "change24h": -0.7638360948126671
+      "priceUsd": 0.00000269,
+      "change24h": -1.7340372064440845
     },
     {
       "symbol": "WIF",
       "coingeckoId": "dogwifcoin",
-      "priceUsd": 0.174683,
-      "change24h": -2.1657766585014144
+      "priceUsd": 0.174837,
+      "change24h": -2.6272775987579706
     },
     {
       "symbol": "BONK",
       "coingeckoId": "bonk",
-      "priceUsd": 0.00000482,
-      "change24h": -1.9812412582194163
+      "priceUsd": 0.00000481,
+      "change24h": -1.7517956904933847
     },
     {
       "symbol": "BRETT",
       "coingeckoId": "based-brett",
-      "priceUsd": 0.00551173,
-      "change24h": -0.46129139873360436
+      "priceUsd": 0.00551866,
+      "change24h": -1.706597101896317
     },
     {
       "symbol": "BTC",
       "coingeckoId": "bitcoin",
-      "priceUsd": 62688,
-      "change24h": 0.1232884950683996
+      "priceUsd": 62722,
+      "change24h": -0.18096822156294226
     },
     {
       "symbol": "ETH",
       "coingeckoId": "ethereum",
-      "priceUsd": 1765.92,
-      "change24h": -0.17242683228991812
+      "priceUsd": 1772.62,
+      "change24h": -1.1063451766730472
     },
     {
       "symbol": "SOL",
       "coingeckoId": "solana",
-      "priceUsd": 81.15,
-      "change24h": -0.6118029870006331
+      "priceUsd": 81.18,
+      "change24h": -1.037288052885448
     },
     {
       "symbol": "XRP",
       "coingeckoId": "ripple",
-      "priceUsd": 1.13,
-      "change24h": -1.9454652496010982
+      "priceUsd": 1.14,
+      "change24h": -2.8088833338182098
     },
     {
       "symbol": "SUI",
       "coingeckoId": "sui",
-      "priceUsd": 0.751084,
-      "change24h": -1.2256200609935002
+      "priceUsd": 0.751479,
+      "change24h": -2.1107856947995365
     },
     {
       "symbol": "MON",
       "coingeckoId": "monad",
-      "priceUsd": 0.02042354,
-      "change24h": -1.1666525499788793
+      "priceUsd": 0.02049621,
+      "change24h": -0.8722269654332421
     },
     {
       "symbol": "HYPE",
       "coingeckoId": "hyperliquid",
-      "priceUsd": 69.11,
-      "change24h": -1.9272684006061542
+      "priceUsd": 69.43,
+      "change24h": -2.056141763931344
     },
     {
       "symbol": "TAO",
       "coingeckoId": "bittensor",
-      "priceUsd": 212.28,
-      "change24h": -0.3018653622431893
+      "priceUsd": 212.69,
+      "change24h": -1.2368196782344025
     }
   ]
 }
