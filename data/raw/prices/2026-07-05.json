@@ -1,0 +1,35 @@
+{
+  "date": "2026-07-05",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "coingeckoId": "chog",
+      "priceUsd": 0.00137975,
+      "change24h": -15.343420332103804
+    },
+    {
+      "symbol": "PEPE",
+      "coingeckoId": "pepe",
+      "priceUsd": 0.00000265,
+      "change24h": -1.8575143772703553
+    },
+    {
+      "symbol": "WIF",
+      "coingeckoId": "dogwifcoin",
+      "priceUsd": 0.172531,
+      "change24h": -2.3282111551001297
+    },
+    {
+      "symbol": "BONK",
+      "coingeckoId": "bonk",
+      "priceUsd": 0.00000483,
+      "change24h": -1.6546406989973763
+    },
+    {
+      "symbol": "BRETT",
+      "coingeckoId": "based-brett",
+      "priceUsd": 0.00546368,
+      "change24h": -0.9430617713854114
+    }
+  ]
+}

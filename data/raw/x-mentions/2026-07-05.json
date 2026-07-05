@@ -1,0 +1,40 @@
+{
+  "date": "2026-07-05",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "query": "(\"CHOG\" OR \"$CHOG\") -is:retweet",
+      "startTime": "2026-07-04T11:54:52.235Z",
+      "mentionCount": 296,
+      "buckets": 25
+    },
+    {
+      "symbol": "PEPE",
+      "query": "(\"PEPE\" OR \"$PEPE\") -is:retweet",
+      "startTime": "2026-07-04T11:54:52.637Z",
+      "mentionCount": 17148,
+      "buckets": 25
+    },
+    {
+      "symbol": "WIF",
+      "query": "(\"$WIF\" OR \"dogwifhat\") -is:retweet",
+      "startTime": "2026-07-04T11:54:52.854Z",
+      "mentionCount": 2643,
+      "buckets": 25
+    },
+    {
+      "symbol": "BONK",
+      "query": "(\"BONK\" OR \"$BONK\") -is:retweet",
+      "startTime": "2026-07-04T11:54:53.240Z",
+      "mentionCount": 4593,
+      "buckets": 25
+    },
+    {
+      "symbol": "BRETT",
+      "query": "(\"BRETT\" OR \"$BRETT\") -is:retweet",
+      "startTime": "2026-07-04T11:54:53.405Z",
+      "mentionCount": 10795,
+      "buckets": 25
+    }
+  ]
+}

@@ -7,7 +7,7 @@ export const ASSETS = [
   {
     symbol: "CHOG",
     chain: "monad",
-    coingeckoId: null,
+    coingeckoId: "chog",
     xQuery: '("CHOG" OR "$CHOG") -is:retweet',
   },
   {
