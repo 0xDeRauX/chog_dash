@@ -1,5 +1,9 @@
 import dotenv from "dotenv";
-dotenv.config();
+// quiet: true suppresses dotenv's console "tips", which since v17 include
+// unsolicited ads for the maintainer's other product (vestauth.com) mixed
+// into stdout — noise at best, a supply-chain prompt-injection vector for
+// AI coding agents at worst.
+dotenv.config({ quiet: true });
 
 // Actifs suivis par le dashboard (CHOG au centre, comparables autour).
 // Source unique de vérité pour les collecteurs (requête X, id CoinGecko, etc.)

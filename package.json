@@ -7,7 +7,9 @@
     "test:twitterapi": "node scripts/test-twitterapi.js",
     "test:xcounts": "node scripts/test-x-counts.js",
     "collect:mentions": "node scripts/collect-mentions.js",
-    "collect:prices": "node scripts/collect-prices.js"
+    "collect:prices": "node scripts/collect-prices.js",
+    "ingest": "node scripts/ingest.js",
+    "build:dashboard": "node scripts/build-dashboard-data.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",

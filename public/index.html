@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CHOG Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="viz-root">
+  <header class="page-header">
+    <h1>CHOG Dashboard</h1>
+    <p class="subtitle">CHOG vs PEPE, WIF, BONK, BRETT — prix, mentions X, comparaison quotidienne.</p>
+    <p class="generated-at" id="generated-at"></p>
+  </header>
+
+  <section class="stat-tiles" id="stat-tiles" aria-label="Vue d'ensemble par actif"></section>
+
+  <section class="chart-card">
+    <h2>Mentions X (24h) — indexé, jour 1 = 100</h2>
+    <div class="chart-wrap">
+      <canvas id="chart-mentions" role="img" aria-label="Évolution indexée des mentions X par actif"></canvas>
+    </div>
+  </section>
+
+  <section class="chart-card">
+    <h2>Prix USD — indexé, jour 1 = 100</h2>
+    <div class="chart-wrap">
+      <canvas id="chart-prices" role="img" aria-label="Évolution indexée du prix par actif"></canvas>
+    </div>
+  </section>
+
+  <section class="table-view">
+    <h2>Données brutes</h2>
+    <div class="table-scroll">
+      <table id="raw-table">
+        <thead>
+          <tr>
+            <th scope="col">Actif</th>
+            <th scope="col">Chaîne</th>
+            <th scope="col">Date</th>
+            <th scope="col">Mentions 24h</th>
+            <th scope="col">Prix USD</th>
+            <th scope="col">Δ 24h</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

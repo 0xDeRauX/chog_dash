@@ -1,2 +1,4 @@
 node_modules/
 .env
+data/chog_dash.db
+data/chog_dash.db-*

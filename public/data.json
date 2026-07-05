@@ -1,0 +1,90 @@
+{
+  "generatedAt": "2026-07-05T12:37:20.806Z",
+  "assets": [
+    {
+      "symbol": "CHOG",
+      "chain": "monad",
+      "mentions": [
+        {
+          "date": "2026-07-05",
+          "count": 293
+        }
+      ],
+      "prices": [
+        {
+          "date": "2026-07-05",
+          "price": 0.0013966,
+          "change24h": -12.234749387709233
+        }
+      ]
+    },
+    {
+      "symbol": "PEPE",
+      "chain": "ethereum",
+      "mentions": [
+        {
+          "date": "2026-07-05",
+          "count": 17135
+        }
+      ],
+      "prices": [
+        {
+          "date": "2026-07-05",
+          "price": 0.00000265,
+          "change24h": -2.0664920311878268
+        }
+      ]
+    },
+    {
+      "symbol": "WIF",
+      "chain": "solana",
+      "mentions": [
+        {
+          "date": "2026-07-05",
+          "count": 2623
+        }
+      ],
+      "prices": [
+        {
+          "date": "2026-07-05",
+          "price": 0.172129,
+          "change24h": -2.4434577910354953
+        }
+      ]
+    },
+    {
+      "symbol": "BONK",
+      "chain": "solana",
+      "mentions": [
+        {
+          "date": "2026-07-05",
+          "count": 4584
+        }
+      ],
+      "prices": [
+        {
+          "date": "2026-07-05",
+          "price": 0.00000483,
+          "change24h": -1.5519720682993965
+        }
+      ]
+    },
+    {
+      "symbol": "BRETT",
+      "chain": "base",
+      "mentions": [
+        {
+          "date": "2026-07-05",
+          "count": 10780
+        }
+      ],
+      "prices": [
+        {
+          "date": "2026-07-05",
+          "price": 0.0054598,
+          "change24h": -0.9940045880957369
+        }
+      ]
+    }
+  ]
+}
