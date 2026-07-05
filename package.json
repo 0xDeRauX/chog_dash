@@ -1,0 +1,14 @@
+{
+  "name": "chog-dash",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:twitterapi": "node scripts/test-twitterapi.js",
+    "test:xcounts": "node scripts/test-x-counts.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "dotenv": "^17.4.2"
+  }
+}
