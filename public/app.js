@@ -36,6 +36,7 @@ const ink = (name) => CSS.getPropertyValue(name).trim();
 function fmtCompact(n) {
   if (n == null) return "—";
   const a = Math.abs(n);
+  if (a >= 1e12) return (n / 1e12).toFixed(2) + "T";
   if (a >= 1e9) return (n / 1e9).toFixed(2) + "B";
   if (a >= 1e6) return (n / 1e6).toFixed(2) + "M";
   if (a >= 1e3) return (n / 1e3).toFixed(1) + "K";
@@ -54,6 +55,30 @@ function fmtDelta(pct) {
   if (pct == null) return "—";
   const s = pct >= 0 ? "▲" : "▼";
   return `${s} ${Math.abs(pct).toFixed(1)}%`;
+}
+
+function fmtUsdCompact(n) {
+  if (n == null) return "—";
+  return "$" + fmtCompact(n);
+}
+
+// % change of `key` between the latest point and the point ~`days` back,
+// read straight from the stored daily series — no extra API calls. Returns
+// null when there isn't enough history yet (e.g. mentions on day one).
+function pctOverDays(series, key, days) {
+  if (!series || series.length < 2) return null;
+  const last = series[series.length - 1];
+  if (last[key] == null) return null;
+  const target = new Date(last.date + "T00:00:00Z");
+  target.setUTCDate(target.getUTCDate() - days);
+  const targetDate = target.toISOString().slice(0, 10);
+  // nearest stored point on or before the target date
+  let ref = null;
+  for (const p of series) {
+    if (p.date <= targetDate && p[key] != null) ref = p;
+  }
+  if (!ref || ref[key] === 0) return null;
+  return ((last[key] - ref[key]) / ref[key]) * 100;
 }
 
 // value / first-known-value × 100, so different scales share one axis.
@@ -389,40 +414,115 @@ function buildDynamicPanel(root, assets, opts = {}) {
   render();
 }
 
-// ---- raw table ----------------------------------------------------------
-function renderTable(tbody, assets) {
-  tbody.innerHTML = "";
-  for (const a of assets) {
-    const color = COLORS[a.symbol] || ink("--brand");
-    const price = a.prices.at(-1);
-    const mentions = a.mentions.at(-1);
-    const change = a.latestChange24h;
-    const tr = document.createElement("tr");
+// ---- leaderboard (sortable) ---------------------------------------------
+function renderLeaderboard(container, assets) {
+  const columns = [
+    { key: "sym", label: "Actif", kind: "sym", value: (a) => a.symbol },
+    { key: "mcap", label: "Market cap", kind: "usd", value: (a) => a.marketCap },
+    { key: "price", label: "Prix", kind: "price", value: (a) => a.prices.at(-1)?.price ?? null },
+    { key: "p24", label: "Prix 24h", kind: "pct", value: (a) => a.latestChange24h },
+    { key: "p7", label: "Prix 7j", kind: "pct", value: (a) => pctOverDays(a.prices, "price", 7) },
+    { key: "p30", label: "Prix 30j", kind: "pct", value: (a) => pctOverDays(a.prices, "price", 30) },
+    { key: "m24", label: "Ment. 24h", kind: "pct", value: (a) => pctOverDays(a.mentions, "count", 1) },
+    { key: "m7", label: "Ment. 7j", kind: "pct", value: (a) => pctOverDays(a.mentions, "count", 7) },
+    { key: "m30", label: "Ment. 30j", kind: "pct", value: (a) => pctOverDays(a.mentions, "count", 30) },
+  ];
 
-    const symTd = document.createElement("td");
-    const symWrap = document.createElement("span");
-    symWrap.className = "sym-cell";
-    const dot = document.createElement("span");
-    dot.className = "dot";
-    dot.style.background = color;
-    symWrap.append(dot, document.createTextNode(a.symbol));
-    symTd.append(symWrap);
+  // Precompute every cell value once.
+  const rows = assets.map((a) => ({
+    a,
+    vals: Object.fromEntries(columns.map((c) => [c.key, c.value(a)])),
+  }));
 
-    const chainTd = document.createElement("td");
-    chainTd.textContent = a.chain;
+  let sortKey = "mcap";
+  let sortDir = "desc";
 
-    const mTd = document.createElement("td");
-    mTd.textContent = fmtCompact(mentions?.count ?? null);
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  for (const c of columns) {
+    const th = document.createElement("th");
+    th.textContent = c.label;
+    th.className = "sortable" + (c.key === sortKey ? " active" : "");
+    th.dataset.key = c.key;
+    const arrow = document.createElement("span");
+    arrow.className = "sort-arrow";
+    arrow.textContent = c.key === sortKey ? (sortDir === "desc" ? " ↓" : " ↑") : "";
+    th.append(arrow);
+    th.addEventListener("click", () => {
+      if (sortKey === c.key) {
+        sortDir = sortDir === "desc" ? "asc" : "desc";
+      } else {
+        sortKey = c.key;
+        sortDir = c.kind === "sym" ? "asc" : "desc";
+      }
+      renderRows();
+      // refresh header state
+      headRow.querySelectorAll("th").forEach((el) => {
+        const on = el.dataset.key === sortKey;
+        el.classList.toggle("active", on);
+        el.querySelector(".sort-arrow").textContent = on ? (sortDir === "desc" ? " ↓" : " ↑") : "";
+      });
+    });
+    headRow.append(th);
+  }
+  thead.append(headRow);
 
-    const pTd = document.createElement("td");
-    pTd.textContent = fmtPrice(price?.price ?? null);
+  const tbody = document.createElement("tbody");
+  table.append(thead, tbody);
+  container.append(table);
 
-    const dTd = document.createElement("td");
-    dTd.textContent = fmtDelta(change);
-    dTd.className = change == null ? "" : change >= 0 ? "up" : "down";
+  function renderRows() {
+    const col = columns.find((c) => c.key === sortKey);
+    const sorted = [...rows].sort((r1, r2) => {
+      const v1 = r1.vals[sortKey];
+      const v2 = r2.vals[sortKey];
+      if (col.kind === "sym") {
+        return sortDir === "asc" ? v1.localeCompare(v2) : v2.localeCompare(v1);
+      }
+      // numeric — nulls always sink to the bottom
+      if (v1 == null && v2 == null) return 0;
+      if (v1 == null) return 1;
+      if (v2 == null) return -1;
+      return sortDir === "asc" ? v1 - v2 : v2 - v1;
+    });
 
-    tr.append(symTd, chainTd, mTd, pTd, dTd);
-    tbody.append(tr);
+    tbody.innerHTML = "";
+    for (const { a, vals } of sorted) {
+      const tr = document.createElement("tr");
+      for (const c of columns) {
+        const td = document.createElement("td");
+        const v = vals[c.key];
+        if (c.kind === "sym") {
+          const wrap = document.createElement("span");
+          wrap.className = "sym-cell";
+          const dot = document.createElement("span");
+          dot.className = "dot";
+          dot.style.background = COLORS[a.symbol] || ink("--brand");
+          wrap.append(dot, document.createTextNode(a.symbol));
+          td.append(wrap);
+        } else if (c.kind === "usd") {
+          td.textContent = fmtUsdCompact(v);
+        } else if (c.kind === "price") {
+          td.textContent = fmtPrice(v);
+        } else {
+          td.textContent = fmtDelta(v);
+          td.className = v == null ? "" : v >= 0 ? "up" : "down";
+        }
+        tr.append(td);
+      }
+      tbody.append(tr);
+    }
+  }
+
+  renderRows();
+
+  if (maxSeriesLen(assets, "mentions") < 2) {
+    const note = document.createElement("div");
+    note.className = "legend-note";
+    note.textContent =
+      "Les colonnes Mentions 24h/7j/30j se remplissent au fil des jours (calculées à partir des compteurs quotidiens déjà stockés, sans requête supplémentaire).";
+    container.append(note);
   }
 }
 
@@ -440,8 +540,8 @@ async function boot() {
   const tilesEl = document.getElementById("tiles");
   if (tilesEl) renderTiles(tilesEl, assets);
 
-  const tableEl = document.querySelector("#raw-table tbody");
-  if (tableEl) renderTable(tableEl, assets);
+  const leaderboardEl = document.getElementById("leaderboard");
+  if (leaderboardEl) renderLeaderboard(leaderboardEl, assets);
 
   const chogVsPriceEl = document.getElementById("chog-mentions-price");
   if (chogVsPriceEl) {

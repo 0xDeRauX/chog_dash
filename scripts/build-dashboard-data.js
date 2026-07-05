@@ -16,6 +16,10 @@ const mentionsStmt = db.prepare(
 const pricesStmt = db.prepare(
   `SELECT date, price_usd AS price, change_24h AS change24h FROM price_daily WHERE asset_id = ? ORDER BY date`
 );
+// Latest known market cap (the daily snapshot carries it; backfilled history rows are null).
+const marketCapStmt = db.prepare(
+  `SELECT market_cap FROM price_daily WHERE asset_id = ? AND market_cap IS NOT NULL ORDER BY date DESC LIMIT 1`
+);
 
 const assets = ASSETS.map((cfg) => {
   const row = assetStmt.get(cfg.symbol);
@@ -27,6 +31,7 @@ const assets = ASSETS.map((cfg) => {
     symbol: row.symbol,
     chain: row.chain,
     latestChange24h: prices.length ? prices.at(-1).change24h : null,
+    marketCap: marketCapStmt.get(row.id)?.market_cap ?? null,
     mentions,
     prices,
   };

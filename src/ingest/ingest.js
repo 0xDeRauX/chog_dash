@@ -59,11 +59,12 @@ export function ingestAll() {
   }
 
   const upsertPrice = db.prepare(`
-    INSERT INTO price_daily (asset_id, date, price_usd, change_24h, source, collected_at)
-    VALUES (@assetId, @date, @priceUsd, @change24h, @source, @collectedAt)
+    INSERT INTO price_daily (asset_id, date, price_usd, change_24h, market_cap, source, collected_at)
+    VALUES (@assetId, @date, @priceUsd, @change24h, @marketCap, @source, @collectedAt)
     ON CONFLICT(asset_id, date, source) DO UPDATE SET
       price_usd = excluded.price_usd,
       change_24h = excluded.change_24h,
+      market_cap = excluded.market_cap,
       collected_at = excluded.collected_at
   `);
 
@@ -81,6 +82,7 @@ export function ingestAll() {
         date: point.date,
         priceUsd: point.price,
         change24h: null,
+        marketCap: null,
         source: "coingecko",
         collectedAt: `${point.date}T00:00:00.000Z`,
       });
@@ -99,6 +101,7 @@ export function ingestAll() {
         date: file.date,
         priceUsd: r.priceUsd,
         change24h: r.change24h,
+        marketCap: r.marketCap ?? null,
         source: "coingecko",
         collectedAt: `${file.date}T00:00:00.000Z`,
       });
