@@ -1,5 +1,6 @@
 // Queries SQLite and writes public/data.json, the only thing the static
-// dashboard reads. Run after `npm run ingest`.
+// dashboard reads. Assets are emitted in config order and tagged by group
+// (memes / majors) so each page renders its own universe.
 // Usage: npm run build:dashboard
 import fs from "fs";
 import path from "path";
@@ -16,22 +17,28 @@ const pricesStmt = db.prepare(
   `SELECT date, price_usd AS price, change_24h AS change24h FROM price_daily WHERE asset_id = ? ORDER BY date`
 );
 
-// Canonical order (CHOG first, then comparables) — not alphabetical — so the
-// frontend can assign fixed categorical colors by position.
-const assets = ASSETS.map((a) => assetStmt.get(a.symbol)).filter(Boolean);
+const assets = ASSETS.map((cfg) => {
+  const row = assetStmt.get(cfg.symbol);
+  if (!row) return null;
+  const prices = pricesStmt.all(row.id);
+  const mentions = mentionsStmt.all(row.id);
+  return {
+    group: cfg.group,
+    symbol: row.symbol,
+    chain: row.chain,
+    latestChange24h: prices.length ? prices.at(-1).change24h : null,
+    mentions,
+    prices,
+  };
+}).filter(Boolean);
 
 const data = {
   generatedAt: new Date().toISOString(),
-  assets: assets.map((a) => ({
-    symbol: a.symbol,
-    chain: a.chain,
-    mentions: mentionsStmt.all(a.id),
-    prices: pricesStmt.all(a.id),
-  })),
+  assets,
 };
 
 db.close();
 
 fs.mkdirSync(path.resolve("public"), { recursive: true });
-fs.writeFileSync(path.resolve("public/data.json"), JSON.stringify(data, null, 2));
+fs.writeFileSync(path.resolve("public/data.json"), JSON.stringify(data));
 console.log(`Wrote public/data.json with ${assets.length} assets.`);

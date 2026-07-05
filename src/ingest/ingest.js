@@ -68,6 +68,28 @@ export function ingestAll() {
   `);
 
   let priceRows = 0;
+
+  // Backfilled history: one file per symbol, each a full daily series.
+  // Same source ('coingecko') as the daily snapshots so they share one row
+  // per (asset, date) — history fills old dates, the daily collector adds today.
+  for (const hist of readRawFiles("prices-history")) {
+    const asset = getAssetId.get(hist.symbol);
+    if (!asset) continue;
+    for (const point of hist.series) {
+      upsertPrice.run({
+        assetId: asset.id,
+        date: point.date,
+        priceUsd: point.price,
+        change24h: null,
+        source: "coingecko",
+        collectedAt: `${point.date}T00:00:00.000Z`,
+      });
+      priceRows++;
+    }
+  }
+
+  // Daily snapshots: authoritative for their date (carry the 24h change),
+  // so they run last and win any overlap with the backfilled point.
   for (const file of readRawFiles("prices")) {
     for (const r of file.results) {
       const asset = getAssetId.get(r.symbol);
