@@ -25,3 +25,12 @@ CREATE TABLE IF NOT EXISTS price_daily (
   collected_at TEXT NOT NULL,
   PRIMARY KEY (asset_id, date, source)
 );
+
+-- TVL is chain-level (shared by all tokens on that chain), so it is keyed by
+-- chain, not asset.
+CREATE TABLE IF NOT EXISTS tvl_daily (
+  chain TEXT NOT NULL,
+  date TEXT NOT NULL,
+  tvl_usd REAL NOT NULL,
+  PRIMARY KEY (chain, date)
+);

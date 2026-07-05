@@ -145,6 +145,24 @@ export const ASSETS = [
   },
 ];
 
+// Maps each asset's `chain` to its DefiLlama chain name for TVL lookups.
+// TVL is a chain-level metric, so tokens sharing a chain share one TVL series
+// (e.g. WIF/BONK/SOL all → Solana). null = no meaningful DeFi TVL (e.g. Akash,
+// a compute network), rendered as "—".
+export const CHAINS = {
+  monad: "Monad",
+  ethereum: "Ethereum",
+  solana: "Solana",
+  base: "Base",
+  sui: "Sui",
+  bitcoin: "Bitcoin",
+  xrp: "XRPL",
+  hyperliquid: "Hyperliquid L1",
+  bittensor: "Bittensor",
+  akash: null,
+  starknet: "Starknet",
+};
+
 export const CONFIG = {
   TWITTER_API_KEY: process.env.TWITTER_API_KEY,
   X_BEARER_TOKEN: process.env.X_BEARER_TOKEN,

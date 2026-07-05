@@ -5,7 +5,7 @@
 import fs from "fs";
 import path from "path";
 import { openDb } from "../src/lib/db.js";
-import { ASSETS } from "../src/config.js";
+import { ASSETS, CHAINS } from "../src/config.js";
 
 const db = openDb();
 
@@ -37,9 +37,24 @@ const assets = ASSETS.map((cfg) => {
   };
 }).filter(Boolean);
 
+// TVL series per chain key (assets look theirs up by `chain`). Emitted once per
+// chain rather than duplicated per asset.
+// Cap to the recent window (some chains have years of history) so data.json
+// stays lean and TVL aligns with the ~90-day price horizon.
+const tvlStmt = db.prepare(
+  `SELECT date, tvl_usd AS tvl FROM tvl_daily WHERE chain = ? ORDER BY date DESC LIMIT 120`
+);
+const tvlByChain = {};
+for (const chainKey of Object.keys(CHAINS)) {
+  if (!CHAINS[chainKey]) continue;
+  const series = tvlStmt.all(chainKey).reverse();
+  if (series.length) tvlByChain[chainKey] = series;
+}
+
 const data = {
   generatedAt: new Date().toISOString(),
   assets,
+  tvlByChain,
 };
 
 db.close();

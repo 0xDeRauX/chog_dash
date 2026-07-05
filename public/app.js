@@ -94,6 +94,43 @@ function unionDates(assets, key) {
   return [...s].sort();
 }
 
+// Keep only points within `windowDays` of the series' latest date (Infinity = all).
+function windowed(series, windowDays) {
+  if (!series || !series.length || !isFinite(windowDays)) return series || [];
+  const last = new Date(series[series.length - 1].date + "T00:00:00Z");
+  const cutoff = new Date(last);
+  cutoff.setUTCDate(cutoff.getUTCDate() - windowDays);
+  const cut = cutoff.toISOString().slice(0, 10);
+  return series.filter((p) => p.date >= cut);
+}
+
+function pearson(pairs) {
+  const n = pairs.length;
+  if (n < 3) return null;
+  let sx = 0, sy = 0, sxy = 0, sxx = 0, syy = 0;
+  for (const [x, y] of pairs) { sx += x; sy += y; sxy += x * y; sxx += x * x; syy += y * y; }
+  const cov = sxy - (sx * sy) / n;
+  const vx = sxx - (sx * sx) / n;
+  const vy = syy - (sy * sy) / n;
+  if (vx <= 0 || vy <= 0) return null;
+  return cov / Math.sqrt(vx * vy);
+}
+
+// Correlation of the values themselves (over a window), date-aligned. This is
+// what the price-vs-TVL scatter shows, so card and scatter agree. A shared
+// upward/downward trend can inflate it — the scatter is there to sanity-check.
+function corrLevels(seriesA, keyA, seriesB, keyB, windowDays) {
+  const wa = windowed(seriesA, windowDays);
+  const wb = windowed(seriesB, windowDays);
+  const bBy = new Map(wb.map((p) => [p.date, p[keyB]]));
+  const pairs = [];
+  for (const p of wa) {
+    const vb = bBy.get(p.date);
+    if (p[keyA] != null && vb != null) pairs.push([p[keyA], vb]);
+  }
+  return { r: pearson(pairs), n: pairs.length };
+}
+
 function alignedIndexed(asset, dates, key, valueKey) {
   const by = new Map(asset[key].map((p) => [p.date, p[valueKey]]));
   const raw = dates.map((d) => ({ [valueKey]: by.has(d) ? by.get(d) : null }));
@@ -423,6 +460,9 @@ function renderLeaderboard(container, assets) {
     { key: "p24", label: "Prix 24h", kind: "pct", value: (a) => a.latestChange24h },
     { key: "p7", label: "Prix 7j", kind: "pct", value: (a) => pctOverDays(a.prices, "price", 7) },
     { key: "p30", label: "Prix 30j", kind: "pct", value: (a) => pctOverDays(a.prices, "price", 30) },
+    { key: "tvl", label: "TVL", kind: "usd", value: (a) => (a.tvl?.length ? a.tvl.at(-1).tvl : null) },
+    { key: "tvl7", label: "TVL 7j", kind: "pct", value: (a) => pctOverDays(a.tvl, "tvl", 7) },
+    { key: "tvl30", label: "TVL 30j", kind: "pct", value: (a) => pctOverDays(a.tvl, "tvl", 30) },
     { key: "m24", label: "Ment. 24h", kind: "pct", value: (a) => pctOverDays(a.mentions, "count", 1) },
     { key: "m7", label: "Ment. 7j", kind: "pct", value: (a) => pctOverDays(a.mentions, "count", 7) },
     { key: "m30", label: "Ment. 30j", kind: "pct", value: (a) => pctOverDays(a.mentions, "count", 30) },
@@ -526,16 +566,317 @@ function renderLeaderboard(container, assets) {
   }
 }
 
+// ---- Vision page --------------------------------------------------------
+const METRIC_DEFS = [
+  { key: "price", series: "prices", vkey: "price", dash: [], label: "prix" },
+  { key: "mentions", series: "mentions", vkey: "count", dash: [5, 4], label: "mentions" },
+  { key: "tvl", series: "tvl", vkey: "tvl", dash: [2, 3], label: "TVL" },
+];
+
+function indexedWindowed(asset, seriesName, vkey, dates, windowDays) {
+  const w = windowed(asset[seriesName], windowDays);
+  const by = new Map(w.map((p) => [p.date, p[vkey]]));
+  const raw = dates.map((d) => ({ v: by.has(d) ? by.get(d) : null }));
+  return indexSeries(raw, "v");
+}
+
+function segmented(options, current, onChange) {
+  const seg = document.createElement("div");
+  seg.className = "segmented";
+  for (const [val, text] of options) {
+    const b = document.createElement("button");
+    b.textContent = text;
+    b.className = val === current() ? "on" : "";
+    b.addEventListener("click", () => {
+      onChange(val);
+      seg.querySelectorAll("button").forEach((x) => x.classList.remove("on"));
+      b.classList.add("on");
+    });
+    seg.append(b);
+  }
+  return seg;
+}
+
+function controlGroup(labelText, control) {
+  const g = document.createElement("div");
+  g.className = "control-group";
+  const l = document.createElement("span");
+  l.className = "control-label";
+  l.textContent = labelText;
+  g.append(l, control);
+  return g;
+}
+
+function corrClass(r) {
+  if (r == null) return "";
+  if (r >= 0.2) return "up";
+  if (r <= -0.2) return "down";
+  return "";
+}
+
+function bootVision(allAssets) {
+  const state = {
+    group: "memes",
+    window: 90,
+    metrics: { price: true, mentions: true, tvl: true },
+    selected: new Set(["CHOG"]),
+  };
+
+  const inGroup = () =>
+    state.group === "all" ? allAssets : allAssets.filter((a) => a.group === state.group);
+  const selectedAssets = () => inGroup().filter((a) => state.selected.has(a.symbol));
+
+  const controlsEl = document.getElementById("vision-controls");
+  const togglesWrap = document.createElement("div");
+  togglesWrap.className = "control-group";
+
+  // group / window / metric controls
+  const topRow = document.createElement("div");
+  topRow.className = "controls";
+  topRow.append(
+    controlGroup(
+      "Univers",
+      segmented(
+        [["memes", "Memecoins"], ["majors", "Big caps"], ["all", "Tous"]],
+        () => state.group,
+        (v) => {
+          state.group = v;
+          // reset selection to the first asset of the new group
+          const first = inGroup()[0];
+          state.selected = new Set(first ? [first.symbol] : []);
+          rebuildToggles();
+          renderAll();
+        }
+      )
+    ),
+    controlGroup(
+      "Fenêtre",
+      segmented(
+        [[30, "30j"], [90, "90j"], [Infinity, "Max"]],
+        () => state.window,
+        (v) => { state.window = v; renderAll(); }
+      )
+    ),
+    controlGroup(
+      "Métriques",
+      (() => {
+        const wrap = document.createElement("div");
+        wrap.className = "control-group";
+        for (const m of METRIC_DEFS) {
+          const t = document.createElement("button");
+          t.className = "asset-toggle" + (state.metrics[m.key] ? " on" : "");
+          t.textContent = m.label[0].toUpperCase() + m.label.slice(1);
+          t.addEventListener("click", () => {
+            state.metrics[m.key] = !state.metrics[m.key];
+            t.classList.toggle("on");
+            renderAll();
+          });
+          wrap.append(t);
+        }
+        return wrap;
+      })()
+    )
+  );
+
+  const toggleRow = document.createElement("div");
+  toggleRow.className = "controls";
+  toggleRow.append(controlGroup("Actifs", togglesWrap));
+
+  controlsEl.append(topRow, toggleRow);
+
+  function rebuildToggles() {
+    togglesWrap.innerHTML = "";
+    for (const a of inGroup()) {
+      const color = COLORS[a.symbol] || ink("--brand");
+      const t = document.createElement("button");
+      t.className = "asset-toggle" + (state.selected.has(a.symbol) ? " on" : "");
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      dot.style.color = color;
+      dot.style.background = color;
+      const name = document.createElement("span");
+      name.textContent = a.symbol;
+      t.append(dot, name);
+      t.addEventListener("click", () => {
+        if (state.selected.has(a.symbol)) state.selected.delete(a.symbol);
+        else state.selected.add(a.symbol);
+        t.classList.toggle("on");
+        renderAll();
+      });
+      togglesWrap.append(t);
+    }
+  }
+
+  // charts + panels
+  const chartCanvas = document.getElementById("vision-chart");
+  const scatterCanvas = document.getElementById("vision-scatter");
+  const corrEl = document.getElementById("vision-correlation");
+  const chartNote = document.getElementById("vision-chart-note");
+  let lineChart = null;
+  let scatterChart = null;
+
+  function renderLineChart() {
+    const sel = selectedAssets();
+    const active = METRIC_DEFS.filter((m) => state.metrics[m.key]);
+    const dates = [
+      ...new Set(
+        sel.flatMap((a) => active.flatMap((m) => windowed(a[m.series], state.window).map((p) => p.date)))
+      ),
+    ].sort();
+
+    const datasets = [];
+    for (const a of sel) {
+      const color = COLORS[a.symbol] || ink("--brand");
+      for (const m of active) {
+        datasets.push(
+          lineDataset({
+            label: `${a.symbol} · ${m.label}`,
+            data: indexedWindowed(a, m.series, m.vkey, dates, state.window),
+            color,
+            dashed: false,
+          })
+        );
+        datasets[datasets.length - 1].borderDash = m.dash;
+      }
+    }
+
+    lineChart?.destroy();
+    lineChart = new Chart(chartCanvas, {
+      type: "line",
+      data: { labels: dates, datasets },
+      options: baseOptions("Indice (base 100)"),
+    });
+    chartNote.innerHTML =
+      "Ligne pleine = <b>prix</b>, tirets = <b>mentions</b>, pointillés = <b>TVL</b>, une couleur par actif. Tout indexé base 100.";
+  }
+
+  function renderScatter() {
+    const sel = selectedAssets();
+    const datasets = [];
+    for (const a of sel) {
+      const color = COLORS[a.symbol] || ink("--brand");
+      const wp = windowed(a.prices, state.window);
+      const wt = windowed(a.tvl, state.window);
+      if (!wp.length || !wt.length) continue;
+      const priceBy = new Map(wp.map((p) => [p.date, p.price]));
+      const tvlBy = new Map(wt.map((p) => [p.date, p.tvl]));
+      const p0 = wp.find((p) => p.price != null)?.price;
+      const t0 = wt.find((p) => p.tvl != null)?.tvl;
+      const pts = [];
+      for (const d of priceBy.keys()) {
+        if (tvlBy.has(d) && p0 && t0) {
+          pts.push({ x: (tvlBy.get(d) / t0) * 100, y: (priceBy.get(d) / p0) * 100 });
+        }
+      }
+      datasets.push({
+        label: a.symbol,
+        data: pts,
+        backgroundColor: color,
+        borderColor: color,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+      });
+    }
+    scatterChart?.destroy();
+    scatterChart = new Chart(scatterCanvas, {
+      type: "scatter",
+      data: { datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top", align: "start", labels: { color: ink("--text-2"), usePointStyle: true, boxHeight: 7, padding: 14 } },
+          tooltip: { backgroundColor: "#1e1a2b", borderColor: "rgba(255,255,255,0.12)", borderWidth: 1, titleColor: ink("--text"), bodyColor: ink("--text-2") },
+        },
+        scales: {
+          x: { title: { display: true, text: "TVL chaîne (indice base 100)", color: ink("--text-3"), font: { size: 11 } }, grid: { color: ink("--grid") }, ticks: { color: ink("--text-3"), font: { size: 11 } } },
+          y: { title: { display: true, text: "Prix (indice base 100)", color: ink("--text-3"), font: { size: 11 } }, grid: { color: ink("--grid") }, ticks: { color: ink("--text-3"), font: { size: 11 } } },
+        },
+      },
+    });
+  }
+
+  function renderCorrelation() {
+    corrEl.innerHTML = "";
+    const sel = selectedAssets();
+    if (!sel.length) {
+      const p = document.createElement("p");
+      p.className = "card-sub";
+      p.textContent = "Sélectionne au moins un actif.";
+      corrEl.append(p);
+      return;
+    }
+    for (const a of sel) {
+      const card = document.createElement("div");
+      card.className = "corr-card";
+      const h = document.createElement("div");
+      h.className = "corr-head";
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      dot.style.background = COLORS[a.symbol] || ink("--brand");
+      h.append(dot, document.createTextNode(a.symbol));
+      card.append(h);
+
+      const pairs = [
+        ["Prix ↔ TVL", corrLevels(a.prices, "price", a.tvl, "tvl", state.window)],
+        ["Prix ↔ Mentions", corrLevels(a.prices, "price", a.mentions, "count", state.window)],
+        ["Mentions ↔ TVL", corrLevels(a.mentions, "count", a.tvl, "tvl", state.window)],
+      ];
+      for (const [label, { r, n }] of pairs) {
+        const row = document.createElement("div");
+        row.className = "corr-row";
+        const l = document.createElement("span");
+        l.className = "corr-label";
+        l.textContent = label;
+        const v = document.createElement("span");
+        v.className = "corr-val " + corrClass(r);
+        v.textContent = r == null ? "—" : (r >= 0 ? "+" : "") + r.toFixed(2);
+        const nn = document.createElement("span");
+        nn.className = "corr-n";
+        nn.textContent = r == null ? "" : `n=${n}`;
+        row.append(l, v, nn);
+        card.append(row);
+      }
+      corrEl.append(card);
+    }
+  }
+
+  const leaderboardEl = document.getElementById("leaderboard");
+  function renderVisionLeaderboard() {
+    leaderboardEl.innerHTML = "";
+    renderLeaderboard(leaderboardEl, inGroup());
+  }
+
+  function renderAll() {
+    renderLineChart();
+    renderScatter();
+    renderCorrelation();
+    renderVisionLeaderboard();
+  }
+
+  rebuildToggles();
+  renderAll();
+}
+
 // ---- bootstrap ----------------------------------------------------------
 async function boot() {
   const page = document.body.dataset.page;
   const data = await fetch("./data.json").then((r) => r.json());
-  const assets = data.assets.filter((a) => a.group === page);
+  const tvlByChain = data.tvlByChain || {};
+  // TVL is chain-level — attach the shared series to every asset by its chain.
+  for (const a of data.assets) a.tvl = tvlByChain[a.chain] || [];
 
   const metaEl = document.getElementById("meta");
   if (metaEl)
     metaEl.textContent =
       "Dernière collecte : " + new Date(data.generatedAt).toLocaleString("fr-FR");
+
+  if (page === "vision") {
+    bootVision(data.assets);
+    return;
+  }
+
+  const assets = data.assets.filter((a) => a.group === page);
 
   const tilesEl = document.getElementById("tiles");
   if (tilesEl) renderTiles(tilesEl, assets);

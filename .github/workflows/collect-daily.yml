@@ -37,6 +37,9 @@ jobs:
       - name: Collect prices
         run: npm run collect:prices
 
+      - name: Collect chain TVL
+        run: npm run collect:tvl
+
       - name: Ingest into SQLite
         run: npm run ingest
 

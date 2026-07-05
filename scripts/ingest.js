@@ -4,5 +4,5 @@
 // Usage: npm run ingest
 import { ingestAll } from "../src/ingest/ingest.js";
 
-const { mentionRows, priceRows } = ingestAll();
-console.log(`Ingested ${mentionRows} mention rows, ${priceRows} price rows.`);
+const { mentionRows, priceRows, tvlRows } = ingestAll();
+console.log(`Ingested ${mentionRows} mention rows, ${priceRows} price rows, ${tvlRows} TVL rows.`);

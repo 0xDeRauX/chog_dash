@@ -8,6 +8,7 @@
     "test:xcounts": "node scripts/test-x-counts.js",
     "collect:mentions": "node scripts/collect-mentions.js",
     "collect:prices": "node scripts/collect-prices.js",
+    "collect:tvl": "node scripts/collect-tvl.js",
     "backfill:prices": "node scripts/backfill-prices.js",
     "ingest": "node scripts/ingest.js",
     "build:dashboard": "node scripts/build-dashboard-data.js"

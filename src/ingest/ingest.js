@@ -109,6 +109,20 @@ export function ingestAll() {
     }
   }
 
+  const upsertTvl = db.prepare(`
+    INSERT INTO tvl_daily (chain, date, tvl_usd)
+    VALUES (@chain, @date, @tvl)
+    ON CONFLICT(chain, date) DO UPDATE SET tvl_usd = excluded.tvl_usd
+  `);
+
+  let tvlRows = 0;
+  for (const file of readRawFiles("tvl")) {
+    for (const point of file.series) {
+      upsertTvl.run({ chain: file.chain, date: point.date, tvl: point.tvl });
+      tvlRows++;
+    }
+  }
+
   db.close();
-  return { mentionRows, priceRows };
+  return { mentionRows, priceRows, tvlRows };
 }
