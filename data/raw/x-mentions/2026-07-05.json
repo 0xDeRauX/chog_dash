@@ -4,36 +4,36 @@
     {
       "symbol": "CHOG",
       "query": "(\"CHOG\" OR \"$CHOG\") -is:retweet",
-      "startTime": "2026-07-04T11:54:52.235Z",
-      "mentionCount": 296,
+      "startTime": "2026-07-04T12:04:39.046Z",
+      "mentionCount": 293,
       "buckets": 25
     },
     {
       "symbol": "PEPE",
       "query": "(\"PEPE\" OR \"$PEPE\") -is:retweet",
-      "startTime": "2026-07-04T11:54:52.637Z",
-      "mentionCount": 17148,
+      "startTime": "2026-07-04T12:04:39.323Z",
+      "mentionCount": 17135,
       "buckets": 25
     },
     {
       "symbol": "WIF",
       "query": "(\"$WIF\" OR \"dogwifhat\") -is:retweet",
-      "startTime": "2026-07-04T11:54:52.854Z",
-      "mentionCount": 2643,
+      "startTime": "2026-07-04T12:04:39.395Z",
+      "mentionCount": 2623,
       "buckets": 25
     },
     {
       "symbol": "BONK",
       "query": "(\"BONK\" OR \"$BONK\") -is:retweet",
-      "startTime": "2026-07-04T11:54:53.240Z",
-      "mentionCount": 4593,
+      "startTime": "2026-07-04T12:04:39.475Z",
+      "mentionCount": 4584,
       "buckets": 25
     },
     {
       "symbol": "BRETT",
       "query": "(\"BRETT\" OR \"$BRETT\") -is:retweet",
-      "startTime": "2026-07-04T11:54:53.405Z",
-      "mentionCount": 10795,
+      "startTime": "2026-07-04T12:04:39.577Z",
+      "mentionCount": 10780,
       "buckets": 25
     }
   ]

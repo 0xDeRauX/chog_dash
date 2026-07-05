@@ -4,32 +4,32 @@
     {
       "symbol": "CHOG",
       "coingeckoId": "chog",
-      "priceUsd": 0.00137975,
-      "change24h": -15.343420332103804
+      "priceUsd": 0.0013966,
+      "change24h": -12.234749387709233
     },
     {
       "symbol": "PEPE",
       "coingeckoId": "pepe",
       "priceUsd": 0.00000265,
-      "change24h": -1.8575143772703553
+      "change24h": -2.0664920311878268
     },
     {
       "symbol": "WIF",
       "coingeckoId": "dogwifcoin",
-      "priceUsd": 0.172531,
-      "change24h": -2.3282111551001297
+      "priceUsd": 0.172129,
+      "change24h": -2.4434577910354953
     },
     {
       "symbol": "BONK",
       "coingeckoId": "bonk",
       "priceUsd": 0.00000483,
-      "change24h": -1.6546406989973763
+      "change24h": -1.5519720682993965
     },
     {
       "symbol": "BRETT",
       "coingeckoId": "based-brett",
-      "priceUsd": 0.00546368,
-      "change24h": -0.9430617713854114
+      "priceUsd": 0.0054598,
+      "change24h": -0.9940045880957369
     }
   ]
 }
