@@ -8,17 +8,21 @@ import path from "path";
 import { ASSETS } from "../src/config.js";
 import { fetchPriceHistory } from "../src/collectors/priceHistory.js";
 
-const DAYS = Number(process.argv[2] ?? 90);
+const args = process.argv.slice(2);
+const force = args.includes("--force");
+const DAYS = Number(args.find((a) => /^\d+$/.test(a)) ?? 90);
 const dir = path.resolve("data/raw/prices-history");
 fs.mkdirSync(dir, { recursive: true });
 
 for (const asset of ASSETS) {
+  const file = path.join(dir, `${asset.symbol}.json`);
+  if (!force && fs.existsSync(file)) {
+    console.log(`${asset.symbol}: already present, skip (use --force to refetch)`);
+    continue;
+  }
   try {
     const hist = await fetchPriceHistory(asset, DAYS);
-    fs.writeFileSync(
-      path.join(dir, `${asset.symbol}.json`),
-      JSON.stringify(hist, null, 2)
-    );
+    fs.writeFileSync(file, JSON.stringify(hist, null, 2));
     console.log(`${asset.symbol}: ${hist.series.length} days`);
   } catch (err) {
     console.error(`${asset.symbol}: ${err.message}`);

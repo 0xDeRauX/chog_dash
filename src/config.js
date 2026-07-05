@@ -46,6 +46,30 @@ export const ASSETS = [
     coingeckoId: "based-brett",
     xQuery: '("BRETT" OR "$BRETT") -is:retweet',
   },
+  {
+    group: "memes",
+    symbol: "PENGU",
+    chain: "solana",
+    coingeckoId: "pudgy-penguins",
+    xQuery: '("$PENGU" OR "Pudgy Penguins") -is:retweet',
+  },
+  {
+    group: "memes",
+    symbol: "FARTCOIN",
+    chain: "solana",
+    coingeckoId: "fartcoin",
+    xQuery: '("$FARTCOIN" OR "Fartcoin") -is:retweet',
+  },
+  {
+    group: "memes",
+    symbol: "ANSEM",
+    chain: "solana",
+    coingeckoId: "the-black-bull",
+    // Cashtag + the word (X search is case-insensitive, so "ANSEM" also matches
+    // "ansem"). Note: this deliberately includes chatter about the influencer
+    // Ansem, so the count reflects name buzz, not only the token's community.
+    xQuery: '("$ANSEM" OR "ANSEM") -is:retweet',
+  },
 
   // ---- majors ------------------------------------------------------------
   {
@@ -103,6 +127,21 @@ export const ASSETS = [
     chain: "bittensor",
     coingeckoId: "bittensor",
     xQuery: '("$TAO" OR "Bittensor") -is:retweet',
+  },
+  {
+    group: "majors",
+    symbol: "AKT",
+    chain: "akash",
+    coingeckoId: "akash-network",
+    // "Akash" alone is a common first name → use the project name + cashtag.
+    xQuery: '("$AKT" OR "Akash Network") -is:retweet',
+  },
+  {
+    group: "majors",
+    symbol: "STRK",
+    chain: "starknet",
+    coingeckoId: "starknet",
+    xQuery: '("$STRK" OR "Starknet") -is:retweet',
   },
 ];
 

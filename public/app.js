@@ -3,20 +3,30 @@
    Monad-purple look. */
 
 // Fixed per-symbol colors (identity follows the entity, never its rank).
+// Beyond 8 series per group the CVD-distinctness of any palette degrades — the
+// always-on legend + the dynamic selector (used with a few assets at a time)
+// are the mitigation, per the dataviz method's "too many series" guidance.
 const COLORS = {
+  // memes
   CHOG: "#836ef9",
-  PEPE: "#199e70",
-  WIF: "#c98500",
-  BONK: "#d95926",
+  PEPE: "#37a537",
+  WIF: "#e0a000",
+  BONK: "#f07530",
   BRETT: "#3987e5",
+  PENGU: "#2ec8e6",
+  FARTCOIN: "#9ccc4a",
+  ANSEM: "#ef5350",
+  // majors
   MON: "#836ef9",
-  BTC: "#d95926",
+  BTC: "#f07530",
   ETH: "#3987e5",
-  SOL: "#199e70",
-  XRP: "#d55181",
-  SUI: "#c98500",
-  HYPE: "#e66767",
-  TAO: "#008300",
+  SOL: "#17b8a6",
+  XRP: "#b0bec5",
+  SUI: "#2ec8e6",
+  HYPE: "#35e0a5",
+  TAO: "#e0559a",
+  AKT: "#ef5350",
+  STRK: "#a98bf0",
 };
 
 const CSS = getComputedStyle(document.documentElement);
