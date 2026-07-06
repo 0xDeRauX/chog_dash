@@ -171,6 +171,15 @@ function baseOptions(yTitle) {
             `  ${c.dataset.label}: ${c.parsed.y == null ? "—" : c.parsed.y.toFixed(1)}`,
         },
       },
+      zoom: {
+        pan: { enabled: true, mode: "x" },
+        zoom: {
+          wheel: { enabled: true },
+          pinch: { enabled: true },
+          drag: { enabled: false },
+          mode: "x",
+        },
+      },
     },
     scales: {
       x: {
@@ -787,6 +796,10 @@ function bootVision(allAssets) {
         plugins: {
           legend: { position: "top", align: "start", labels: { color: ink("--text-2"), usePointStyle: true, boxHeight: 7, padding: 14 } },
           tooltip: { backgroundColor: "#1e1a2b", borderColor: "rgba(255,255,255,0.12)", borderWidth: 1, titleColor: ink("--text"), bodyColor: ink("--text-2") },
+          zoom: {
+            pan: { enabled: true, mode: "xy" },
+            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: "xy" },
+          },
         },
         scales: {
           x: { title: { display: true, text: "TVL chaîne (indice base 100)", color: ink("--text-3"), font: { size: 11 } }, grid: { color: ink("--grid") }, ticks: { color: ink("--text-3"), font: { size: 11 } } },
@@ -858,9 +871,35 @@ function bootVision(allAssets) {
   renderAll();
 }
 
+// ---- zoom/pan wiring ----------------------------------------------------
+function setupZoom() {
+  // The UMD plugin usually self-registers; register defensively if not.
+  const zp = window.ChartZoom || window["chartjs-plugin-zoom"];
+  if (zp && Chart.registry?.plugins?.get?.("zoom") == null) {
+    try { Chart.register(zp); } catch (_) {}
+  }
+
+  // Double-click a chart to reset its zoom/pan.
+  document.addEventListener("dblclick", (e) => {
+    if (e.target?.tagName !== "CANVAS") return;
+    const c = Chart.getChart(e.target);
+    if (c?.resetZoom) c.resetZoom();
+  });
+
+  // A discoverability caption under every chart.
+  for (const box of document.querySelectorAll(".chart-box")) {
+    const hint = document.createElement("div");
+    hint.className = "zoom-hint";
+    hint.textContent = "Molette : zoom · glisser : déplacer · double-clic : réinitialiser";
+    box.after(hint);
+  }
+}
+
 // ---- bootstrap ----------------------------------------------------------
 async function boot() {
   const page = document.body.dataset.page;
+  setupZoom();
+
   const data = await fetch("./data.json").then((r) => r.json());
   const tvlByChain = data.tvlByChain || {};
   // TVL is chain-level — attach the shared series to every asset by its chain.
