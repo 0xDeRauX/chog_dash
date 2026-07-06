@@ -16,14 +16,14 @@ export const ASSETS = [
     symbol: "CHOG",
     chain: "monad",
     coingeckoId: "chog",
-    xQuery: '("CHOG" OR "$CHOG") -is:retweet',
+    xQuery: '("CHOG" OR "$CHOG" OR "@ChogNFT" OR "@chog_xyz") -is:retweet',
   },
   {
     group: "memes",
     symbol: "PEPE",
     chain: "ethereum",
     coingeckoId: "pepe",
-    xQuery: '("PEPE" OR "$PEPE") -is:retweet',
+    xQuery: '("PEPE" OR "$PEPE" OR "@pepecoineth") -is:retweet',
   },
   {
     group: "memes",
@@ -37,28 +37,28 @@ export const ASSETS = [
     symbol: "BONK",
     chain: "solana",
     coingeckoId: "bonk",
-    xQuery: '("BONK" OR "$BONK") -is:retweet',
+    xQuery: '("BONK" OR "$BONK" OR "@bonk_inu") -is:retweet',
   },
   {
     group: "memes",
     symbol: "BRETT",
     chain: "base",
     coingeckoId: "based-brett",
-    xQuery: '("BRETT" OR "$BRETT") -is:retweet',
+    xQuery: '("BRETT" OR "$BRETT" OR "@BasedBrett") -is:retweet',
   },
   {
     group: "memes",
     symbol: "PENGU",
     chain: "solana",
     coingeckoId: "pudgy-penguins",
-    xQuery: '("$PENGU" OR "Pudgy Penguins") -is:retweet',
+    xQuery: '("$PENGU" OR "Pudgy Penguins" OR "@pudgypenguins") -is:retweet',
   },
   {
     group: "memes",
     symbol: "FARTCOIN",
     chain: "solana",
     coingeckoId: "fartcoin",
-    xQuery: '("$FARTCOIN" OR "Fartcoin") -is:retweet',
+    xQuery: '("$FARTCOIN" OR "Fartcoin" OR "@FartCoinOfSOL") -is:retweet',
   },
   {
     group: "memes",
@@ -68,7 +68,7 @@ export const ASSETS = [
     // Cashtag + the word (X search is case-insensitive, so "ANSEM" also matches
     // "ansem"). Note: this deliberately includes chatter about the influencer
     // Ansem, so the count reflects name buzz, not only the token's community.
-    xQuery: '("$ANSEM" OR "ANSEM") -is:retweet',
+    xQuery: '("$ANSEM" OR "ANSEM" OR "@blknoiz06") -is:retweet',
   },
 
   // ---- majors ------------------------------------------------------------
@@ -84,21 +84,21 @@ export const ASSETS = [
     symbol: "ETH",
     chain: "ethereum",
     coingeckoId: "ethereum",
-    xQuery: '("$ETH" OR "Ethereum" OR "eth") -is:retweet',
+    xQuery: '("$ETH" OR "Ethereum" OR "eth" OR "@ethereum") -is:retweet',
   },
   {
     group: "majors",
     symbol: "SOL",
     chain: "solana",
     coingeckoId: "solana",
-    xQuery: '("$SOL" OR "Solana" OR "sol") -is:retweet',
+    xQuery: '("$SOL" OR "Solana" OR "@solana") -is:retweet',
   },
   {
     group: "majors",
     symbol: "XRP",
     chain: "xrp",
     coingeckoId: "ripple",
-    xQuery: '("$XRP" OR "Ripple" OR "xrp") -is:retweet',
+    xQuery: '("$XRP" OR "Ripple" OR "xrp" OR "@ripple") -is:retweet',
   },
   {
     group: "majors",
@@ -112,21 +112,21 @@ export const ASSETS = [
     symbol: "MON",
     chain: "monad",
     coingeckoId: "monad",
-    xQuery: '("$MON" OR "Monad") -is:retweet',
+    xQuery: '("$MON" OR "Monad" OR "@monad") -is:retweet',
   },
   {
     group: "majors",
     symbol: "HYPE",
     chain: "hyperliquid",
     coingeckoId: "hyperliquid",
-    xQuery: '("$HYPE" OR "Hyperliquid") -is:retweet',
+    xQuery: '("$HYPE" OR "Hyperliquid" OR "@HyperliquidX") -is:retweet',
   },
   {
     group: "majors",
     symbol: "TAO",
     chain: "bittensor",
     coingeckoId: "bittensor",
-    xQuery: '("$TAO" OR "Bittensor") -is:retweet',
+    xQuery: '("$TAO" OR "Bittensor" OR "@bittensor") -is:retweet',
   },
   {
     group: "majors",
@@ -134,14 +134,14 @@ export const ASSETS = [
     chain: "akash",
     coingeckoId: "akash-network",
     // "Akash" alone is a common first name → use the project name + cashtag.
-    xQuery: '("$AKT" OR "Akash Network") -is:retweet',
+    xQuery: '("$AKT" OR "Akash Network" OR "@akashnet") -is:retweet',
   },
   {
     group: "majors",
     symbol: "STRK",
     chain: "starknet",
     coingeckoId: "starknet",
-    xQuery: '("$STRK" OR "Starknet") -is:retweet',
+    xQuery: '("$STRK" OR "Starknet" OR "@starknet") -is:retweet',
   },
 ];
 

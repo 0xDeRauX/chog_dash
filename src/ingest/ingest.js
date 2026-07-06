@@ -43,16 +43,34 @@ export function ingestAll() {
   `);
 
   let mentionRows = 0;
+
+  // Backfilled history: one file per symbol, full daily series (calendar-day).
+  for (const hist of readRawFiles("x-mentions-history")) {
+    const asset = getAssetId.get(hist.symbol);
+    if (!asset) continue;
+    for (const point of hist.series) {
+      upsertMentions.run({
+        assetId: asset.id,
+        date: point.date,
+        mentionCount: point.count,
+        source: "x-api",
+        collectedAt: `${point.date}T00:00:00.000Z`,
+      });
+      mentionRows++;
+    }
+  }
+
+  // Daily snapshots (calendar-day, one file per collected day).
   for (const file of readRawFiles("x-mentions")) {
     for (const r of file.results) {
       const asset = getAssetId.get(r.symbol);
       if (!asset) continue;
       upsertMentions.run({
         assetId: asset.id,
-        date: file.date,
+        date: r.date ?? file.date,
         mentionCount: r.mentionCount,
         source: "x-api",
-        collectedAt: r.startTime,
+        collectedAt: r.collectedAt ?? `${r.date ?? file.date}T00:00:00.000Z`,
       });
       mentionRows++;
     }

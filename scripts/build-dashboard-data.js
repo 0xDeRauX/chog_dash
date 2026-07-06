@@ -40,9 +40,10 @@ const assets = ASSETS.map((cfg) => {
 // TVL series per chain key (assets look theirs up by `chain`). Emitted once per
 // chain rather than duplicated per asset.
 // Cap to the recent window (some chains have years of history) so data.json
-// stays lean and TVL aligns with the ~90-day price horizon.
+// stays lean and TVL aligns with the price/mention horizon.
+const WINDOW_DAYS = 300;
 const tvlStmt = db.prepare(
-  `SELECT date, tvl_usd AS tvl FROM tvl_daily WHERE chain = ? ORDER BY date DESC LIMIT 120`
+  `SELECT date, tvl_usd AS tvl FROM tvl_daily WHERE chain = ? ORDER BY date DESC LIMIT ${WINDOW_DAYS}`
 );
 const tvlByChain = {};
 for (const chainKey of Object.keys(CHAINS)) {

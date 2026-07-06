@@ -1,14 +1,27 @@
 // Calls the official X API's "Counts: Recent" endpoint ($0.005/request,
-// not per tweet) to get the mention count for one asset over the last 24h.
+// not per tweet). Counts the PREVIOUS complete UTC calendar day (not a rolling
+// 24h ending "now"), so the value is independent of the exact run time — a
+// missed/delayed schedule no longer shifts the window. Yesterday is always
+// within the endpoint's 7-day reach.
 import { CONFIG } from "../config.js";
 
+// [yesterday 00:00 UTC, today 00:00 UTC), labelled with yesterday's date.
+export function previousUtcDay() {
+  const end = new Date();
+  end.setUTCHours(0, 0, 0, 0);
+  const start = new Date(end);
+  start.setUTCDate(start.getUTCDate() - 1);
+  return { start, end, date: start.toISOString().slice(0, 10) };
+}
+
 export async function collectMentionsForAsset(asset) {
-  const startTime = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { start, end, date } = previousUtcDay();
 
   const url = new URL("https://api.x.com/2/tweets/counts/recent");
   url.searchParams.set("query", asset.xQuery);
-  url.searchParams.set("start_time", startTime);
-  url.searchParams.set("granularity", "hour");
+  url.searchParams.set("start_time", start.toISOString());
+  url.searchParams.set("end_time", end.toISOString());
+  url.searchParams.set("granularity", "day");
 
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${CONFIG.X_BEARER_TOKEN}` },
@@ -23,9 +36,9 @@ export async function collectMentionsForAsset(asset) {
   return {
     symbol: asset.symbol,
     query: asset.xQuery,
-    startTime,
+    date,
     mentionCount: data.meta?.total_tweet_count ?? 0,
-    buckets: data.data?.length ?? 0,
+    collectedAt: new Date().toISOString(),
   };
 }
 
