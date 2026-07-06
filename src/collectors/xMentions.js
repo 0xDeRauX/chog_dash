@@ -1,21 +1,26 @@
-// Calls the official X API's "Counts: Recent" endpoint ($0.005/request,
-// not per tweet). Counts the PREVIOUS complete UTC calendar day (not a rolling
-// 24h ending "now"), so the value is independent of the exact run time — a
-// missed/delayed schedule no longer shifts the window. Yesterday is always
-// within the endpoint's 7-day reach.
+// Daily mention collection via the official X "Counts: Recent" endpoint
+// ($0.005 PER REQUEST — not per day). One request returns a whole window of
+// calendar-day (UTC) buckets, so re-collecting the last few days each run costs
+// the same as one day yet self-heals any missed/late day (the ingest upserts).
 import { CONFIG } from "../config.js";
 
-// [yesterday 00:00 UTC, today 00:00 UTC), labelled with yesterday's date.
-export function previousUtcDay() {
+// Trailing complete UTC days to (re)collect each run. Capped at 6 because
+// counts/recent only reaches back 7 days — 6 full calendar days always fit
+// inside that window whatever time of day the run fires (7 would overflow and
+// return a truncated oldest bucket).
+export const DAILY_LOOKBACK_DAYS = 6;
+
+// Window = [today 00:00 UTC − days, today 00:00 UTC): only complete days.
+export function lookbackWindow(days) {
   const end = new Date();
   end.setUTCHours(0, 0, 0, 0);
   const start = new Date(end);
-  start.setUTCDate(start.getUTCDate() - 1);
-  return { start, end, date: start.toISOString().slice(0, 10) };
+  start.setUTCDate(start.getUTCDate() - days);
+  return { start, end };
 }
 
-export async function collectMentionsForAsset(asset) {
-  const { start, end, date } = previousUtcDay();
+export async function collectRecentDays(asset, days = DAILY_LOOKBACK_DAYS) {
+  const { start, end } = lookbackWindow(days);
 
   const url = new URL("https://api.x.com/2/tweets/counts/recent");
   url.searchParams.set("query", asset.xQuery);
@@ -26,26 +31,27 @@ export async function collectMentionsForAsset(asset) {
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${CONFIG.X_BEARER_TOKEN}` },
   });
-
   if (!res.ok) {
-    throw new Error(`X counts API HTTP ${res.status} for ${asset.symbol}: ${await res.text()}`);
+    throw new Error(`X counts/recent HTTP ${res.status} for ${asset.symbol}: ${await res.text()}`);
   }
 
   const data = await res.json();
-
-  return {
-    symbol: asset.symbol,
-    query: asset.xQuery,
-    date,
-    mentionCount: data.meta?.total_tweet_count ?? 0,
-    collectedAt: new Date().toISOString(),
-  };
+  const series = (data.data ?? []).map((b) => ({
+    date: b.start.slice(0, 10),
+    count: b.tweet_count,
+  }));
+  return { symbol: asset.symbol, query: asset.xQuery, series };
 }
 
-export async function collectAllMentions(assets) {
+export async function collectAllRecent(assets, days = DAILY_LOOKBACK_DAYS) {
   const results = [];
   for (const asset of assets) {
-    results.push(await collectMentionsForAsset(asset));
+    try {
+      results.push(await collectRecentDays(asset, days));
+    } catch (err) {
+      // One bad/edited query must not fail the whole daily run — skip and log.
+      console.error(`Skipped ${asset.symbol}: ${err.message}`);
+    }
   }
   return results;
 }
