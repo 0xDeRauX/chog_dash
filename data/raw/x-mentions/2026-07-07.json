@@ -1,112 +1,112 @@
 {
-  "date": "2026-07-03",
+  "date": "2026-07-07",
   "results": [
     {
       "symbol": "CHOG",
-      "date": "2026-07-03",
-      "mentionCount": 608,
+      "date": "2026-07-07",
+      "mentionCount": 615,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "PEPE",
-      "date": "2026-07-03",
-      "mentionCount": 18330,
+      "date": "2026-07-07",
+      "mentionCount": 20386,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "WIF",
-      "date": "2026-07-03",
-      "mentionCount": 2711,
+      "date": "2026-07-07",
+      "mentionCount": 2375,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "BONK",
-      "date": "2026-07-03",
-      "mentionCount": 4786,
+      "date": "2026-07-07",
+      "mentionCount": 9800,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "BRETT",
-      "date": "2026-07-03",
-      "mentionCount": 10618,
+      "date": "2026-07-07",
+      "mentionCount": 13323,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "PENGU",
-      "date": "2026-07-03",
-      "mentionCount": 5145,
+      "date": "2026-07-07",
+      "mentionCount": 12460,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "FARTCOIN",
-      "date": "2026-07-03",
-      "mentionCount": 5011,
+      "date": "2026-07-07",
+      "mentionCount": 835,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "ANSEM",
-      "date": "2026-07-03",
-      "mentionCount": 162859,
+      "date": "2026-07-07",
+      "mentionCount": 4663220,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "BTC",
-      "date": "2026-07-03",
-      "mentionCount": 107775,
+      "date": "2026-07-07",
+      "mentionCount": 104284,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "ETH",
-      "date": "2026-07-03",
-      "mentionCount": 40495,
+      "date": "2026-07-07",
+      "mentionCount": 42524,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "SOL",
-      "date": "2026-07-03",
-      "mentionCount": 167362,
+      "date": "2026-07-07",
+      "mentionCount": 3422691,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "XRP",
-      "date": "2026-07-03",
-      "mentionCount": 18917,
+      "date": "2026-07-07",
+      "mentionCount": 19190,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "SUI",
-      "date": "2026-07-03",
-      "mentionCount": 15622,
+      "date": "2026-07-07",
+      "mentionCount": 13574,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "MON",
-      "date": "2026-07-03",
-      "mentionCount": 66482,
+      "date": "2026-07-07",
+      "mentionCount": 74189,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "HYPE",
-      "date": "2026-07-03",
-      "mentionCount": 51003,
+      "date": "2026-07-07",
+      "mentionCount": 50596,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "TAO",
-      "date": "2026-07-03",
-      "mentionCount": 19020,
+      "date": "2026-07-07",
+      "mentionCount": 19476,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "AKT",
-      "date": "2026-07-03",
-      "mentionCount": 1171,
+      "date": "2026-07-07",
+      "mentionCount": 1061,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     },
     {
       "symbol": "STRK",
-      "date": "2026-07-03",
-      "mentionCount": 486,
+      "date": "2026-07-07",
+      "mentionCount": 390,
       "collectedAt": "2026-07-08T09:03:32.553Z"
     }
   ]
