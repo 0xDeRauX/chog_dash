@@ -141,6 +141,29 @@ export function ingestAll() {
     }
   }
 
+  const upsertDiscord = db.prepare(`
+    INSERT INTO discord_daily (asset_id, date, member_count, online_count)
+    VALUES (@assetId, @date, @memberCount, @onlineCount)
+    ON CONFLICT(asset_id, date) DO UPDATE SET
+      member_count = excluded.member_count,
+      online_count = excluded.online_count
+  `);
+
+  let discordRows = 0;
+  for (const file of readRawFiles("discord")) {
+    for (const r of file.results) {
+      const asset = getAssetId.get(r.symbol);
+      if (!asset) continue;
+      upsertDiscord.run({
+        assetId: asset.id,
+        date: file.date,
+        memberCount: r.memberCount ?? null,
+        onlineCount: r.onlineCount ?? null,
+      });
+      discordRows++;
+    }
+  }
+
   db.close();
-  return { mentionRows, priceRows, tvlRows };
+  return { mentionRows, priceRows, tvlRows, discordRows };
 }

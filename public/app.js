@@ -475,6 +475,8 @@ function renderLeaderboard(container, assets) {
     { key: "m24", label: "Ment. 24h", kind: "pct", value: (a) => pctOverDays(a.mentions, "count", 1) },
     { key: "m7", label: "Ment. 7j", kind: "pct", value: (a) => pctOverDays(a.mentions, "count", 7) },
     { key: "m30", label: "Ment. 30j", kind: "pct", value: (a) => pctOverDays(a.mentions, "count", 30) },
+    { key: "dc", label: "Membres DC", kind: "num", value: (a) => (a.discord?.length ? a.discord.at(-1).members : null) },
+    { key: "dc7", label: "Membres 7j", kind: "pct", value: (a) => pctOverDays(a.discord, "members", 7) },
   ];
 
   // Precompute every cell value once.
@@ -552,6 +554,8 @@ function renderLeaderboard(container, assets) {
           td.append(wrap);
         } else if (c.kind === "usd") {
           td.textContent = fmtUsdCompact(v);
+        } else if (c.kind === "num") {
+          td.textContent = fmtCompact(v);
         } else if (c.kind === "price") {
           td.textContent = fmtPrice(v);
         } else {

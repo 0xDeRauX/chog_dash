@@ -17,6 +17,9 @@ export const ASSETS = [
     chain: "monad",
     coingeckoId: "chog",
     xQuery: '("CHOG" OR "$CHOG" OR "@ChogNFT" OR "@chog_xyz") -is:retweet',
+    // Discord invite code / vanity (member count is public via the invite API,
+    // no bot/admin needed). Add one per project to compare communities.
+    discordInvite: "chog",
   },
   {
     group: "memes",

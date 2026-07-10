@@ -34,3 +34,11 @@ CREATE TABLE IF NOT EXISTS tvl_daily (
   tvl_usd REAL NOT NULL,
   PRIMARY KEY (chain, date)
 );
+
+CREATE TABLE IF NOT EXISTS discord_daily (
+  asset_id INTEGER NOT NULL REFERENCES assets(id),
+  date TEXT NOT NULL,
+  member_count INTEGER,
+  online_count INTEGER,
+  PRIMARY KEY (asset_id, date)
+);

@@ -40,6 +40,9 @@ jobs:
       - name: Collect chain TVL
         run: npm run collect:tvl
 
+      - name: Collect Discord members
+        run: npm run collect:discord
+
       - name: Ingest into SQLite
         run: npm run ingest
 

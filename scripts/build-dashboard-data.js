@@ -20,18 +20,23 @@ const pricesStmt = db.prepare(
 const marketCapStmt = db.prepare(
   `SELECT market_cap FROM price_daily WHERE asset_id = ? AND market_cap IS NOT NULL ORDER BY date DESC LIMIT 1`
 );
+const discordStmt = db.prepare(
+  `SELECT date, member_count AS members, online_count AS online FROM discord_daily WHERE asset_id = ? ORDER BY date`
+);
 
 const assets = ASSETS.map((cfg) => {
   const row = assetStmt.get(cfg.symbol);
   if (!row) return null;
   const prices = pricesStmt.all(row.id);
   const mentions = mentionsStmt.all(row.id);
+  const discord = discordStmt.all(row.id);
   return {
     group: cfg.group,
     symbol: row.symbol,
     chain: row.chain,
     latestChange24h: prices.length ? prices.at(-1).change24h : null,
     marketCap: marketCapStmt.get(row.id)?.market_cap ?? null,
+    discord,
     mentions,
     prices,
   };
