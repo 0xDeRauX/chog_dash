@@ -1,0 +1,131 @@
+{
+  "date": "2026-07-07",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "coingeckoId": "chog",
+      "priceUsd": 0.00189958,
+      "change24h": 7.685896831345534,
+      "marketCap": 1932466.108289571
+    },
+    {
+      "symbol": "PEPE",
+      "coingeckoId": "pepe",
+      "priceUsd": 0.0000027,
+      "change24h": 0.7491848436966362,
+      "marketCap": 1137077792.6455123
+    },
+    {
+      "symbol": "WIF",
+      "coingeckoId": "dogwifcoin",
+      "priceUsd": 0.168197,
+      "change24h": -2.8841393432347133,
+      "marketCap": 167987666.42626846
+    },
+    {
+      "symbol": "BONK",
+      "coingeckoId": "bonk",
+      "priceUsd": 0.00000429,
+      "change24h": -8.472452112143904,
+      "marketCap": 377498677.8269722
+    },
+    {
+      "symbol": "BRETT",
+      "coingeckoId": "based-brett",
+      "priceUsd": 0.00550249,
+      "change24h": -0.4901926624851681,
+      "marketCap": 54525987.677282296
+    },
+    {
+      "symbol": "PENGU",
+      "coingeckoId": "pudgy-penguins",
+      "priceUsd": 0.00663636,
+      "change24h": 0.48776226546757473,
+      "marketCap": 417096122.34981275
+    },
+    {
+      "symbol": "FARTCOIN",
+      "coingeckoId": "fartcoin",
+      "priceUsd": 0.161055,
+      "change24h": 2.6732267395492313,
+      "marketCap": 161012765.81681824
+    },
+    {
+      "symbol": "ANSEM",
+      "coingeckoId": "the-black-bull",
+      "priceUsd": 0.399265,
+      "change24h": 18.462684787307058,
+      "marketCap": 166342949.40580732
+    },
+    {
+      "symbol": "BTC",
+      "coingeckoId": "bitcoin",
+      "priceUsd": 63330,
+      "change24h": 1.0167805359818463,
+      "marketCap": 1267670803687.3972
+    },
+    {
+      "symbol": "ETH",
+      "coingeckoId": "ethereum",
+      "priceUsd": 1779.84,
+      "change24h": 1.147927819465351,
+      "marketCap": 214414980271.0291
+    },
+    {
+      "symbol": "SOL",
+      "coingeckoId": "solana",
+      "priceUsd": 81.28,
+      "change24h": 1.5420067457426836,
+      "marketCap": 47279445283.92893
+    },
+    {
+      "symbol": "XRP",
+      "coingeckoId": "ripple",
+      "priceUsd": 1.13,
+      "change24h": -0.7948814018682151,
+      "marketCap": 70082022768.41104
+    },
+    {
+      "symbol": "SUI",
+      "coingeckoId": "sui",
+      "priceUsd": 0.739884,
+      "change24h": 0.3197604820452468,
+      "marketCap": 2997454462.432336
+    },
+    {
+      "symbol": "MON",
+      "coingeckoId": "monad",
+      "priceUsd": 0.02462543,
+      "change24h": 10.095270946155816,
+      "marketCap": 291398003.37348014
+    },
+    {
+      "symbol": "HYPE",
+      "coingeckoId": "hyperliquid",
+      "priceUsd": 71.31,
+      "change24h": 1.8267496536390413,
+      "marketCap": 15864377815.486448
+    },
+    {
+      "symbol": "TAO",
+      "coingeckoId": "bittensor",
+      "priceUsd": 213.6,
+      "change24h": 1.2428035302647669,
+      "marketCap": 2049680782.4672174
+    },
+    {
+      "symbol": "AKT",
+      "coingeckoId": "akash-network",
+      "priceUsd": 0.620841,
+      "change24h": -0.04051550095459688,
+      "marketCap": 181307031.14088804
+    },
+    {
+      "symbol": "STRK",
+      "coingeckoId": "starknet",
+      "priceUsd": 0.03136362,
+      "change24h": 0.8440205104574857,
+      "marketCap": 206351400.17181224
+    }
+  ]
+}
