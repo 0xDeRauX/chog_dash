@@ -14,7 +14,7 @@ const mentionsStmt = db.prepare(
   `SELECT date, mention_count AS count FROM mentions_daily WHERE asset_id = ? ORDER BY date`
 );
 const pricesStmt = db.prepare(
-  `SELECT date, price_usd AS price, change_24h AS change24h FROM price_daily WHERE asset_id = ? ORDER BY date`
+  `SELECT date, price_usd AS price, change_24h AS change24h, volume_usd AS volume FROM price_daily WHERE asset_id = ? ORDER BY date`
 );
 // Latest known market cap (the daily snapshot carries it; backfilled history rows are null).
 const marketCapStmt = db.prepare(

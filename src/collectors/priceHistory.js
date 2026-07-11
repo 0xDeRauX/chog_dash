@@ -24,15 +24,19 @@ export async function fetchPriceHistory(asset, days = 90) {
   }
 
   const data = await res.json();
-  // data.prices = [[unixMs, price], ...] — collapse to last price per UTC date.
-  const byDate = new Map();
+  // market_chart returns prices + total_volumes as [[unixMs, value], ...].
+  // Collapse each to the last sample per UTC date.
+  const priceByDate = new Map();
   for (const [ts, price] of data.prices ?? []) {
-    const date = new Date(ts).toISOString().slice(0, 10);
-    byDate.set(date, price); // later timestamps overwrite → last-of-day wins
+    priceByDate.set(new Date(ts).toISOString().slice(0, 10), price);
+  }
+  const volByDate = new Map();
+  for (const [ts, vol] of data.total_volumes ?? []) {
+    volByDate.set(new Date(ts).toISOString().slice(0, 10), vol);
   }
 
-  const series = [...byDate.entries()]
-    .map(([date, price]) => ({ date, price }))
+  const series = [...priceByDate.entries()]
+    .map(([date, price]) => ({ date, price, volume: volByDate.get(date) ?? null }))
     .sort((a, b) => a.date.localeCompare(b.date));
 
   return { symbol: asset.symbol, coingeckoId: asset.coingeckoId, series };

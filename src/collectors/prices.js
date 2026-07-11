@@ -8,6 +8,7 @@ export async function collectPrices(assets) {
   url.searchParams.set("vs_currencies", "usd");
   url.searchParams.set("include_24hr_change", "true");
   url.searchParams.set("include_market_cap", "true");
+  url.searchParams.set("include_24hr_vol", "true");
 
   const res = await fetch(url);
 
@@ -23,5 +24,6 @@ export async function collectPrices(assets) {
     priceUsd: data[asset.coingeckoId]?.usd ?? null,
     change24h: data[asset.coingeckoId]?.usd_24h_change ?? null,
     marketCap: data[asset.coingeckoId]?.usd_market_cap ?? null,
+    volume24h: data[asset.coingeckoId]?.usd_24h_vol ?? null,
   }));
 }

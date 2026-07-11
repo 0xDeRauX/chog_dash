@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS price_daily (
   price_usd REAL NOT NULL,
   change_24h REAL,
   market_cap REAL,
+  volume_usd REAL,
   source TEXT NOT NULL,
   collected_at TEXT NOT NULL,
   PRIMARY KEY (asset_id, date, source)

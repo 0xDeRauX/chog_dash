@@ -465,6 +465,7 @@ function renderLeaderboard(container, assets) {
   const columns = [
     { key: "sym", label: "Actif", kind: "sym", value: (a) => a.symbol },
     { key: "mcap", label: "Market cap", kind: "usd", value: (a) => a.marketCap },
+    { key: "vol", label: "Volume 24h", kind: "usd", value: (a) => a.prices.at(-1)?.volume ?? null },
     { key: "price", label: "Prix", kind: "price", value: (a) => a.prices.at(-1)?.price ?? null },
     { key: "p24", label: "Prix 24h", kind: "pct", value: (a) => a.latestChange24h },
     { key: "p7", label: "Prix 7j", kind: "pct", value: (a) => pctOverDays(a.prices, "price", 7) },
@@ -585,6 +586,7 @@ const METRIC_DEFS = [
   { key: "mentions", series: "mentions", vkey: "count", dash: [5, 4], label: "mentions" },
   { key: "tvl", series: "tvl", vkey: "tvl", dash: [2, 3], label: "TVL" },
   { key: "discord", series: "discord", vkey: "members", dash: [10, 3], label: "Discord" },
+  { key: "volume", series: "prices", vkey: "volume", dash: [4, 4], label: "volume" },
 ];
 
 function indexedWindowed(asset, seriesName, vkey, dates, windowDays) {
