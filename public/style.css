@@ -603,6 +603,12 @@ td.down {
   margin-left: 6px;
 }
 
+.screener-table td.heat {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
 /* ---- asset view ------------------------------------------------------- */
 .back-link {
   display: inline-block;

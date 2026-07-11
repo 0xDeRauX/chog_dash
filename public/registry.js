@@ -20,13 +20,13 @@ const METRICS = [
     id: "price", label: "Prix", category: "market",
     series: "prices", vkey: "price", format: "price",
     latest: (a) => a.prices?.at(-1)?.price ?? null,
-    deltas: [1, 7, 30], chart: true, spark: true, chartDefault: true,
+    deltas: [1, 7, 30, 90], chart: true, spark: true, chartDefault: true,
   },
   {
     id: "volume", label: "Volume", category: "market",
     series: "prices", vkey: "volume", format: "usd",
     latest: (a) => a.prices?.at(-1)?.volume ?? null,
-    chart: true,
+    deltas: [7, 30, 90], chart: true,
   },
   {
     id: "mcap", label: "Market cap", category: "market", format: "usd",
@@ -36,44 +36,60 @@ const METRICS = [
     id: "tvl", label: "TVL", category: "onchain",
     series: "tvl", vkey: "tvl", format: "usd",
     latest: (a) => a.tvl?.at(-1)?.tvl ?? null,
-    deltas: [7], chart: true,
+    deltas: [7, 30, 90], chart: true,
   },
   {
     id: "mentions", label: "Mentions X", category: "social",
     series: "mentions", vkey: "count", format: "num",
     latest: (a) => a.mentions?.at(-1)?.count ?? null,
-    deltas: [7], chart: true,
+    deltas: [7, 30, 90], chart: true,
   },
   {
     id: "discord", label: "Membres DC", category: "community",
     series: "discord", vkey: "members", format: "num",
     latest: (a) => a.discord?.at(-1)?.members ?? null,
-    chart: true,
+    deltas: [7, 30, 90], chart: true,
   },
 ];
 
 const METRIC_BY_ID = Object.fromEntries(METRICS.map((m) => [m.id, m]));
 const CHART_METRICS = METRICS.filter((m) => m.chart);
 
-const DELTA_LABEL = { 1: "24h", 7: "7j", 30: "30j" };
+const DELTA_LABEL = { 1: "24h", 7: "7j", 30: "30j", 90: "90j" };
 
-// Screener columns derived from the registry: each metric's latest value,
-// then its delta columns.
-function screenerColumns() {
-  const cols = [];
-  for (const m of METRICS) {
-    cols.push({ key: m.id, label: m.label, kind: "value", metric: m });
-    for (const d of m.deltas || []) {
-      cols.push({
-        key: `${m.id}_${d}`,
-        label: `${m.label.split(" ")[0]} ${DELTA_LABEL[d]}`,
-        kind: "delta",
-        metric: m,
-        days: d,
-      });
+// Measures the screener can focus on. "overview" = compact glance across all
+// metrics; each other id = one metric with its value + every delta period.
+const MEASURES = [
+  ["overview", "Vue d'ensemble"],
+  ["price", "Prix"],
+  ["volume", "Volume"],
+  ["tvl", "TVL"],
+  ["mentions", "Mentions"],
+  ["discord", "Discord"],
+];
+
+// Columns for a given measure. Overview = one value column per metric (+ price
+// 24h). Focus = the metric's value then each of its delta periods.
+function columnsForMeasure(measure) {
+  if (measure === "overview") {
+    const cols = [];
+    for (const m of METRICS) {
+      cols.push({ key: m.id, label: m.label, kind: "value", metric: m });
+      if (m.id === "price") cols.push({ key: "price_1", label: "24h", kind: "delta", metric: m, days: 1 });
     }
+    return cols;
+  }
+  const m = METRIC_BY_ID[measure];
+  const cols = [{ key: m.id, label: m.label, kind: "value", metric: m }];
+  for (const d of m.deltas || []) {
+    cols.push({ key: `${m.id}_${d}`, label: DELTA_LABEL[d], kind: "delta", metric: m, days: d });
   }
   return cols;
+}
+
+// Default sort column key for a measure.
+function defaultSortKey(measure) {
+  return measure === "overview" ? "mcap" : measure;
 }
 
 // Value of a screener column for an asset (number, for sorting + display).
