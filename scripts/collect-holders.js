@@ -10,7 +10,11 @@ const date = todayUTC();
 const results = await collectAllHolders(ASSETS);
 const file = writeRaw("holders", date, {
   date,
-  results: results.map((r) => ({ symbol: r.symbol, holders: r.holders })),
+  results: results.map((r) => ({
+    symbol: r.symbol,
+    holders: r.holders,
+    ...(r.flows ? { flows: r.flows } : {}),
+  })),
 });
 
 console.log(`Wrote ${file}`);

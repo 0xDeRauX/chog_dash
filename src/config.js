@@ -22,7 +22,7 @@ export const ASSETS = [
     discordInvite: "chog",
     // Holder count. Monad has no free holder API, so we index Transfer events
     // via thirdweb Insight and reconstruct balances (incremental, state cached).
-    holders: { source: "thirdweb", chainId: 143, contract: "0x350035555e10d9afaf1566aaebfced5ba6c27777", startBlock: 37000000 },
+    holders: { source: "thirdweb", chainId: 143, contract: "0x350035555e10d9afaf1566aaebfced5ba6c27777", startBlock: 37000000, decimals: 18 },
   },
   {
     group: "memes",

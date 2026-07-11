@@ -120,6 +120,9 @@ function saveState(symbol, lastBlock, balances) {
 async function thirdwebHolders(symbol, cfg) {
   if (!CONFIG.THIRDWEB_SECRET_KEY) throw new Error("Missing THIRDWEB_SECRET_KEY");
   const { lastBlock, balances } = loadState(symbol);
+  // Snapshot balances before applying this run's transfers, so we can diff the
+  // day's flows (who accumulated / distributed / entered / left the holder set).
+  const before = new Map(balances);
 
   // First run starts at the token's deployment-ish block (cfg.startBlock);
   // later runs resume strictly AFTER the last fully-processed block so already-
@@ -165,8 +168,22 @@ async function thirdwebHolders(symbol, cfg) {
 
   let holders = 0;
   for (const b of balances.values()) if (b > 0n) holders++;
+
+  // Flows: compare each address's balance to its pre-run value.
+  let accumulating = 0, distributing = 0, newHolders = 0, churned = 0;
+  const addrs = new Set([...before.keys(), ...balances.keys()]);
+  for (const a of addrs) {
+    const o = before.get(a) || 0n, nw = balances.get(a) || 0n;
+    if (nw === o) continue;
+    if (o <= 0n && nw > 0n) newHolders++;
+    else if (o > 0n && nw <= 0n) churned++;
+    else if (nw > o) accumulating++;
+    else distributing++;
+  }
+  const flows = { accumulating, distributing, newHolders, churned };
+
   saveState(symbol, headBlock, balances);
-  return { holders, calls, lastBlock: headBlock };
+  return { holders, calls, lastBlock: headBlock, flows };
 }
 
 // ---- public -------------------------------------------------------------
@@ -177,8 +194,8 @@ export async function collectHoldersForAsset(asset) {
     return { symbol: asset.symbol, holders: await blockscoutHolders(cfg) };
   }
   if (cfg.source === "thirdweb") {
-    const { holders, calls } = await thirdwebHolders(asset.symbol, cfg);
-    return { symbol: asset.symbol, holders, calls };
+    const { holders, calls, flows } = await thirdwebHolders(asset.symbol, cfg);
+    return { symbol: asset.symbol, holders, calls, flows };
   }
   if (cfg.source === "solana") {
     return { symbol: asset.symbol, holders: await solanaHolders(cfg) };

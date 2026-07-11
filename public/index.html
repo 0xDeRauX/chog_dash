@@ -3,25 +3,43 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CHOG Intel — Screener</title>
+  <title>CHOG Intel — Vue 360</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body data-page="screener">
+<body data-page="chog">
   <main class="wrap">
-    <header class="page-head">
-      <h1>Screener</h1>
-      <p>Toutes les métriques par actif — clique une colonne pour trier, une ligne pour ouvrir la fiche.</p>
-      <p class="meta-line" id="meta"></p>
-    </header>
+    <section class="hero" id="hero"></section>
 
-    <div class="filterbar" id="filters"></div>
-    <div class="table-scroll" id="screener"></div>
+    <section class="card">
+      <div class="card-head"><h2>Graphe — prix &amp; indicateurs (base 100)</h2></div>
+      <div class="controls" id="chart-controls"></div>
+      <div class="lw-chart" id="chart"></div>
+      <div class="legend-note" id="chart-note"></div>
+    </section>
 
-    <p class="foot">CHOG Intel · X API + CoinGecko + DefiLlama + Discord · mise à jour quotidienne</p>
+    <h3 class="section-title">Les 4 piliers <span>— valeur, tendance et rang de CHOG face aux memecoins</span></h3>
+    <section class="pillars" id="pillars"></section>
+
+    <section class="card">
+      <div class="card-head"><h2>Positionnement vs la meute</h2></div>
+      <p class="card-sub">Percentile de CHOG sur chaque mesure parmi les memecoins (100 = meilleur du panel).</p>
+      <div class="positioning" id="positioning"></div>
+    </section>
+
+    <h3 class="section-title">Deep-dive on-chain <span>— la communauté des holders CHOG</span></h3>
+    <section class="onchain-grid" id="onchain"></section>
+
+    <section class="card">
+      <div class="card-head"><h2>Fil de signaux</h2></div>
+      <div class="signals-feed" id="signals-feed"></div>
+    </section>
+
+    <p class="foot">CHOG Intel · X API + CoinGecko + DefiLlama + Discord + on-chain (Monad) · mise à jour quotidienne</p>
   </main>
 
+  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
   <script src="lib.js"></script>
   <script src="registry.js"></script>
-  <script src="screener.js"></script>
+  <script src="chog.js"></script>
 </body>
 </html>

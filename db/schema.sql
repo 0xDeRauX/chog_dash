@@ -50,3 +50,16 @@ CREATE TABLE IF NOT EXISTS holders_daily (
   holders INTEGER,
   PRIMARY KEY (asset_id, date)
 );
+
+-- Daily balance flows, only for tokens we index ourselves (thirdweb ledger),
+-- where we can diff each address's balance across the day: how many balances
+-- rose/fell, and how many addresses entered/left the holder set.
+CREATE TABLE IF NOT EXISTS holder_flows_daily (
+  asset_id INTEGER NOT NULL REFERENCES assets(id),
+  date TEXT NOT NULL,
+  accumulating INTEGER,
+  distributing INTEGER,
+  new_holders INTEGER,
+  churned INTEGER,
+  PRIMARY KEY (asset_id, date)
+);

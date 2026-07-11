@@ -166,7 +166,8 @@ async function loadData() {
 // ---- chrome -------------------------------------------------------------
 function buildTopbar(active) {
   const tabs = [
-    ["index.html", "Screener"],
+    ["index.html", "CHOG"],
+    ["screener.html", "Screener"],
     ["signals.html", "Signaux"],
   ];
   const nav = document.createElement("nav");
