@@ -5,6 +5,7 @@
       "symbol": "CHOG",
       "invite": "chog",
       "memberCount": 43188,
+<<<<<<< HEAD
       "onlineCount": 1401,
       "guildName": "Chog"
     },
@@ -49,6 +50,10 @@
       "memberCount": 49766,
       "onlineCount": 4234,
       "guildName": "Bittensor"
+=======
+      "onlineCount": 1322,
+      "guildName": "Chog"
+>>>>>>> origin/main
     }
   ]
 }
