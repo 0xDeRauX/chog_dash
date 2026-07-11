@@ -5,7 +5,6 @@
       "symbol": "CHOG",
       "invite": "chog",
       "memberCount": 43188,
-<<<<<<< HEAD
       "onlineCount": 1401,
       "guildName": "Chog"
     },
@@ -13,20 +12,20 @@
       "symbol": "BONK",
       "invite": "qaQa6M6mN2",
       "memberCount": 33161,
-      "onlineCount": 1799,
+      "onlineCount": 1798,
       "guildName": "Bonk"
     },
     {
       "symbol": "PENGU",
       "invite": "pudgypenguins",
       "memberCount": 162414,
-      "onlineCount": 8453,
+      "onlineCount": 8546,
       "guildName": "Pudgy Penguins"
     },
     {
       "symbol": "SOL",
       "invite": "solana",
-      "memberCount": 148759,
+      "memberCount": 148760,
       "onlineCount": 5670,
       "guildName": "Solana Tech"
     },
@@ -40,20 +39,16 @@
     {
       "symbol": "MON",
       "invite": "monad",
-      "memberCount": 635709,
-      "onlineCount": 11607,
+      "memberCount": 635707,
+      "onlineCount": 11634,
       "guildName": "Monad"
     },
     {
       "symbol": "TAO",
       "invite": "5MGtAz5kW",
       "memberCount": 49766,
-      "onlineCount": 4234,
+      "onlineCount": 4231,
       "guildName": "Bittensor"
-=======
-      "onlineCount": 1322,
-      "guildName": "Chog"
->>>>>>> origin/main
     }
   ]
 }
