@@ -584,6 +584,7 @@ const METRIC_DEFS = [
   { key: "price", series: "prices", vkey: "price", dash: [], label: "prix" },
   { key: "mentions", series: "mentions", vkey: "count", dash: [5, 4], label: "mentions" },
   { key: "tvl", series: "tvl", vkey: "tvl", dash: [2, 3], label: "TVL" },
+  { key: "discord", series: "discord", vkey: "members", dash: [10, 3], label: "Discord" },
 ];
 
 function indexedWindowed(asset, seriesName, vkey, dates, windowDays) {
@@ -625,6 +626,93 @@ function corrClass(r) {
   if (r >= 0.2) return "up";
   if (r <= -0.2) return "down";
   return "";
+}
+
+// Focused panel: Discord members · mentions · price for assets that have all
+// three. One colour per asset; solid = Discord, dashed = mentions, dotted = price.
+function buildCommunityPanel(root, assets) {
+  const metrics = [
+    { series: "discord", vkey: "members", dash: [], label: "Discord" },
+    { series: "mentions", vkey: "count", dash: [5, 4], label: "mentions" },
+    { series: "prices", vkey: "price", dash: [2, 3], label: "prix" },
+  ];
+  const state = { window: 90, selected: new Set(assets.slice(0, 4).map((a) => a.symbol)) };
+
+  const controls = document.createElement("div");
+  controls.className = "controls";
+  const togglesWrap = document.createElement("div");
+  togglesWrap.className = "control-group";
+  controls.append(
+    controlGroup(
+      "Fenêtre",
+      segmented(
+        [[30, "30j"], [90, "90j"], [Infinity, "Max"]],
+        () => state.window,
+        (v) => { state.window = v; render(); }
+      )
+    ),
+    controlGroup("Actifs", togglesWrap)
+  );
+  for (const a of assets) {
+    const color = COLORS[a.symbol] || ink("--brand");
+    const t = document.createElement("button");
+    t.className = "asset-toggle" + (state.selected.has(a.symbol) ? " on" : "");
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    dot.style.color = color;
+    dot.style.background = color;
+    const name = document.createElement("span");
+    name.textContent = a.symbol;
+    t.append(dot, name);
+    t.addEventListener("click", () => {
+      if (state.selected.has(a.symbol)) state.selected.delete(a.symbol);
+      else state.selected.add(a.symbol);
+      t.classList.toggle("on");
+      render();
+    });
+    togglesWrap.append(t);
+  }
+
+  const box = document.createElement("div");
+  box.className = "chart-box";
+  const canvas = document.createElement("canvas");
+  box.append(canvas);
+  const note = document.createElement("div");
+  note.className = "legend-note";
+  note.innerHTML =
+    "Ligne pleine = <b>Discord</b>, tirets = <b>mentions</b>, pointillés = <b>prix</b>, une couleur par actif. Indexé base 100. (L'historique Discord démarre aujourd'hui et se remplit jour après jour.)";
+
+  root.append(controls, box, note);
+
+  let chart = null;
+  function render() {
+    const sel = assets.filter((a) => state.selected.has(a.symbol));
+    const dates = [
+      ...new Set(
+        sel.flatMap((a) => metrics.flatMap((m) => windowed(a[m.series], state.window).map((p) => p.date)))
+      ),
+    ].sort();
+    const datasets = [];
+    for (const a of sel) {
+      const color = COLORS[a.symbol] || ink("--brand");
+      for (const m of metrics) {
+        const ds = lineDataset({
+          label: `${a.symbol} · ${m.label}`,
+          data: indexedWindowed(a, m.series, m.vkey, dates, state.window),
+          color,
+        });
+        ds.borderDash = m.dash;
+        datasets.push(ds);
+      }
+    }
+    chart?.destroy();
+    chart = new Chart(canvas, {
+      type: "line",
+      data: { labels: dates, datasets },
+      options: baseOptions("Indice (base 100)"),
+    });
+  }
+  render();
 }
 
 function bootVision(allAssets) {
@@ -873,6 +961,15 @@ function bootVision(allAssets) {
 
   rebuildToggles();
   renderAll();
+
+  // Community panel: only assets that have Discord + mentions + price data.
+  const communityEl = document.getElementById("community");
+  if (communityEl) {
+    const dc = allAssets.filter(
+      (a) => a.discord?.length && a.mentions?.length && a.prices?.length
+    );
+    if (dc.length) buildCommunityPanel(communityEl, dc);
+  }
 }
 
 // ---- zoom/pan wiring ----------------------------------------------------

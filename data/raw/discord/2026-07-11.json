@@ -1,0 +1,54 @@
+{
+  "date": "2026-07-11",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "invite": "chog",
+      "memberCount": 43188,
+      "onlineCount": 1401,
+      "guildName": "Chog"
+    },
+    {
+      "symbol": "BONK",
+      "invite": "qaQa6M6mN2",
+      "memberCount": 33161,
+      "onlineCount": 1799,
+      "guildName": "Bonk"
+    },
+    {
+      "symbol": "PENGU",
+      "invite": "pudgypenguins",
+      "memberCount": 162414,
+      "onlineCount": 8453,
+      "guildName": "Pudgy Penguins"
+    },
+    {
+      "symbol": "SOL",
+      "invite": "solana",
+      "memberCount": 148759,
+      "onlineCount": 5670,
+      "guildName": "Solana Tech"
+    },
+    {
+      "symbol": "SUI",
+      "invite": "sui",
+      "memberCount": 896843,
+      "onlineCount": 11545,
+      "guildName": "Sui"
+    },
+    {
+      "symbol": "MON",
+      "invite": "monad",
+      "memberCount": 635709,
+      "onlineCount": 11607,
+      "guildName": "Monad"
+    },
+    {
+      "symbol": "TAO",
+      "invite": "5MGtAz5kW",
+      "memberCount": 49766,
+      "onlineCount": 4234,
+      "guildName": "Bittensor"
+    }
+  ]
+}

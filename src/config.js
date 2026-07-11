@@ -41,6 +41,7 @@ export const ASSETS = [
     chain: "solana",
     coingeckoId: "bonk",
     xQuery: '("BONK" OR "$BONK" OR "@bonk_inu") -is:retweet',
+    discordInvite: "qaQa6M6mN2",
   },
   {
     group: "memes",
@@ -55,6 +56,7 @@ export const ASSETS = [
     chain: "solana",
     coingeckoId: "pudgy-penguins",
     xQuery: '("$PENGU" OR "Pudgy Penguins" OR "@pudgypenguins") -is:retweet',
+    discordInvite: "pudgypenguins",
   },
   {
     group: "memes",
@@ -95,6 +97,7 @@ export const ASSETS = [
     chain: "solana",
     coingeckoId: "solana",
     xQuery: '("$SOL" OR "Solana" OR "@solana") -is:retweet',
+    discordInvite: "solana",
   },
   {
     group: "majors",
@@ -109,6 +112,7 @@ export const ASSETS = [
     chain: "sui",
     coingeckoId: "sui",
     xQuery: '("$SUI" OR "@SuiNetwork") -is:retweet',
+    discordInvite: "sui",
   },
   {
     group: "majors",
@@ -116,6 +120,7 @@ export const ASSETS = [
     chain: "monad",
     coingeckoId: "monad",
     xQuery: '("$MON" OR "Monad" OR "@monad") -is:retweet',
+    discordInvite: "monad",
   },
   {
     group: "majors",
@@ -130,6 +135,7 @@ export const ASSETS = [
     chain: "bittensor",
     coingeckoId: "bittensor",
     xQuery: '("$TAO" OR "Bittensor" OR "@bittensor") -is:retweet',
+    discordInvite: "5MGtAz5kW",
   },
   {
     group: "majors",
