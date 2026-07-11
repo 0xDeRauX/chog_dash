@@ -3,69 +3,25 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CHOG Dashboard — Memecoins</title>
+  <title>CHOG Intel — Screener</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body data-page="memes">
-  <nav class="topbar">
-    <div class="topbar-inner">
-      <div class="brand-mark">
-        <span class="brand-dot"></span>
-        CHOG&nbsp;<span class="dim">Intel</span>
-      </div>
-      <div class="nav-tabs">
-        <a href="index.html" class="active">Memecoins</a>
-        <a href="majors.html">Cryptos majeures</a>
-        <a href="vision.html">Vision</a>
-      </div>
-    </div>
-  </nav>
-
+<body data-page="screener">
   <main class="wrap">
     <header class="page-head">
-      <h1>Memecoins — CHOG vs le reste</h1>
-      <p>Prix et engouement X (mentions/24h) de CHOG face aux memecoins des autres chaînes.</p>
+      <h1>Screener</h1>
+      <p>Toutes les métriques par actif — clique une colonne pour trier, une ligne pour ouvrir la fiche.</p>
       <p class="meta-line" id="meta"></p>
     </header>
 
-    <section class="tiles" id="tiles" aria-label="Vue d'ensemble"></section>
+    <div class="filterbar" id="filters"></div>
+    <div class="table-scroll" id="screener"></div>
 
-    <section class="card">
-      <div class="card-head">
-        <h2>CHOG — mentions X vs prix</h2>
-      </div>
-      <p class="card-sub">Les deux courbes indexées base 100 : quand les mentions montent et que le prix stagne, c'est une divergence d'accumulation potentielle.</p>
-      <div class="chart-box"><canvas id="chog-mentions-price"></canvas></div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <h2>Mentions X par memecoin</h2>
-      </div>
-      <p class="card-sub">Trajectoires d'attention comparées, indexées base 100 (le volume absolu est dans les tuiles).</p>
-      <div class="chart-box"><canvas id="mentions-only"></canvas></div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <h2>Comparaison croisée dynamique</h2>
-      </div>
-      <p class="card-sub">Choisis les actifs et la métrique pour croiser prix et mentions à la volée.</p>
-      <div id="dynamic"></div>
-    </section>
-
-    <section class="card">
-      <div class="card-head"><h2>Leaderboard</h2></div>
-      <p class="card-sub">Clique sur une colonne pour trier (plus haut / plus bas). Les % mentions sont calculés depuis les compteurs quotidiens stockés, sans requête en plus.</p>
-      <div class="table-scroll" id="leaderboard"></div>
-    </section>
-
-    <p class="foot">CHOG Intel · données X API + CoinGecko · mise à jour quotidienne</p>
+    <p class="foot">CHOG Intel · X API + CoinGecko + DefiLlama + Discord · mise à jour quotidienne</p>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-  <script src="app.js"></script>
+  <script src="lib.js"></script>
+  <script src="registry.js"></script>
+  <script src="screener.js"></script>
 </body>
 </html>

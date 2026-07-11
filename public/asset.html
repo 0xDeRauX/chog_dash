@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CHOG Intel — Fiche actif</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="asset">
+  <main class="wrap">
+    <a href="index.html" class="back-link">← Screener</a>
+    <header class="asset-head" id="asset-head"></header>
+
+    <section class="stat-row" id="stats"></section>
+
+    <section class="card">
+      <div class="card-head"><h2>Graphe — indicateurs indexés base 100</h2></div>
+      <div class="controls" id="chart-controls"></div>
+      <div class="lw-chart" id="chart"></div>
+      <div class="legend-note" id="chart-note"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Corrélations (fenêtre courante)</h2></div>
+      <p class="card-sub">Corrélation de Pearson des valeurs sur la fenêtre choisie. +1 = varient ensemble, −1 = à l'opposé.</p>
+      <div class="corr-grid" id="corr"></div>
+    </section>
+
+    <p class="foot">CHOG Intel · X API + CoinGecko + DefiLlama + Discord</p>
+  </main>
+
+  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="lib.js"></script>
+  <script src="registry.js"></script>
+  <script src="asset.js"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CHOG Intel — Signaux</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="signals">
+  <main class="wrap">
+    <header class="page-head">
+      <h1>Signaux</h1>
+      <p>Couche analytique cross-actifs : où prix, attention et communauté se couplent (ou divergent).</p>
+      <p class="meta-line" id="meta"></p>
+    </header>
+
+    <div class="filterbar" id="filters"></div>
+
+    <section class="card">
+      <div class="card-head"><h2>Heatmap de corrélations</h2></div>
+      <p class="card-sub">Corrélation de Pearson par actif sur la fenêtre choisie. Vert = varient ensemble, rouge = à l'opposé, gris = pas de lien. "—" = pas assez d'historique.</p>
+      <div class="table-scroll" id="heatmap"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Score composite CHOG</h2></div>
+      <p class="card-sub">À venir (M8) — un score 0-100 pondéré des indicateurs propriétaires (Buzz Score, divergence, vélocité…). Se branchera ici via le registre, sans nouvelle page.</p>
+    </section>
+
+    <p class="foot">CHOG Intel · X API + CoinGecko + DefiLlama + Discord</p>
+  </main>
+
+  <script src="lib.js"></script>
+  <script src="registry.js"></script>
+  <script src="signals.js"></script>
+</body>
+</html>
