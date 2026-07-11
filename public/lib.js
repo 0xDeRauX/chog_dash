@@ -48,6 +48,7 @@ function fmtBy(format, v) {
   if (format === "num") return fmtCompact(v);
   if (format === "pct") return fmtDelta(v);
   if (format === "score") return v == null ? "—" : Math.round(v).toString();
+  if (format === "z") return v == null ? "—" : (v >= 0 ? "+" : "") + v.toFixed(1) + "σ";
   return v == null ? "—" : String(v);
 }
 
@@ -108,11 +109,37 @@ function corrLevels(seriesA, keyA, seriesB, keyB, windowDays) {
   return { r: pearson(pairs), n: pairs.length };
 }
 
+// ---- Buzz Score ---------------------------------------------------------
+// Per-day z-score of daily mentions vs the trailing 30-day mean/stddev:
+// z = (today − mean30) / std30. z > +2σ = an attention spike specific to the
+// asset, above its own normal — comparable across assets of any size.
+function buzzSeries(asset) {
+  const s = (asset.mentions || []).filter((p) => p.count != null);
+  const WIN = 30, MIN = 10;
+  const out = [];
+  for (let i = 0; i < s.length; i++) {
+    const win = s.slice(Math.max(0, i - WIN), i).map((p) => p.count); // trailing, excludes today
+    if (win.length < MIN) { out.push({ date: s[i].date, buzz: null }); continue; }
+    const mean = win.reduce((a, b) => a + b, 0) / win.length;
+    const std = Math.sqrt(win.reduce((a, b) => a + (b - mean) ** 2, 0) / win.length);
+    out.push({ date: s[i].date, buzz: std > 0 ? (s[i].count - mean) / std : null });
+  }
+  return out;
+}
+function lastValue(series, key) {
+  if (!series) return null;
+  for (let i = series.length - 1; i >= 0; i--) if (series[i][key] != null) return series[i][key];
+  return null;
+}
+
 // ---- data ---------------------------------------------------------------
 async function loadData() {
   const data = await fetch("./data.json").then((r) => r.json());
   const tvlByChain = data.tvlByChain || {};
-  for (const a of data.assets) a.tvl = tvlByChain[a.chain] || [];
+  for (const a of data.assets) {
+    a.tvl = tvlByChain[a.chain] || [];
+    a.buzz = buzzSeries(a); // computed indicator — plugs into the registry like any series
+  }
   return data;
 }
 

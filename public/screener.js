@@ -35,6 +35,12 @@ function deltaHeat(v) {
   const a = Math.min(Math.abs(v) / 50, 0.42);
   return v >= 0 ? `rgba(53,208,127,${a})` : `rgba(255,107,107,${a})`;
 }
+// Heatmap for a Buzz z-score: full intensity around ±3σ.
+function buzzHeat(z) {
+  if (z == null) return "transparent";
+  const a = Math.min(Math.abs(z) / 3, 0.5);
+  return z >= 0 ? `rgba(53,208,127,${a})` : `rgba(255,107,107,${a})`;
+}
 
 function segmentedControl(options, current, onChange) {
   const seg = document.createElement("div");
@@ -172,6 +178,10 @@ async function boot() {
           td.textContent = fmtDelta(v);
           td.className = "heat";
           td.style.background = deltaHeat(v);
+        } else if (c.metric.id === "buzz") {
+          td.textContent = fmtBy("z", v);
+          td.className = "heat";
+          td.style.background = buzzHeat(v);
         } else {
           td.textContent = fmtBy(c.metric.format, v);
         }

@@ -50,6 +50,13 @@ const METRICS = [
     latest: (a) => a.discord?.at(-1)?.members ?? null,
     deltas: [7, 30, 90], chart: true,
   },
+  {
+    // Proprietary indicator (M4). Computed client-side from the mention series
+    // in lib.js (attached as a.buzz) — plugs into the registry like any metric.
+    id: "buzz", label: "Buzz Score", category: "signal",
+    series: "buzz", vkey: "buzz", format: "z",
+    latest: (a) => lastValue(a.buzz, "buzz"),
+  },
 ];
 
 const METRIC_BY_ID = Object.fromEntries(METRICS.map((m) => [m.id, m]));
@@ -61,6 +68,7 @@ const DELTA_LABEL = { 1: "24h", 7: "7j", 30: "30j", 90: "90j" };
 // metrics; each other id = one metric with its value + every delta period.
 const MEASURES = [
   ["overview", "Vue d'ensemble"],
+  ["buzz", "Buzz"],
   ["price", "Prix"],
   ["volume", "Volume"],
   ["tvl", "TVL"],
@@ -79,6 +87,16 @@ function columnsForMeasure(measure) {
     }
     return cols;
   }
+  // Buzz focus: the score + the mention context behind it.
+  if (measure === "buzz") {
+    const buzz = METRIC_BY_ID.buzz, ment = METRIC_BY_ID.mentions;
+    return [
+      { key: "buzz", label: "Buzz Score", kind: "value", metric: buzz },
+      { key: "mentions", label: "Mentions", kind: "value", metric: ment },
+      { key: "mentions_7", label: "Ment. 7j", kind: "delta", metric: ment, days: 7 },
+      { key: "mentions_30", label: "Ment. 30j", kind: "delta", metric: ment, days: 30 },
+    ];
+  }
   const m = METRIC_BY_ID[measure];
   const cols = [{ key: m.id, label: m.label, kind: "value", metric: m }];
   for (const d of m.deltas || []) {
@@ -89,7 +107,8 @@ function columnsForMeasure(measure) {
 
 // Default sort column key for a measure.
 function defaultSortKey(measure) {
-  return measure === "overview" ? "mcap" : measure;
+  if (measure === "overview") return "mcap";
+  return measure; // buzz -> "buzz", price -> "price", etc.
 }
 
 // Value of a screener column for an asset (number, for sorting + display).
