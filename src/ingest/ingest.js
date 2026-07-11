@@ -167,6 +167,21 @@ export function ingestAll() {
     }
   }
 
+  const upsertHolders = db.prepare(`
+    INSERT INTO holders_daily (asset_id, date, holders)
+    VALUES (@assetId, @date, @holders)
+    ON CONFLICT(asset_id, date) DO UPDATE SET holders = excluded.holders
+  `);
+  let holderRows = 0;
+  for (const file of readRawFiles("holders")) {
+    for (const r of file.results) {
+      const asset = getAssetId.get(r.symbol);
+      if (!asset || r.holders == null) continue;
+      upsertHolders.run({ assetId: asset.id, date: file.date, holders: r.holders });
+      holderRows++;
+    }
+  }
+
   db.close();
-  return { mentionRows, priceRows, tvlRows, discordRows };
+  return { mentionRows, priceRows, tvlRows, discordRows, holderRows };
 }

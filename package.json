@@ -10,6 +10,7 @@
     "collect:prices": "node scripts/collect-prices.js",
     "collect:tvl": "node scripts/collect-tvl.js",
     "collect:discord": "node scripts/collect-discord.js",
+    "collect:holders": "node scripts/collect-holders.js",
     "backfill:prices": "node scripts/backfill-prices.js",
     "backfill:mentions": "node scripts/backfill-mentions.js",
     "backfill": "node scripts/backfill.js",

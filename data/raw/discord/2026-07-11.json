@@ -4,50 +4,57 @@
     {
       "symbol": "CHOG",
       "invite": "chog",
-      "memberCount": 43188,
-      "onlineCount": 1447,
+      "memberCount": 43174,
+      "onlineCount": 1367,
       "guildName": "Chog"
     },
     {
       "symbol": "BONK",
       "invite": "qaQa6M6mN2",
-      "memberCount": 33160,
-      "onlineCount": 1813,
+      "memberCount": 33163,
+      "onlineCount": 2065,
       "guildName": "Bonk"
     },
     {
       "symbol": "PENGU",
       "invite": "pudgypenguins",
-      "memberCount": 162412,
-      "onlineCount": 8739,
+      "memberCount": 162398,
+      "onlineCount": 9933,
       "guildName": "Pudgy Penguins"
     },
     {
       "symbol": "SOL",
       "invite": "solana",
-      "memberCount": 148759,
-      "onlineCount": 5803,
+      "memberCount": 148763,
+      "onlineCount": 6426,
       "guildName": "Solana Tech"
     },
     {
       "symbol": "SUI",
       "invite": "sui",
-      "memberCount": 896842,
-      "onlineCount": 11918,
+      "memberCount": 896746,
+      "onlineCount": 11492,
       "guildName": "Sui"
     },
     {
       "symbol": "MON",
       "invite": "monad",
-      "memberCount": 635705,
-      "onlineCount": 12100,
+      "memberCount": 635630,
+      "onlineCount": 11926,
       "guildName": "Monad"
+    },
+    {
+      "symbol": "HYPE",
+      "invite": "hyperliquid",
+      "memberCount": 87840,
+      "onlineCount": 9984,
+      "guildName": "Hyperliquid"
     },
     {
       "symbol": "TAO",
       "invite": "5MGtAz5kW",
-      "memberCount": 49771,
-      "onlineCount": 4352,
+      "memberCount": 49778,
+      "onlineCount": 4462,
       "guildName": "Bittensor"
     }
   ]

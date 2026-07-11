@@ -20,6 +20,9 @@ export const ASSETS = [
     // Discord invite code / vanity (member count is public via the invite API,
     // no bot/admin needed). Add one per project to compare communities.
     discordInvite: "chog",
+    // Holder count. Monad has no free holder API, so we index Transfer events
+    // via thirdweb Insight and reconstruct balances (incremental, state cached).
+    holders: { source: "thirdweb", chainId: 143, contract: "0x350035555e10d9afaf1566aaebfced5ba6c27777", startBlock: 37000000 },
   },
   {
     group: "memes",
@@ -27,6 +30,8 @@ export const ASSETS = [
     chain: "ethereum",
     coingeckoId: "pepe",
     xQuery: '("PEPE" OR "$PEPE" OR "@pepecoineth") -is:retweet',
+    // Ethereum runs a public Blockscout that returns holder count in one call.
+    holders: { source: "blockscout", base: "https://eth.blockscout.com", contract: "0x6982508145454ce325ddbe47a25d4ec3d2311933" },
   },
   {
     group: "memes",
@@ -128,6 +133,7 @@ export const ASSETS = [
     chain: "hyperliquid",
     coingeckoId: "hyperliquid",
     xQuery: '("$HYPE" OR "Hyperliquid" OR "@HyperliquidX") -is:retweet',
+    discordInvite: "hyperliquid",
   },
   {
     group: "majors",
@@ -175,4 +181,5 @@ export const CHAINS = {
 export const CONFIG = {
   TWITTER_API_KEY: process.env.TWITTER_API_KEY,
   X_BEARER_TOKEN: process.env.X_BEARER_TOKEN,
+  THIRDWEB_SECRET_KEY: process.env.THIRDWEB_SECRET_KEY,
 };

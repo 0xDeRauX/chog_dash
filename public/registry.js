@@ -51,6 +51,12 @@ const METRICS = [
     deltas: [7, 30, 90], chart: true,
   },
   {
+    id: "holders", label: "Holders", category: "onchain",
+    series: "holders", vkey: "holders", format: "num",
+    latest: (a) => a.holders?.at(-1)?.holders ?? null,
+    deltas: [7, 30, 90], chart: true,
+  },
+  {
     // Proprietary indicator (M4). Computed client-side from the mention series
     // in lib.js (attached as a.buzz) — plugs into the registry like any metric.
     id: "buzz", label: "Buzz Score", category: "signal",
@@ -82,6 +88,7 @@ const MEASURES = [
   ["tvl", "TVL"],
   ["mentions", "Mentions"],
   ["discord", "Discord"],
+  ["holders", "Holders"],
 ];
 
 // Columns for a given measure. Overview = one value column per metric (+ price

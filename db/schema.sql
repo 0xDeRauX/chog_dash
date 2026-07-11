@@ -43,3 +43,10 @@ CREATE TABLE IF NOT EXISTS discord_daily (
   online_count INTEGER,
   PRIMARY KEY (asset_id, date)
 );
+
+CREATE TABLE IF NOT EXISTS holders_daily (
+  asset_id INTEGER NOT NULL REFERENCES assets(id),
+  date TEXT NOT NULL,
+  holders INTEGER,
+  PRIMARY KEY (asset_id, date)
+);
