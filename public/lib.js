@@ -49,6 +49,7 @@ function fmtBy(format, v) {
   if (format === "pct") return fmtDelta(v);
   if (format === "score") return v == null ? "—" : Math.round(v).toString();
   if (format === "z") return v == null ? "—" : (v >= 0 ? "+" : "") + v.toFixed(1) + "σ";
+  if (format === "signed") return v == null ? "—" : (v >= 0 ? "+" : "") + v.toFixed(2);
   return v == null ? "—" : String(v);
 }
 
@@ -109,22 +110,40 @@ function corrLevels(seriesA, keyA, seriesB, keyB, windowDays) {
   return { r: pearson(pairs), n: pairs.length };
 }
 
-// ---- Buzz Score ---------------------------------------------------------
-// Per-day z-score of daily mentions vs the trailing 30-day mean/stddev:
-// z = (today − mean30) / std30. z > +2σ = an attention spike specific to the
-// asset, above its own normal — comparable across assets of any size.
-function buzzSeries(asset) {
-  const s = (asset.mentions || []).filter((p) => p.count != null);
-  const WIN = 30, MIN = 10;
-  const out = [];
+// ---- z-scores / signal indicators --------------------------------------
+// Per-day z-score of `key` vs its trailing WIN-day mean/stddev, keyed by date.
+// z = (today − meanWIN) / stdWIN. A high z = a value far above the asset's own
+// normal — comparable across assets of any size.
+function zScoreByDate(series, key, WIN = 30, MIN = 10) {
+  const s = (series || []).filter((p) => p[key] != null);
+  const out = new Map();
   for (let i = 0; i < s.length; i++) {
-    const win = s.slice(Math.max(0, i - WIN), i).map((p) => p.count); // trailing, excludes today
-    if (win.length < MIN) { out.push({ date: s[i].date, buzz: null }); continue; }
+    const win = s.slice(Math.max(0, i - WIN), i).map((p) => p[key]); // trailing, excludes today
+    if (win.length < MIN) continue;
     const mean = win.reduce((a, b) => a + b, 0) / win.length;
     const std = Math.sqrt(win.reduce((a, b) => a + (b - mean) ** 2, 0) / win.length);
-    out.push({ date: s[i].date, buzz: std > 0 ? (s[i].count - mean) / std : null });
+    if (std > 0) out.set(s[i].date, (s[i][key] - mean) / std);
   }
   return out;
+}
+
+// Buzz Score (M4): z-score of daily mentions. z > +2σ = attention spike.
+function buzzSeries(asset) {
+  return [...zScoreByDate(asset.mentions, "count").entries()]
+    .map(([date, buzz]) => ({ date, buzz }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+// Attention/Price Divergence (M5-lite): normalized attention minus normalized
+// price, same z-score method. High positive = attention far above its norm
+// while price isn't → silent accumulation (attention leading price). Negative =
+// price running ahead of attention.
+function divergenceSeries(asset) {
+  const mz = zScoreByDate(asset.mentions, "count");
+  const pz = zScoreByDate(asset.prices, "price");
+  const out = [];
+  for (const [date, m] of mz) if (pz.has(date)) out.push({ date, div: m - pz.get(date) });
+  return out.sort((a, b) => a.date.localeCompare(b.date));
 }
 function lastValue(series, key) {
   if (!series) return null;
@@ -138,7 +157,8 @@ async function loadData() {
   const tvlByChain = data.tvlByChain || {};
   for (const a of data.assets) {
     a.tvl = tvlByChain[a.chain] || [];
-    a.buzz = buzzSeries(a); // computed indicator — plugs into the registry like any series
+    a.buzz = buzzSeries(a); // computed indicators — plug into the registry like any series
+    a.divergence = divergenceSeries(a);
   }
   return data;
 }

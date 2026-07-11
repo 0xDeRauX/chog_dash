@@ -57,6 +57,13 @@ const METRICS = [
     series: "buzz", vkey: "buzz", format: "z",
     latest: (a) => lastValue(a.buzz, "buzz"),
   },
+  {
+    // Proprietary indicator (M5-lite): normalized attention − normalized price.
+    // High positive = attention leading price (silent accumulation).
+    id: "divergence", label: "Divergence", category: "signal",
+    series: "divergence", vkey: "div", format: "signed",
+    latest: (a) => lastValue(a.divergence, "div"),
+  },
 ];
 
 const METRIC_BY_ID = Object.fromEntries(METRICS.map((m) => [m.id, m]));
@@ -69,6 +76,7 @@ const DELTA_LABEL = { 1: "24h", 7: "7j", 30: "30j", 90: "90j" };
 const MEASURES = [
   ["overview", "Vue d'ensemble"],
   ["buzz", "Buzz"],
+  ["divergence", "Divergence"],
   ["price", "Prix"],
   ["volume", "Volume"],
   ["tvl", "TVL"],
@@ -95,6 +103,16 @@ function columnsForMeasure(measure) {
       { key: "mentions", label: "Mentions", kind: "value", metric: ment },
       { key: "mentions_7", label: "Ment. 7j", kind: "delta", metric: ment, days: 7 },
       { key: "mentions_30", label: "Ment. 30j", kind: "delta", metric: ment, days: 30 },
+    ];
+  }
+  // Divergence focus: the signal + the attention & price it's built from.
+  if (measure === "divergence") {
+    const div = METRIC_BY_ID.divergence, buzz = METRIC_BY_ID.buzz, price = METRIC_BY_ID.price;
+    return [
+      { key: "divergence", label: "Divergence", kind: "value", metric: div },
+      { key: "buzz", label: "Buzz Score", kind: "value", metric: buzz },
+      { key: "price_7", label: "Prix 7j", kind: "delta", metric: price, days: 7 },
+      { key: "price_30", label: "Prix 30j", kind: "delta", metric: price, days: 30 },
     ];
   }
   const m = METRIC_BY_ID[measure];

@@ -178,8 +178,8 @@ async function boot() {
           td.textContent = fmtDelta(v);
           td.className = "heat";
           td.style.background = deltaHeat(v);
-        } else if (c.metric.id === "buzz") {
-          td.textContent = fmtBy("z", v);
+        } else if (c.metric.id === "buzz" || c.metric.id === "divergence") {
+          td.textContent = fmtBy(c.metric.format, v);
           td.className = "heat";
           td.style.background = buzzHeat(v);
         } else {
