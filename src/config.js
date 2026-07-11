@@ -39,6 +39,9 @@ export const ASSETS = [
     chain: "solana",
     coingeckoId: "dogwifcoin",
     xQuery: '("$WIF" OR "dogwifhat") -is:retweet',
+    // Solana has no free holder API, so we count SPL token accounts on-chain
+    // via a public RPC (keyless). program defaults to the classic Token program.
+    holders: { source: "solana", mint: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" },
   },
   {
     group: "memes",
@@ -47,6 +50,7 @@ export const ASSETS = [
     coingeckoId: "bonk",
     xQuery: '("BONK" OR "$BONK" OR "@bonk_inu") -is:retweet',
     discordInvite: "qaQa6M6mN2",
+    holders: { source: "solana", mint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" },
   },
   {
     group: "memes",
@@ -54,6 +58,9 @@ export const ASSETS = [
     chain: "base",
     coingeckoId: "based-brett",
     xQuery: '("BRETT" OR "$BRETT" OR "@BasedBrett") -is:retweet',
+    // Base runs a public Blockscout with a holder count. (Note: some ISPs, e.g.
+    // SFR, wrongly block base.blockscout.com — it resolves fine from CI.)
+    holders: { source: "blockscout", base: "https://base.blockscout.com", contract: "0x532f27101965dd16442E59d40670FaF5eBB142E4" },
   },
   {
     group: "memes",
@@ -62,6 +69,7 @@ export const ASSETS = [
     coingeckoId: "pudgy-penguins",
     xQuery: '("$PENGU" OR "Pudgy Penguins" OR "@pudgypenguins") -is:retweet',
     discordInvite: "pudgypenguins",
+    holders: { source: "solana", mint: "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv" },
   },
   {
     group: "memes",
@@ -69,6 +77,7 @@ export const ASSETS = [
     chain: "solana",
     coingeckoId: "fartcoin",
     xQuery: '("$FARTCOIN" OR "Fartcoin" OR "@FartCoinOfSOL") -is:retweet',
+    holders: { source: "solana", mint: "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump" },
   },
   {
     group: "memes",
@@ -79,6 +88,8 @@ export const ASSETS = [
     // "ansem"). Note: this deliberately includes chatter about the influencer
     // Ansem, so the count reflects name buzz, not only the token's community.
     xQuery: '("$ANSEM" OR "ANSEM" OR "@blknoiz06") -is:retweet',
+    // Minted on pump.fun with the newer Token-2022 program (not classic SPL).
+    holders: { source: "solana", mint: "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump", program: "token-2022" },
   },
 
   // ---- majors ------------------------------------------------------------
@@ -182,4 +193,7 @@ export const CONFIG = {
   TWITTER_API_KEY: process.env.TWITTER_API_KEY,
   X_BEARER_TOKEN: process.env.X_BEARER_TOKEN,
   THIRDWEB_SECRET_KEY: process.env.THIRDWEB_SECRET_KEY,
+  // Optional: a dedicated Solana RPC (higher rate limits than public ones) for
+  // the keyless holder count. Falls back to public RPCs if unset.
+  SOL_RPC: process.env.SOL_RPC,
 };

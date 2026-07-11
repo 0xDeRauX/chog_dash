@@ -7,7 +7,27 @@
     },
     {
       "symbol": "PEPE",
-      "holders": 567958
+      "holders": 567961
+    },
+    {
+      "symbol": "WIF",
+      "holders": 250822
+    },
+    {
+      "symbol": "BONK",
+      "holders": 1002404
+    },
+    {
+      "symbol": "PENGU",
+      "holders": 536220
+    },
+    {
+      "symbol": "FARTCOIN",
+      "holders": 160883
+    },
+    {
+      "symbol": "ANSEM",
+      "holders": 129300
     }
   ]
 }

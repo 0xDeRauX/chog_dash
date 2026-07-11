@@ -6,6 +6,10 @@
 //                   the balance ledger + last block are persisted in a state
 //                   file (data/holders-state/<sym>.json, gitignored, cached in
 //                   CI), so only new transfers are fetched each run.
+//   - "solana":     no free holder API for Solana either, so we count on-chain
+//                   ourselves via a public RPC getProgramAccounts (all SPL token
+//                   accounts of the mint), streamed, counting balance > 0.
+//                   Keyless and stateless (full re-count each run).
 import fs from "fs";
 import path from "path";
 import { CONFIG } from "../config.js";
@@ -14,6 +18,77 @@ const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a
 const ZERO = "0x0000000000000000000000000000000000000000";
 const addrFromTopic = (t) => "0x" + t.slice(26).toLowerCase();
 const STATE_DIR = path.resolve("data/holders-state");
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ---- Solana (keyless on-chain count) -----------------------------------
+const SPL_TOKEN = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+const SPL_TOKEN_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+// A custom SOL_RPC (env) is tried first; then the public mainnet-beta endpoint —
+// the only *keyless* RPC that actually serves these heavy getProgramAccounts
+// (drpc/ankr/publicnode/onfinality all reject or 410 them). mainnet-beta rate-
+// limits (HTTP 413/429) after a few big calls, so we retry with long backoff and
+// pace successive tokens. Set SOL_RPC to a free dedicated RPC (e.g. Helius) to
+// make this rock-solid.
+const SOL_RPCS = [
+  ...(CONFIG.SOL_RPC ? [CONFIG.SOL_RPC] : []),
+  "https://api.mainnet-beta.solana.com",
+];
+const SOL_ATTEMPTS = 6;
+
+// Stream the RPC response and count accounts with a non-zero u64 amount. The
+// response can exceed 512MB (e.g. BONK), past V8's max string length, so we
+// never hold it whole: scan chunks for each account's sliced data and drop the
+// processed prefix. dataSlice(offset 64, length 8) => only the amount field.
+async function streamNonZero(res) {
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  const MARK = '"data":["';
+  let buf = "", holders = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let last = 0, idx;
+    while ((idx = buf.indexOf(MARK, last)) !== -1) {
+      const start = idx + MARK.length, end = buf.indexOf('"', start);
+      if (end === -1) break; // account split across chunks: wait for more
+      const b64 = buf.slice(start, end);
+      if (b64) {
+        const b = Buffer.from(b64, "base64");
+        if (b.length >= 8 && b.readBigUInt64LE(0) > 0n) holders++;
+      }
+      last = end + 1;
+    }
+    buf = buf.slice(last);
+  }
+  return holders;
+}
+
+async function solanaHolders(cfg) {
+  const program = cfg.program === "token-2022" ? SPL_TOKEN_2022 : SPL_TOKEN;
+  const filters = [{ memcmp: { offset: 0, bytes: cfg.mint } }];
+  // Classic token accounts are exactly 165B; Token-2022 vary (extensions), so
+  // only the mint memcmp is safe there.
+  if (program === SPL_TOKEN) filters.unshift({ dataSize: 165 });
+  const body = JSON.stringify({
+    jsonrpc: "2.0", id: 1, method: "getProgramAccounts",
+    params: [program, { encoding: "base64", dataSlice: { offset: 64, length: 8 }, filters }],
+  });
+  let lastErr;
+  for (let attempt = 0; attempt < SOL_ATTEMPTS; attempt++) {
+    const rpc = SOL_RPCS[attempt % SOL_RPCS.length];
+    try {
+      const res = await fetch(rpc, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body,
+      });
+      if (!res.ok) { lastErr = new Error(`HTTP ${res.status} @ ${rpc}`); await sleep(8000 * (attempt + 1)); continue; }
+      return await streamNonZero(res);
+    } catch (e) {
+      lastErr = e; await sleep(8000 * (attempt + 1));
+    }
+  }
+  throw lastErr || new Error("solana RPC failed");
+}
 
 // ---- Blockscout ---------------------------------------------------------
 async function blockscoutHolders(cfg) {
@@ -105,19 +180,27 @@ export async function collectHoldersForAsset(asset) {
     const { holders, calls } = await thirdwebHolders(asset.symbol, cfg);
     return { symbol: asset.symbol, holders, calls };
   }
+  if (cfg.source === "solana") {
+    return { symbol: asset.symbol, holders: await solanaHolders(cfg) };
+  }
   return null;
 }
 
 export async function collectAllHolders(assets) {
   const results = [];
+  let prevSolana = false;
   for (const asset of assets) {
     if (!asset.holders) continue;
+    // Pace consecutive heavy Solana getProgramAccounts so the public RPC doesn't
+    // rate-limit us (a fresh run after BONK's ~500MB pull otherwise 429s).
+    if (prevSolana && asset.holders.source === "solana") await sleep(12000);
     try {
       const r = await collectHoldersForAsset(asset);
       if (r) results.push(r);
     } catch (err) {
       console.error(`Skipped ${asset.symbol}: ${err.message}`);
     }
+    prevSolana = asset.holders.source === "solana";
   }
   return results;
 }
