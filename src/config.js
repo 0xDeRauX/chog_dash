@@ -91,6 +91,16 @@ export const ASSETS = [
     // Minted on pump.fun with the newer Token-2022 program (not classic SPL).
     holders: { source: "solana", mint: "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump", program: "token-2022" },
   },
+  {
+    group: "memes",
+    symbol: "CASHCAT",
+    chain: "robinhood",
+    coingeckoId: "cash-cat",
+    xQuery: '("$CASHCAT" OR "Cash Cat" OR "CashCat") -is:retweet',
+    // Robinhood Chain (chainId 4663) runs a public Blockscout with a holder
+    // count in one call — same path as PEPE/BRETT.
+    holders: { source: "blockscout", base: "https://robinhoodchain.blockscout.com", contract: "0x020bfc650a365f8bb26819deaabf3e21291018b4" },
+  },
 
   // ---- majors ------------------------------------------------------------
   {
@@ -180,6 +190,7 @@ export const CHAINS = {
   ethereum: "Ethereum",
   solana: "Solana",
   base: "Base",
+  robinhood: "Robinhood Chain",
   sui: "Sui",
   bitcoin: "Bitcoin",
   xrp: "XRPL",

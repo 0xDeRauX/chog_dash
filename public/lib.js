@@ -6,6 +6,7 @@
 const COLORS = {
   CHOG: "#836ef9", PEPE: "#37a537", WIF: "#e0a000", BONK: "#f07530",
   BRETT: "#3987e5", PENGU: "#2ec8e6", FARTCOIN: "#9ccc4a", ANSEM: "#ef5350",
+  CASHCAT: "#43c59e",
   MON: "#836ef9", BTC: "#f07530", ETH: "#3987e5", SOL: "#17b8a6",
   XRP: "#b0bec5", SUI: "#2ec8e6", HYPE: "#35e0a5", TAO: "#e0559a",
   AKT: "#ef5350", STRK: "#a98bf0",
@@ -36,7 +37,12 @@ function fmtPrice(p) {
 }
 function fmtDelta(pct) {
   if (pct == null) return "—";
-  return `${pct >= 0 ? "▲" : "▼"} ${Math.abs(pct).toFixed(1)}%`;
+  const a = Math.abs(pct);
+  const arrow = pct >= 0 ? "▲" : "▼";
+  // New/low-baseline series (e.g. a token's first days) produce astronomical
+  // %-changes; render those compactly so they don't blow up the layout.
+  if (a >= 1000) return `${arrow} ${fmtCompact(a)}%`;
+  return `${arrow} ${a.toFixed(1)}%`;
 }
 function fmtUsdCompact(n) {
   return n == null ? "—" : "$" + fmtCompact(n);
