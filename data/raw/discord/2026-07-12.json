@@ -1,10 +1,10 @@
 {
-  "date": "2026-07-11",
+  "date": "2026-07-12",
   "results": [
     {
       "symbol": "CHOG",
       "invite": "chog",
-      "memberCount": 43172,
+      "memberCount": 43165,
       "onlineCount": 1269,
       "guildName": "Chog"
     },
@@ -12,49 +12,49 @@
       "symbol": "BONK",
       "invite": "qaQa6M6mN2",
       "memberCount": 33162,
-      "onlineCount": 1969,
+      "onlineCount": 1706,
       "guildName": "Bonk"
     },
     {
       "symbol": "PENGU",
       "invite": "pudgypenguins",
-      "memberCount": 162397,
-      "onlineCount": 9630,
+      "memberCount": 162386,
+      "onlineCount": 8287,
       "guildName": "Pudgy Penguins"
     },
     {
       "symbol": "SOL",
       "invite": "solana",
-      "memberCount": 148762,
-      "onlineCount": 6221,
+      "memberCount": 148768,
+      "onlineCount": 5474,
       "guildName": "Solana Tech"
     },
     {
       "symbol": "SUI",
       "invite": "sui",
-      "memberCount": 896747,
-      "onlineCount": 10887,
+      "memberCount": 896745,
+      "onlineCount": 11068,
       "guildName": "Sui"
     },
     {
       "symbol": "MON",
       "invite": "monad",
-      "memberCount": 635628,
-      "onlineCount": 11274,
+      "memberCount": 635606,
+      "onlineCount": 10969,
       "guildName": "Monad"
     },
     {
       "symbol": "HYPE",
       "invite": "hyperliquid",
-      "memberCount": 87844,
-      "onlineCount": 9488,
+      "memberCount": 87845,
+      "onlineCount": 8984,
       "guildName": "Hyperliquid"
     },
     {
       "symbol": "TAO",
       "invite": "5MGtAz5kW",
-      "memberCount": 49778,
-      "onlineCount": 4323,
+      "memberCount": 49780,
+      "onlineCount": 4107,
       "guildName": "Bittensor"
     }
   ]

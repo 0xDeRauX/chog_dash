@@ -3,31 +3,41 @@
   "results": [
     {
       "symbol": "CHOG",
-      "holders": 32925
+      "holders": 32925,
+      "flows": {
+        "accumulating": 0,
+        "distributing": 0,
+        "newHolders": 32925,
+        "churned": 0
+      }
     },
     {
       "symbol": "PEPE",
-      "holders": 567961
+      "holders": 567965
     },
     {
       "symbol": "WIF",
-      "holders": 250822
+      "holders": 250770
     },
     {
       "symbol": "BONK",
-      "holders": 1002404
+      "holders": 1002348
+    },
+    {
+      "symbol": "BRETT",
+      "holders": 948578
     },
     {
       "symbol": "PENGU",
-      "holders": 536220
+      "holders": 536216
     },
     {
       "symbol": "FARTCOIN",
-      "holders": 160883
+      "holders": 160894
     },
     {
       "symbol": "ANSEM",
-      "holders": 129300
+      "holders": 129212
     }
   ]
 }
