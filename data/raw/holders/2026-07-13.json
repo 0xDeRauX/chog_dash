@@ -1,0 +1,47 @@
+{
+  "date": "2026-07-13",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "holders": 32925,
+      "flows": {
+        "accumulating": 0,
+        "distributing": 0,
+        "newHolders": 0,
+        "churned": 0
+      }
+    },
+    {
+      "symbol": "PEPE",
+      "holders": 568148
+    },
+    {
+      "symbol": "WIF",
+      "holders": 250727
+    },
+    {
+      "symbol": "BONK",
+      "holders": 1002378
+    },
+    {
+      "symbol": "BRETT",
+      "holders": 948590
+    },
+    {
+      "symbol": "PENGU",
+      "holders": 536259
+    },
+    {
+      "symbol": "FARTCOIN",
+      "holders": 160819
+    },
+    {
+      "symbol": "ANSEM",
+      "holders": 129982
+    },
+    {
+      "symbol": "CASHCAT",
+      "holders": 24685
+    }
+  ]
+}
