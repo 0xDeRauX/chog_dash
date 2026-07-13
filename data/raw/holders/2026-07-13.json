@@ -13,15 +13,15 @@
     },
     {
       "symbol": "PEPE",
-      "holders": 568153
+      "holders": 568173
     },
     {
       "symbol": "WIF",
-      "holders": 250723
+      "holders": 250727
     },
     {
       "symbol": "BONK",
-      "holders": 1002397
+      "holders": 1002410
     },
     {
       "symbol": "BRETT",
@@ -29,19 +29,39 @@
     },
     {
       "symbol": "PENGU",
-      "holders": 536259
+      "holders": 536285
     },
     {
       "symbol": "FARTCOIN",
-      "holders": 160815
+      "holders": 160825
     },
     {
       "symbol": "ANSEM",
-      "holders": 130040
+      "holders": 130086
     },
     {
       "symbol": "CASHCAT",
-      "holders": 24755
+      "holders": 24872
+    },
+    {
+      "symbol": "BTC",
+      "holders": 57401197
+    },
+    {
+      "symbol": "ETH",
+      "holders": 199418328
+    },
+    {
+      "symbol": "XRP",
+      "holders": 8002754
+    },
+    {
+      "symbol": "HYPE",
+      "holders": 246984
+    },
+    {
+      "symbol": "AKT",
+      "holders": 1148263
     }
   ]
 }

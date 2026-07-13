@@ -90,6 +90,62 @@ async function solanaHolders(cfg) {
   throw lastErr || new Error("solana RPC failed");
 }
 
+// ---- Native-coin holder counts (address counts per chain) --------------
+// "Holders" of a native coin = addresses/accounts with a non-zero balance, as
+// published by each ecosystem. All keyless & free.
+
+// Coinmetrics community API: AdrBalCnt = count of addresses holding the asset.
+// Covers BTC/ETH/XRP (and more) on the free tier.
+async function coinmetricsHolders(cfg) {
+  const url = new URL("https://community-api.coinmetrics.io/v4/timeseries/asset-metrics");
+  url.searchParams.set("assets", cfg.cmAsset);
+  url.searchParams.set("metrics", "AdrBalCnt");
+  url.searchParams.set("frequency", "1d");
+  url.searchParams.set("start_time", new Date(Date.now() - 12 * 864e5).toISOString().slice(0, 10));
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Coinmetrics HTTP ${res.status} for ${cfg.cmAsset}`);
+  const { data = [] } = await res.json();
+  const last = data.filter((d) => d.AdrBalCnt != null).at(-1);
+  return last ? Number(last.AdrBalCnt) : null;
+}
+
+// Cosmos SDK chains expose the total account count via the auth module's
+// pagination total (public LCD/REST endpoints, keyless).
+async function cosmosHolders(cfg) {
+  const bases = cfg.lcds || [cfg.lcd];
+  let lastErr;
+  for (const base of bases) {
+    try {
+      const res = await fetch(`${base}/cosmos/auth/v1beta1/accounts?pagination.limit=1&pagination.count_total=true`);
+      if (!res.ok) { lastErr = new Error(`HTTP ${res.status}`); continue; }
+      const j = await res.json();
+      const t = Number(j.pagination?.total);
+      if (t) return t;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error("cosmos LCD failed");
+}
+
+// Hyperliquid: hypurrscan's /holders/<token> payload embeds the full holder map,
+// but holdersCount sits at the very start — stream just enough to read it, then
+// stop (the map itself can be tens of MB).
+async function hypurrscanHolders(cfg) {
+  const res = await fetch(`https://api.hypurrscan.io/holders/${cfg.token}`);
+  if (!res.ok) throw new Error(`hypurrscan HTTP ${res.status}`);
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  for (let i = 0; i < 60; i++) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const m = /"holdersCount":\s*(\d+)/.exec(buf);
+    if (m) { reader.cancel(); return Number(m[1]); }
+    if (buf.length > 2e6) break;
+  }
+  throw new Error("hypurrscan: holdersCount not found");
+}
+
 // ---- Blockscout ---------------------------------------------------------
 async function blockscoutHolders(cfg) {
   const res = await fetch(`${cfg.base}/api/v2/tokens/${cfg.contract}`, {
@@ -199,6 +255,15 @@ export async function collectHoldersForAsset(asset) {
   }
   if (cfg.source === "solana") {
     return { symbol: asset.symbol, holders: await solanaHolders(cfg) };
+  }
+  if (cfg.source === "coinmetrics") {
+    return { symbol: asset.symbol, holders: await coinmetricsHolders(cfg) };
+  }
+  if (cfg.source === "cosmos") {
+    return { symbol: asset.symbol, holders: await cosmosHolders(cfg) };
+  }
+  if (cfg.source === "hypurrscan") {
+    return { symbol: asset.symbol, holders: await hypurrscanHolders(cfg) };
   }
   return null;
 }

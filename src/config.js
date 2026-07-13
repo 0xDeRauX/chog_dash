@@ -109,6 +109,8 @@ export const ASSETS = [
     chain: "bitcoin",
     coingeckoId: "bitcoin",
     xQuery: '("$BTC" OR "Bitcoin" OR "btc") -is:retweet',
+    // Native-coin "holders" = addresses with a non-zero balance (Coinmetrics).
+    holders: { source: "coinmetrics", cmAsset: "btc" },
   },
   {
     group: "majors",
@@ -117,6 +119,7 @@ export const ASSETS = [
     coingeckoId: "ethereum",
     xQuery: '("$ETH" OR "Ethereum" OR "eth" OR "@ethereum") -is:retweet',
     discordInvite: "ethereum-org",
+    holders: { source: "coinmetrics", cmAsset: "eth" },
   },
   {
     group: "majors",
@@ -133,6 +136,7 @@ export const ASSETS = [
     coingeckoId: "ripple",
     xQuery: '("$XRP" OR "Ripple" OR "xrp" OR "@ripple") -is:retweet',
     discordInvite: "xrpl",
+    holders: { source: "coinmetrics", cmAsset: "xrp" },
   },
   {
     group: "majors",
@@ -157,6 +161,7 @@ export const ASSETS = [
     coingeckoId: "hyperliquid",
     xQuery: '("$HYPE" OR "Hyperliquid" OR "@HyperliquidX") -is:retweet',
     discordInvite: "hyperliquid",
+    holders: { source: "hypurrscan", token: "HYPE" },
   },
   {
     group: "majors",
@@ -174,6 +179,8 @@ export const ASSETS = [
     // "Akash" alone is a common first name → use the project name + cashtag.
     xQuery: '("$AKT" OR "Akash Network" OR "@akashnet") -is:retweet',
     discordInvite: "akash",
+    // Cosmos SDK: total account count via the auth module (public LCD, keyless).
+    holders: { source: "cosmos", lcds: ["https://akash-api.polkachu.com", "https://rest-akash.ecostake.com"] },
   },
   {
     group: "majors",
