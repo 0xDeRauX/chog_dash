@@ -43,6 +43,9 @@ jobs:
       - name: Collect Discord members
         run: npm run collect:discord
 
+      - name: Collect Telegram members
+        run: npm run collect:telegram
+
       # Persist the on-chain holder balance ledger between runs (outside the
       # repo) so holders update incrementally instead of re-indexing daily.
       - name: Restore holder state

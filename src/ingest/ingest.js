@@ -167,6 +167,21 @@ export function ingestAll() {
     }
   }
 
+  const upsertTelegram = db.prepare(`
+    INSERT INTO telegram_daily (asset_id, date, members)
+    VALUES (@assetId, @date, @members)
+    ON CONFLICT(asset_id, date) DO UPDATE SET members = excluded.members
+  `);
+  let telegramRows = 0;
+  for (const file of readRawFiles("telegram")) {
+    for (const r of file.results) {
+      const asset = getAssetId.get(r.symbol);
+      if (!asset || r.members == null) continue;
+      upsertTelegram.run({ assetId: asset.id, date: file.date, members: r.members });
+      telegramRows++;
+    }
+  }
+
   const upsertHolders = db.prepare(`
     INSERT INTO holders_daily (asset_id, date, holders)
     VALUES (@assetId, @date, @holders)
@@ -202,5 +217,5 @@ export function ingestAll() {
   }
 
   db.close();
-  return { mentionRows, priceRows, tvlRows, discordRows, holderRows, flowRows };
+  return { mentionRows, priceRows, tvlRows, discordRows, telegramRows, holderRows, flowRows };
 }

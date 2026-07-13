@@ -44,6 +44,13 @@ CREATE TABLE IF NOT EXISTS discord_daily (
   PRIMARY KEY (asset_id, date)
 );
 
+CREATE TABLE IF NOT EXISTS telegram_daily (
+  asset_id INTEGER NOT NULL REFERENCES assets(id),
+  date TEXT NOT NULL,
+  members INTEGER,
+  PRIMARY KEY (asset_id, date)
+);
+
 CREATE TABLE IF NOT EXISTS holders_daily (
   asset_id INTEGER NOT NULL REFERENCES assets(id),
   date TEXT NOT NULL,

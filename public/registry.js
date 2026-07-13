@@ -51,6 +51,12 @@ const METRICS = [
     deltas: [7, 30, 90], chart: true,
   },
   {
+    id: "telegram", label: "Telegram", category: "community",
+    series: "telegram", vkey: "members", format: "num",
+    latest: (a) => a.telegram?.at(-1)?.members ?? null,
+    deltas: [7, 30, 90], chart: true,
+  },
+  {
     id: "holders", label: "Holders", category: "onchain",
     series: "holders", vkey: "holders", format: "num",
     latest: (a) => a.holders?.at(-1)?.holders ?? null,
@@ -88,6 +94,7 @@ const MEASURES = [
   ["tvl", "TVL"],
   ["mentions", "Mentions"],
   ["discord", "Discord"],
+  ["telegram", "Telegram"],
   ["holders", "Holders"],
 ];
 

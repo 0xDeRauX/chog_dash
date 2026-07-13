@@ -64,6 +64,9 @@ const marketCapStmt = db.prepare(
 const discordStmt = db.prepare(
   `SELECT date, member_count AS members, online_count AS online FROM discord_daily WHERE asset_id = ? ORDER BY date`
 );
+const telegramStmt = db.prepare(
+  `SELECT date, members FROM telegram_daily WHERE asset_id = ? ORDER BY date`
+);
 const holdersStmt = db.prepare(
   `SELECT date, holders FROM holders_daily WHERE asset_id = ? ORDER BY date`
 );
@@ -84,6 +87,7 @@ const assets = ASSETS.map((cfg) => {
     latestChange24h: prices.length ? prices.at(-1).change24h : null,
     marketCap: marketCapStmt.get(row.id)?.market_cap ?? null,
     discord,
+    telegram: telegramStmt.all(row.id),
     holders: holdersStmt.all(row.id),
     holderFlows: flowsStmt.all(row.id),
     onchain: computeOnchain(cfg),

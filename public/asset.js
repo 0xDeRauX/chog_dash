@@ -4,7 +4,7 @@
 
 const METRIC_COLOR = {
   price: "#836ef9", volume: "#e0a000", tvl: "#3987e5",
-  mentions: "#17b8a6", discord: "#e0559a",
+  mentions: "#17b8a6", discord: "#e0559a", telegram: "#29a9eb", holders: "#35e0a5",
 };
 
 // Indexed base-100 data for a metric over a window, as Lightweight Charts points.

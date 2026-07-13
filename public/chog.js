@@ -5,7 +5,7 @@
 
 const M_COLOR = {
   price: "#836ef9", volume: "#e0a000", tvl: "#3987e5",
-  mentions: "#17b8a6", discord: "#e0559a", holders: "#35e0a5",
+  mentions: "#17b8a6", discord: "#e0559a", telegram: "#29a9eb", holders: "#35e0a5",
 };
 const CHOG_SYM = "CHOG";
 
@@ -176,7 +176,7 @@ function renderChart(a) {
 const PILLARS = [
   { title: "Marché", cls: "market", ids: ["price", "volume", "mcap", "tvl"] },
   { title: "Attention", cls: "social", ids: ["mentions", "buzz"] },
-  { title: "Communauté", cls: "community", ids: ["discord"] },
+  { title: "Communauté", cls: "community", ids: ["discord", "telegram"] },
   { title: "On-chain", cls: "onchain", ids: ["holders"] },
 ];
 function renderPillars(el, a, assets) {

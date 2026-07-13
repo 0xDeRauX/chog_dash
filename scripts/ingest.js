@@ -4,7 +4,7 @@
 // Usage: npm run ingest
 import { ingestAll } from "../src/ingest/ingest.js";
 
-const { mentionRows, priceRows, tvlRows, discordRows, holderRows, flowRows } = ingestAll();
+const { mentionRows, priceRows, tvlRows, discordRows, telegramRows, holderRows, flowRows } = ingestAll();
 console.log(
-  `Ingested ${mentionRows} mention, ${priceRows} price, ${tvlRows} TVL, ${discordRows} Discord, ${holderRows} holder, ${flowRows} flow rows.`
+  `Ingested ${mentionRows} mention, ${priceRows} price, ${tvlRows} TVL, ${discordRows} Discord, ${telegramRows} Telegram, ${holderRows} holder, ${flowRows} flow rows.`
 );
