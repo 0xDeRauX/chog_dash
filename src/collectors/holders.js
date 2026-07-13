@@ -82,7 +82,12 @@ async function solanaHolders(cfg) {
         method: "POST", headers: { "Content-Type": "application/json" }, body,
       });
       if (!res.ok) { lastErr = new Error(`HTTP ${res.status} @ ${rpc}`); await sleep(8000 * (attempt + 1)); continue; }
-      return await streamNonZero(res);
+      const holders = await streamNonZero(res);
+      // These tokens always have holders; a 0 means the RPC returned an error
+      // body or truncated (some providers cap large getProgramAccounts) — retry
+      // rather than record a bogus 0.
+      if (holders === 0) { lastErr = new Error(`empty result @ ${rpc}`); await sleep(8000 * (attempt + 1)); continue; }
+      return holders;
     } catch (e) {
       lastErr = e; await sleep(8000 * (attempt + 1));
     }
@@ -144,6 +149,28 @@ async function hypurrscanHolders(cfg) {
     if (buf.length > 2e6) break;
   }
   throw new Error("hypurrscan: holdersCount not found");
+}
+
+// taostats (Bittensor/TAO): total account count = holders. Needs a free key.
+async function taostatsHolders() {
+  if (!CONFIG.TAOSTATS_API_KEY) throw new Error("Missing TAOSTATS_API_KEY");
+  const res = await fetch("https://api.taostats.io/api/account/latest/v1?limit=1", {
+    headers: { Authorization: CONFIG.TAOSTATS_API_KEY },
+  });
+  if (!res.ok) throw new Error(`taostats HTTP ${res.status}`);
+  const j = await res.json();
+  return Number(j.pagination?.total_items) || null;
+}
+
+// Blockvision Sui: coin/detail carries the native SUI holder count — but only
+// when given the fully-normalized 64-hex coinType. Needs a free key.
+async function blockvisionSuiHolders(cfg) {
+  if (!CONFIG.BLOCKVISION_SUI_KEY) throw new Error("Missing blockvision_api_key_sui");
+  const url = `https://api.blockvision.org/v2/sui/coin/detail?coinType=${encodeURIComponent(cfg.coinType)}`;
+  const res = await fetch(url, { headers: { "x-api-key": CONFIG.BLOCKVISION_SUI_KEY } });
+  if (!res.ok) throw new Error(`Blockvision Sui HTTP ${res.status}`);
+  const j = await res.json();
+  return Number(j.result?.holders) || null;
 }
 
 // ---- Blockscout ---------------------------------------------------------
@@ -264,6 +291,12 @@ export async function collectHoldersForAsset(asset) {
   }
   if (cfg.source === "hypurrscan") {
     return { symbol: asset.symbol, holders: await hypurrscanHolders(cfg) };
+  }
+  if (cfg.source === "taostats") {
+    return { symbol: asset.symbol, holders: await taostatsHolders() };
+  }
+  if (cfg.source === "blockvision-sui") {
+    return { symbol: asset.symbol, holders: await blockvisionSuiHolders(cfg) };
   }
   return null;
 }

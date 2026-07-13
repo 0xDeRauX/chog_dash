@@ -145,6 +145,8 @@ export const ASSETS = [
     coingeckoId: "sui",
     xQuery: '("$SUI" OR "@SuiNetwork") -is:retweet',
     discordInvite: "sui",
+    // Blockvision exposes native SUI holders via coin/detail (full coinType).
+    holders: { source: "blockvision-sui", coinType: "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI" },
   },
   {
     group: "majors",
@@ -170,6 +172,8 @@ export const ASSETS = [
     coingeckoId: "bittensor",
     xQuery: '("$TAO" OR "Bittensor" OR "@bittensor") -is:retweet',
     discordInvite: "5MGtAz5kW",
+    // Bittensor account count = holders (taostats, free key).
+    holders: { source: "taostats" },
   },
   {
     group: "majors",
@@ -215,7 +219,12 @@ export const CONFIG = {
   TWITTER_API_KEY: process.env.TWITTER_API_KEY,
   X_BEARER_TOKEN: process.env.X_BEARER_TOKEN,
   THIRDWEB_SECRET_KEY: process.env.THIRDWEB_SECRET_KEY,
-  // Optional: a dedicated Solana RPC (higher rate limits than public ones) for
-  // the keyless holder count. Falls back to public RPCs if unset.
+  // Optional dedicated Solana RPC for the SPL holder counts. Note: Helius's free
+  // tier rejects the large getProgramAccounts these need (e.g. BONK ~485MB), so
+  // the public mainnet-beta endpoint is actually the reliable default here.
   SOL_RPC: process.env.SOL_RPC,
+  // Native-coin holder counts that need a free API key.
+  TAOSTATS_API_KEY: process.env.TAOSTATS_API_KEY,          // TAO (Bittensor)
+  BLOCKVISION_SUI_KEY: process.env.blockvision_api_key_sui, // SUI
+  BLOCKVISION_MONAD_KEY: process.env.blockvision_api_key_monad, // MON (reserved)
 };
