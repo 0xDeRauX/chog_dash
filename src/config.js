@@ -116,6 +116,7 @@ export const ASSETS = [
     chain: "ethereum",
     coingeckoId: "ethereum",
     xQuery: '("$ETH" OR "Ethereum" OR "eth" OR "@ethereum") -is:retweet',
+    discordInvite: "ethereum-org",
   },
   {
     group: "majors",
@@ -131,6 +132,7 @@ export const ASSETS = [
     chain: "xrp",
     coingeckoId: "ripple",
     xQuery: '("$XRP" OR "Ripple" OR "xrp" OR "@ripple") -is:retweet',
+    discordInvite: "xrpl",
   },
   {
     group: "majors",
@@ -171,6 +173,7 @@ export const ASSETS = [
     coingeckoId: "akash-network",
     // "Akash" alone is a common first name → use the project name + cashtag.
     xQuery: '("$AKT" OR "Akash Network" OR "@akashnet") -is:retweet',
+    discordInvite: "akash",
   },
   {
     group: "majors",
@@ -178,6 +181,7 @@ export const ASSETS = [
     chain: "starknet",
     coingeckoId: "starknet",
     xQuery: '("$STRK" OR "Starknet" OR "@starknet") -is:retweet',
+    discordInvite: "starknet",
   },
 ];
 
