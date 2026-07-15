@@ -1324,6 +1324,37 @@ body.studio-dragging .drop-zones { display: flex; }
   text-align: left;
 }
 
+/* ---- Signals: verdict + IC tables -------------------------------------- */
+.verdict-table td,
+.verdict-table th { padding: 11px 14px; }
+.verdict-name {
+  font-weight: 650;
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+.verdict-badge {
+  font-weight: 650;
+  font-size: 13px;
+  white-space: nowrap;
+  text-align: left !important;
+}
+.verdict-badge .verdict-note {
+  display: block;
+  font-weight: 400;
+  font-size: 10.5px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+.verdict-badge.up { color: var(--up); }
+.verdict-badge.mid { color: #e0a000; }
+.verdict-badge.down { color: var(--down); }
+
+.ic-horizon { margin-bottom: 12px; }
+.ic-table th { font-size: 10.5px; white-space: nowrap; }
+.ic-table td.heat-cell,
+.ic-table th { min-width: 62px; }
+.ic-table .col-sep { border-left: 2px solid var(--border-strong); }
+
 /* ---- CHOG 360 landing ------------------------------------------------- */
 .section-title {
   font-size: 15px;

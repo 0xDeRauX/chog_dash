@@ -17,14 +17,27 @@
     <div class="filterbar" id="filters"></div>
 
     <section class="card">
-      <div class="card-head"><h2>Heatmap de corrélations</h2></div>
-      <p class="card-sub">Corrélation de Pearson par actif sur la fenêtre choisie. Vert = varient ensemble, rouge = à l'opposé, gris = pas de lien. "—" = pas assez d'historique.</p>
+      <div class="card-head"><h2 id="verdict-title">① Verdict — quel indicateur prédit ?</h2></div>
+      <p class="card-sub">L'<b>Information Coefficient</b> (IC) mesure si un signal <b>annonce</b> le rendement futur : corrélation de rang entre le signal du jour et le prix 1/7/30 jours plus tard, sur tout l'historique du groupe. <b>|IC| &gt; 0.05</b> = économiquement significatif (règle de l'industrie).</p>
+      <div class="table-scroll" id="verdict"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>② IC par actif</h2></div>
+      <p class="card-sub">Pour chaque actif : le pouvoir prédictif de chaque signal à l'horizon choisi. <span style="color:var(--up)">Vert</span> = prédit une hausse, <span style="color:var(--down)">rouge</span> = une baisse, gris pâle = sous le seuil 0.05 (bruit). « — » = pas assez d'historique (métrique récente).</p>
+      <div class="ic-horizon" id="ic-horizon"></div>
+      <div class="table-scroll" id="ic-table"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>③ Corrélations — ce qui bouge <em>ensemble</em></h2></div>
+      <p class="card-sub"><b>Descriptif, pas prédictif</b> : corrélation des <b>variations quotidiennes</b> sur la fenêtre choisie. Vert = varient ensemble, rouge = à l'opposé. Contraste avec le bloc ② : une forte corrélation ici + un IC nul là-haut = « ça bouge ensemble mais ça ne prédit rien ».</p>
       <div class="table-scroll" id="heatmap"></div>
     </section>
 
     <section class="card">
       <div class="card-head"><h2>Score composite CHOG</h2></div>
-      <p class="card-sub">À venir (M8) — un score 0-100 pondéré des indicateurs propriétaires (Buzz Score, divergence, vélocité…). Se branchera ici via le registre, sans nouvelle page.</p>
+      <p class="card-sub">À venir (M8) — un score 0-100 pondéré des indicateurs propriétaires, <b>chacun par la qualité mesurée ci-dessus (IC)</b> plutôt que par des poids arbitraires. Se branchera ici via le registre.</p>
     </section>
 
     <p class="foot">CHOG Intel · X API + CoinGecko + DefiLlama + Discord</p>

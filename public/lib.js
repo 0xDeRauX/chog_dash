@@ -139,6 +139,69 @@ function corrReturns(seriesA, keyA, seriesB, keyB, windowDays) {
   return { r: pearson(pairs), n: pairs.length };
 }
 
+// ---- Information Coefficient (does a signal PREDICT the future?) --------
+// The correlation heatmap answers "what moves together" (simultaneous). The IC
+// answers "what predicts": Spearman rank-correlation between the signal at t and
+// the price return over t→t+k. Rank-based, so robust to outliers/non-linearity.
+// Industry rule of thumb: |IC| > 0.05 = economically meaningful for a daily
+// signal; IR (mean/σ of the IC) > 0.5 = strong.
+function addDaysISO(dateStr, k) {
+  const d = new Date(dateStr + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + k);
+  return d.toISOString().slice(0, 10);
+}
+function rankOf(values) {
+  const idx = values.map((v, i) => [v, i]).sort((a, b) => a[0] - b[0]);
+  const r = new Array(values.length);
+  for (let i = 0; i < idx.length;) {
+    let j = i;
+    while (j + 1 < idx.length && idx[j + 1][0] === idx[i][0]) j++;
+    const avg = (i + j) / 2 + 1; // average rank for ties
+    for (let k = i; k <= j; k++) r[idx[k][1]] = avg;
+    i = j + 1;
+  }
+  return r;
+}
+function spearman(pairs, minN = 12) {
+  if (!pairs || pairs.length < minN) return null;
+  const rx = rankOf(pairs.map((p) => p[0]));
+  const ry = rankOf(pairs.map((p) => p[1]));
+  return pearson(rx.map((v, i) => [v, ry[i]]));
+}
+// date -> forward simple return over k calendar days (small gap tolerance so a
+// missing weekend/collection day doesn't drop the point).
+function forwardReturns(prices, k) {
+  const by = new Map((prices || []).map((p) => [p.date, p.price]));
+  const out = new Map();
+  for (const p of prices || []) {
+    if (!(p.price > 0)) continue;
+    let f = null;
+    for (let j = 0; j <= 3 && f == null; j++) f = by.get(addDaysISO(p.date, k + j));
+    if (f != null) out.set(p.date, f / p.price - 1);
+  }
+  return out;
+}
+// Time-series IC for one asset: pair each signal_t with the return t→t+k.
+function icTimeSeries(signalMap, prices, k, minN = 20) {
+  if (!signalMap || !signalMap.size) return { ic: null, n: 0 };
+  const fr = forwardReturns(prices, k);
+  const pairs = [];
+  for (const [d, v] of signalMap) { const f = fr.get(d); if (f != null) pairs.push([v, f]); }
+  return { ic: spearman(pairs, minN), n: pairs.length };
+}
+// Pooled IC: stack every (signal_t, forward return) pair across a set of assets
+// — the headline "does this signal work overall?" number.
+function icPooled(assets, buildSignal, k, minN = 40) {
+  const pairs = [];
+  for (const a of assets) {
+    const sig = buildSignal(a);
+    if (!sig) continue;
+    const fr = forwardReturns(a.prices, k);
+    for (const [d, v] of sig) { const f = fr.get(d); if (f != null) pairs.push([v, f]); }
+  }
+  return { ic: spearman(pairs, minN), n: pairs.length };
+}
+
 // ---- z-scores / signal indicators --------------------------------------
 // Per-day z-score of `key` vs its trailing WIN-day mean/stddev, keyed by date.
 // z = (today − meanWIN) / stdWIN. A high z = a value far above the asset's own
