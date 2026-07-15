@@ -4,85 +4,85 @@
     {
       "symbol": "CHOG",
       "invite": "chog",
-      "memberCount": 43163,
-      "onlineCount": 1429,
+      "memberCount": 43157,
+      "onlineCount": 1671,
       "guildName": "Chog"
     },
     {
       "symbol": "BONK",
       "invite": "qaQa6M6mN2",
-      "memberCount": 33167,
-      "onlineCount": 1766,
+      "memberCount": 33172,
+      "onlineCount": 2241,
       "guildName": "Bonk"
     },
     {
       "symbol": "PENGU",
       "invite": "pudgypenguins",
-      "memberCount": 162294,
-      "onlineCount": 8631,
+      "memberCount": 162275,
+      "onlineCount": 11091,
       "guildName": "Pudgy Penguins"
     },
     {
       "symbol": "ETH",
       "invite": "ethereum-org",
-      "memberCount": 45844,
-      "onlineCount": 1974,
+      "memberCount": 45838,
+      "onlineCount": 2390,
       "guildName": "ethereum.org"
     },
     {
       "symbol": "SOL",
       "invite": "solana",
-      "memberCount": 149040,
-      "onlineCount": 5891,
+      "memberCount": 149055,
+      "onlineCount": 7156,
       "guildName": "Solana Tech"
     },
     {
       "symbol": "XRP",
       "invite": "xrpl",
-      "memberCount": 16462,
-      "onlineCount": 923,
+      "memberCount": 16448,
+      "onlineCount": 1133,
       "guildName": "XRP Ledger"
     },
     {
       "symbol": "SUI",
       "invite": "sui",
-      "memberCount": 896473,
-      "onlineCount": 11787,
+      "memberCount": 896455,
+      "onlineCount": 14254,
       "guildName": "Sui"
     },
     {
       "symbol": "MON",
       "invite": "monad",
-      "memberCount": 635265,
-      "onlineCount": 11828,
+      "memberCount": 635248,
+      "onlineCount": 14529,
       "guildName": "Monad"
     },
     {
       "symbol": "HYPE",
       "invite": "hyperliquid",
-      "memberCount": 87932,
-      "onlineCount": 9789,
+      "memberCount": 87952,
+      "onlineCount": 11643,
       "guildName": "Hyperliquid"
     },
     {
       "symbol": "TAO",
       "invite": "5MGtAz5kW",
-      "memberCount": 49837,
-      "onlineCount": 4430,
+      "memberCount": 49844,
+      "onlineCount": 5286,
       "guildName": "Bittensor"
     },
     {
       "symbol": "AKT",
       "invite": "akash",
-      "memberCount": 24399,
-      "onlineCount": 1117,
+      "memberCount": 24401,
+      "onlineCount": 1290,
       "guildName": "Akash Network Devs"
     },
     {
       "symbol": "STRK",
       "invite": "starknet",
       "memberCount": 32386,
-      "onlineCount": 385,
+      "onlineCount": 387,
       "guildName": "Starknet (Privacy arc) 🥷"
     }
   ]
