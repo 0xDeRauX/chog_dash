@@ -89,7 +89,7 @@ async function boot() {
       td0.append(cell);
       tr.append(td0);
       for (const [, sA, kA, sB, kB] of CORR_PAIRS) {
-        const { r } = corrLevels(a[sA], kA, a[sB], kB, state.window);
+        const { r } = corrReturns(a[sA], kA, a[sB], kB, state.window);
         const td = document.createElement("td");
         td.className = "heat-cell";
         td.style.background = corrCellColor(r);

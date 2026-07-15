@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CHOG Intel — Studio</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="studio" class="studio-app">
+  <!-- Fullscreen workspace: site nav (injected) → slim toolbar → rail + chart.
+       The page itself never scrolls; the rail scrolls internally. -->
+  <div class="studio-toolbar" id="studio-toolbar"></div>
+
+  <div class="studio-ws" id="studio-card">
+    <aside class="studio-rail" id="studio-rail"></aside>
+    <div class="chart-wrap studio-chartzone">
+      <div class="draw-rail" id="draw-rail"></div>
+      <div class="float-legend" id="legend"></div>
+      <div id="chart" class="studio-chart"></div>
+      <canvas id="draw-canvas"></canvas>
+      <div class="drop-zones" id="drop-zones">
+        <div class="drop-zone" id="zone-overlay">Superposer aux séries</div>
+        <div class="drop-zone drop-zone-pane" id="zone-pane">⬇ Sous-panneau dédié</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- v5 (not the v4 used elsewhere): native multi-panes w/ draggable separators -->
+  <script src="https://unpkg.com/lightweight-charts@5.0.8/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="lib.js"></script>
+  <script src="registry.js"></script>
+  <script src="studio-core.js"></script>
+  <script src="studio.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CHOG Intel — Mon Dash</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="dash">
+  <main class="wrap wrap-dash">
+    <header class="page-head dash-head">
+      <div>
+        <h1>Mon Dash</h1>
+        <p>Tes vues Studio enregistrées, en widgets. Glisse l'en-tête pour réordonner, ◧ change la largeur, S/M/L la hauteur.</p>
+      </div>
+      <div class="dash-head-actions" id="dash-actions"></div>
+    </header>
+
+    <div class="preset-panel" id="preset-panel" hidden></div>
+    <div class="dash-grid" id="dash-grid"></div>
+
+    <p class="foot">CHOG Intel · Mon Dash — widgets stockés localement dans ce navigateur</p>
+  </main>
+
+  <!-- v5 (same engine as the Studio) -->
+  <script src="https://unpkg.com/lightweight-charts@5.0.8/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="lib.js"></script>
+  <script src="registry.js"></script>
+  <script src="studio-core.js"></script>
+  <script src="dash.js"></script>
+</body>
+</html>

@@ -72,10 +72,21 @@ function pctOverDays(series, key, days) {
   if (!ref || ref[key] === 0) return null;
   return ((last[key] - ref[key]) / ref[key]) * 100;
 }
+// Base-100 needs a MEANINGFUL base. Young series often open with launch dust —
+// Monad's TVL starts at $1.00 before reaching $529M, so indexing on that $1
+// yields 5e10 and flattens every other line on the chart. Ignore leading points
+// that are negligible (<0.1%) vs the window's median before picking the base.
+function indexBase(values) {
+  const pos = values.filter((v) => v != null && v > 0).sort((a, b) => a - b);
+  if (!pos.length) return null;
+  const med = pos[Math.floor(pos.length / 2)];
+  const floor = med * 0.001;
+  return values.find((v) => v != null && v > 0 && v >= floor) ?? pos[0];
+}
 function indexSeries(points, key) {
-  const base = points.find((p) => p[key] != null && p[key] !== 0);
+  const base = indexBase(points.map((p) => p[key]));
   if (!base) return points.map(() => null);
-  return points.map((p) => (p[key] == null ? null : (p[key] / base[key]) * 100));
+  return points.map((p) => (p[key] == null ? null : (p[key] / base) * 100));
 }
 function windowed(series, windowDays) {
   if (!series || !series.length || !isFinite(windowDays)) return series || [];
@@ -104,14 +115,26 @@ function pearson(pairs) {
   if (vx <= 0 || vy <= 0) return null;
   return cov / Math.sqrt(vx * vy);
 }
-function corrLevels(seriesA, keyA, seriesB, keyB, windowDays) {
+// Correlation of DAILY CHANGES, not of levels. Correlating raw levels of two
+// trending series returns ~±1 whatever the truth (two independent random walks
+// that both drift score |r|≈0.95), so it invents relationships. Comparing the
+// day-to-day moves answers the real question: when A moves, does B move too?
+// Young tokens also produce absurd launch-day returns (a listing at ~0 gives
+// +34,000,000%), so returns are winsorized to ±50%/day before correlating.
+function corrReturns(seriesA, keyA, seriesB, keyB, windowDays) {
   const wa = windowed(seriesA, windowDays);
   const wb = windowed(seriesB, windowDays);
   const bBy = new Map(wb.map((p) => [p.date, p[keyB]]));
+  const clip = (r) => Math.max(-0.5, Math.min(0.5, r));
   const pairs = [];
+  let prev = null;
   for (const p of wa) {
-    const vb = bBy.get(p.date);
-    if (p[keyA] != null && vb != null) pairs.push([p[keyA], vb]);
+    const va = p[keyA], vb = bBy.get(p.date);
+    if (va == null || vb == null) continue;
+    if (prev && prev.a > 0 && prev.b > 0) {
+      pairs.push([clip(va / prev.a - 1), clip(vb / prev.b - 1)]);
+    }
+    prev = { a: va, b: vb };
   }
   return { r: pearson(pairs), n: pairs.length };
 }
@@ -169,11 +192,35 @@ async function loadData() {
   return data;
 }
 
+// ---- custom-indicator help ---------------------------------------------
+// Custom indicators aren't self-explanatory like "Prix", so every one of them
+// carries a `help` descriptor (what it is / how to read it / an example / how
+// well it actually predicts). helpIcon renders the ⓘ + its hover card.
+function helpIcon(help, label) {
+  if (!help) return null;
+  const wrap = document.createElement("span");
+  wrap.className = "help-ico";
+  wrap.tabIndex = 0;
+  wrap.textContent = "ⓘ";
+  wrap.setAttribute("aria-label", `À quoi sert ${label} ?`);
+  const card = document.createElement("span");
+  card.className = "help-card";
+  card.innerHTML = `<b class="help-title">${label}</b>`
+    + (help.what ? `<span class="help-p">${help.what}</span>` : "")
+    + (help.read ? `<span class="help-p"><i>Lecture :</i> ${help.read}</span>` : "")
+    + (help.example ? `<span class="help-ex"><i>Exemple :</i> ${help.example}</span>` : "")
+    + (help.quality ? `<span class="help-q">${help.quality}</span>` : "");
+  wrap.append(card);
+  return wrap;
+}
+
 // ---- chrome -------------------------------------------------------------
 function buildTopbar(active) {
   const tabs = [
     ["index.html", "CHOG"],
     ["screener.html", "Screener"],
+    ["studio.html", "Studio"],
+    ["dash.html", "Mon Dash"],
     ["signals.html", "Signaux"],
   ];
   const nav = document.createElement("nav");

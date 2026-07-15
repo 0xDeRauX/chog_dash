@@ -109,6 +109,14 @@ async function boot() {
       th.textContent = c.label;
       th.className = "sortable";
       th.dataset.key = c.key;
+      // Custom indicators get a ⓘ explaining what they are (with an example).
+      if (c.kind === "value" && c.metric?.help) {
+        const ico = helpIcon(c.metric.help, c.metric.label);
+        if (ico) {
+          ico.addEventListener("click", (ev) => ev.stopPropagation()); // don't sort
+          th.append(ico);
+        }
+      }
       const arrow = document.createElement("span");
       arrow.className = "sort-arrow";
       th.append(arrow);

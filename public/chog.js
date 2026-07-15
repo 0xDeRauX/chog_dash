@@ -101,7 +101,7 @@ function renderHero(el, a, assets) {
 function metricIndexed(a, m, win) {
   const w = windowed(a[m.series], win).filter((p) => p[m.vkey] != null);
   if (!w.length) return [];
-  const base = w.find((p) => p[m.vkey] !== 0)?.[m.vkey];
+  const base = indexBase(w.map((p) => p[m.vkey])); // robust vs launch dust (lib.js)
   if (!base) return [];
   return w.map((p) => ({ time: p.date, value: (p[m.vkey] / base) * 100 }));
 }
@@ -197,7 +197,7 @@ function renderPillars(el, a, assets) {
         chips += `<span class="mini-chip ${c}">${DELTA_LABEL[d]} ${fmtDelta(dv)}</span>`;
       }
       rows += `
-        <div class="pillar-metric">
+        <div class="pillar-metric" data-help="${m.help ? m.id : ""}">
           <div class="pm-top">
             <span class="pm-label">${m.label}</span>
             ${rk ? `<span class="pm-rank">#${rk.rank}<span>/${rk.total}</span></span>` : ""}
@@ -210,6 +210,13 @@ function renderPillars(el, a, assets) {
         </div>`;
     }
     card.innerHTML = `<div class="pillar-head">${p.title}</div>${rows}`;
+    // Attach the ⓘ hover cards for the custom indicators in this pillar.
+    for (const slot of card.querySelectorAll(".pillar-metric[data-help]")) {
+      const m = METRIC_BY_ID[slot.dataset.help];
+      if (!m?.help) continue;
+      const ico = helpIcon(m.help, m.label);
+      if (ico) slot.querySelector(".pm-label").after(ico);
+    }
     el.append(card);
   }
 }

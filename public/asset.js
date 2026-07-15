@@ -11,7 +11,7 @@ const METRIC_COLOR = {
 function metricIndexed(a, m, win) {
   const w = windowed(a[m.series], win).filter((p) => p[m.vkey] != null);
   if (!w.length) return [];
-  const base = w.find((p) => p[m.vkey] !== 0)?.[m.vkey];
+  const base = indexBase(w.map((p) => p[m.vkey])); // robust vs launch dust (lib.js)
   if (!base) return [];
   return w.map((p) => ({ time: p.date, value: (p[m.vkey] / base) * 100 }));
 }
@@ -158,7 +158,7 @@ async function boot() {
     ["Mentions ↔ Discord", "mentions", "count", "discord", "members"],
   ];
   for (const [label, sA, kA, sB, kB] of pairs) {
-    const { r, n } = corrLevels(a[sA], kA, a[sB], kB, state.window);
+    const { r, n } = corrReturns(a[sA], kA, a[sB], kB, state.window);
     const row = document.createElement("div");
     row.className = "corr-row corr-standalone";
     const l = document.createElement("span");

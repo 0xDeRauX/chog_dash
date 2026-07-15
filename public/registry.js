@@ -68,6 +68,12 @@ const METRICS = [
     id: "buzz", label: "Buzz Score", category: "signal",
     series: "buzz", vkey: "buzz", format: "z",
     latest: (a) => lastValue(a.buzz, "buzz"),
+    help: {
+      what: "Intensité des mentions X <b>par rapport à la norme de l'actif lui-même</b> (z-score vs sa moyenne 30j). Rend BTC et CHOG comparables malgré des volumes 100× différents.",
+      read: "<b>+2σ</b> = pic d'attention rare (le buzz est 2 écarts-types au-dessus de sa normale) · <b>0</b> = journée ordinaire · <b>−1σ</b> = attention en berne.",
+      example: "CHOG passe de 400 à 900 mentions/jour : en absolu c'est peu face aux 90 000 de BTC, mais son Buzz monte à +3σ → il se passe quelque chose <i>chez CHOG</i>.",
+      quality: "IC ≈ +0.06 à +0.08 — signal faible mais réel, surtout pour <b>classer les memes entre eux</b>.",
+    },
   },
   {
     // Proprietary indicator (M5-lite): normalized attention − normalized price.
@@ -75,6 +81,12 @@ const METRICS = [
     id: "divergence", label: "Divergence", category: "signal",
     series: "divergence", vkey: "div", format: "signed",
     latest: (a) => lastValue(a.divergence, "div"),
+    help: {
+      what: "Écart entre l'attention normalisée et le prix normalisé : <b>z(mentions) − z(prix)</b>. Mesure si le buzz devance le prix, ou l'inverse.",
+      read: "<b>Positif</b> = l'attention monte plus que le prix → <b>accumulation silencieuse potentielle</b> · <b>Négatif</b> = le prix a déjà décollé sans le buzz (essoufflement possible).",
+      example: "Les mentions CHOG grimpent à +2σ mais le prix reste plat (0σ) → Divergence ≈ +2 : la foule s'intéresse avant que le prix ne bouge.",
+      quality: "✅ <b>Notre meilleur signal</b>, validé sur ~350j : IC +0.10 (7j) à +0.13 (30j) — au-dessus du seuil 0.05 de l'industrie, positif sur 7 memes/9.",
+    },
   },
 ];
 
