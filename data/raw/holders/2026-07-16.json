@@ -1,0 +1,75 @@
+{
+  "date": "2026-07-16",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "holders": 32925,
+      "flows": {
+        "accumulating": 0,
+        "distributing": 0,
+        "newHolders": 0,
+        "churned": 0
+      }
+    },
+    {
+      "symbol": "PEPE",
+      "holders": 568663
+    },
+    {
+      "symbol": "WIF",
+      "holders": 250839
+    },
+    {
+      "symbol": "BONK",
+      "holders": 1002657
+    },
+    {
+      "symbol": "BRETT",
+      "holders": 948674
+    },
+    {
+      "symbol": "PENGU",
+      "holders": 536697
+    },
+    {
+      "symbol": "FARTCOIN",
+      "holders": 160847
+    },
+    {
+      "symbol": "ANSEM",
+      "holders": 129954
+    },
+    {
+      "symbol": "CASHCAT",
+      "holders": 30747
+    },
+    {
+      "symbol": "BTC",
+      "holders": 57380782
+    },
+    {
+      "symbol": "ETH",
+      "holders": 199770640
+    },
+    {
+      "symbol": "XRP",
+      "holders": 8008285
+    },
+    {
+      "symbol": "SUI",
+      "holders": 27354347
+    },
+    {
+      "symbol": "HYPE",
+      "holders": 248164
+    },
+    {
+      "symbol": "TAO",
+      "holders": 546333
+    },
+    {
+      "symbol": "AKT",
+      "holders": 1148427
+    }
+  ]
+}

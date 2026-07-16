@@ -1,0 +1,89 @@
+{
+  "date": "2026-07-16",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "invite": "chog",
+      "memberCount": 43152,
+      "onlineCount": 1376,
+      "guildName": "Chog"
+    },
+    {
+      "symbol": "BONK",
+      "invite": "qaQa6M6mN2",
+      "memberCount": 33171,
+      "onlineCount": 1777,
+      "guildName": "Bonk"
+    },
+    {
+      "symbol": "PENGU",
+      "invite": "pudgypenguins",
+      "memberCount": 162248,
+      "onlineCount": 8547,
+      "guildName": "Pudgy Penguins"
+    },
+    {
+      "symbol": "ETH",
+      "invite": "ethereum-org",
+      "memberCount": 45833,
+      "onlineCount": 1986,
+      "guildName": "ethereum.org"
+    },
+    {
+      "symbol": "SOL",
+      "invite": "solana",
+      "memberCount": 149049,
+      "onlineCount": 5958,
+      "guildName": "Solana Tech"
+    },
+    {
+      "symbol": "XRP",
+      "invite": "xrpl",
+      "memberCount": 16448,
+      "onlineCount": 930,
+      "guildName": "XRP Ledger"
+    },
+    {
+      "symbol": "SUI",
+      "invite": "sui",
+      "memberCount": 896342,
+      "onlineCount": 11729,
+      "guildName": "Sui"
+    },
+    {
+      "symbol": "MON",
+      "invite": "monad",
+      "memberCount": 635194,
+      "onlineCount": 11737,
+      "guildName": "Monad"
+    },
+    {
+      "symbol": "HYPE",
+      "invite": "hyperliquid",
+      "memberCount": 87963,
+      "onlineCount": 9877,
+      "guildName": "Hyperliquid"
+    },
+    {
+      "symbol": "TAO",
+      "invite": "5MGtAz5kW",
+      "memberCount": 49845,
+      "onlineCount": 4572,
+      "guildName": "Bittensor"
+    },
+    {
+      "symbol": "AKT",
+      "invite": "akash",
+      "memberCount": 24404,
+      "onlineCount": 1133,
+      "guildName": "Akash Network Devs"
+    },
+    {
+      "symbol": "STRK",
+      "invite": "starknet",
+      "memberCount": 32386,
+      "onlineCount": 388,
+      "guildName": "Starknet (Privacy arc) 🥷"
+    }
+  ]
+}
