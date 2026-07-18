@@ -196,13 +196,24 @@ export function ingestAll() {
       new_holders = excluded.new_holders,
       churned = excluded.churned
   `);
-  let holderRows = 0, flowRows = 0;
+  const upsertTiers = db.prepare(`
+    INSERT INTO holder_tiers_daily (asset_id, date, lt50, t50_500, t500_5k, t5k_50k, gt50k)
+    VALUES (@assetId, @date, @lt50, @t50_500, @t500_5k, @t5k_50k, @gt50k)
+    ON CONFLICT(asset_id, date) DO UPDATE SET
+      lt50 = excluded.lt50, t50_500 = excluded.t50_500, t500_5k = excluded.t500_5k,
+      t5k_50k = excluded.t5k_50k, gt50k = excluded.gt50k
+  `);
+  let holderRows = 0, flowRows = 0, tierRows = 0;
   for (const file of readRawFiles("holders")) {
     for (const r of file.results) {
       const asset = getAssetId.get(r.symbol);
       if (!asset || r.holders == null) continue;
       upsertHolders.run({ assetId: asset.id, date: file.date, holders: r.holders });
       holderRows++;
+      if (r.tiers) {
+        upsertTiers.run({ assetId: asset.id, date: file.date, ...r.tiers });
+        tierRows++;
+      }
       if (r.flows) {
         upsertFlows.run({
           assetId: asset.id, date: file.date,
@@ -216,6 +227,40 @@ export function ingestAll() {
     }
   }
 
+  // Buy/sell volume: Binance history files (per-symbol series), Binance daily
+  // series and DexScreener daily snapshots share one upsert.
+  const upsertFlow = db.prepare(`
+    INSERT INTO tradeflow_daily (asset_id, date, buy_usd, sell_usd, buy_tx, sell_tx)
+    VALUES (@assetId, @date, @buyUsd, @sellUsd, @buyTx, @sellTx)
+    ON CONFLICT(asset_id, date) DO UPDATE SET
+      buy_usd = COALESCE(excluded.buy_usd, buy_usd),
+      sell_usd = COALESCE(excluded.sell_usd, sell_usd),
+      buy_tx = COALESCE(excluded.buy_tx, buy_tx),
+      sell_tx = COALESCE(excluded.sell_tx, sell_tx)
+  `);
+  let tradeflowRows = 0;
+  const flowPoint = (assetId, date, p) => {
+    upsertFlow.run({
+      assetId, date,
+      buyUsd: p.buyUsd ?? null, sellUsd: p.sellUsd ?? null,
+      buyTx: p.buyTx ?? null, sellTx: p.sellTx ?? null,
+    });
+    tradeflowRows++;
+  };
+  for (const hist of readRawFiles("tradeflow-history")) {
+    const asset = getAssetId.get(hist.symbol);
+    if (!asset) continue;
+    for (const p of hist.series || []) flowPoint(asset.id, p.date, p);
+  }
+  for (const file of readRawFiles("tradeflow")) {
+    for (const r of file.results || []) {
+      const asset = getAssetId.get(r.symbol);
+      if (!asset) continue;
+      if (r.series) for (const p of r.series) flowPoint(asset.id, p.date, p);
+      else flowPoint(asset.id, file.date, r);
+    }
+  }
+
   db.close();
-  return { mentionRows, priceRows, tvlRows, discordRows, telegramRows, holderRows, flowRows };
+  return { mentionRows, priceRows, tvlRows, discordRows, telegramRows, holderRows, flowRows, tierRows, tradeflowRows };
 }

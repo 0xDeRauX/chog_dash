@@ -55,6 +55,7 @@ function fmtBy(format, v) {
   if (format === "pct") return fmtDelta(v);
   if (format === "score") return v == null ? "—" : Math.round(v).toString();
   if (format === "z") return v == null ? "—" : (v >= 0 ? "+" : "") + v.toFixed(1) + "σ";
+  if (format === "pctraw") return v == null ? "—" : v.toFixed(1) + "%"; // a 0-100 level, not a delta
   if (format === "signed") return v == null ? "—" : (v >= 0 ? "+" : "") + v.toFixed(2);
   return v == null ? "—" : String(v);
 }
@@ -255,6 +256,75 @@ async function loadData() {
   return data;
 }
 
+// ---- journal (dated milestones) ------------------------------------------
+// Milestones live in localStorage. scope "global" shows on EVERY chart of the
+// site; any other scope (e.g. "studio" or a Mon Dash widget id) only on that
+// chart — for project-specific events that would pollute the rest.
+const JOURNAL_KEY = "chog-journal-v1";
+const JOURNAL_CATS = [["macro", "Macro", "#e0a000"], ["crypto", "Crypto", "#3987e5"], ["projet", "Projet", "#e0559a"]];
+const journalCatColor = (cat) => JOURNAL_CATS.find(([k]) => k === cat)?.[2] || "#836ef9";
+function journalAll() {
+  try { return JSON.parse(localStorage.getItem(JOURNAL_KEY)) || []; } catch { return []; }
+}
+function journalSave(evts) {
+  localStorage.setItem(JOURNAL_KEY, JSON.stringify(evts));
+}
+function journalEvents(scope) {
+  return journalAll()
+    .filter((e) => e.scope === "global" || (scope && e.scope === scope))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+function journalAdd({ date, label, cat = "crypto", scope = "global" }) {
+  const evts = journalAll();
+  evts.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), date, label, cat, scope });
+  journalSave(evts);
+}
+// Markers must sit on an existing data point — snap each event to the first
+// date >= the event date within the plotted series.
+function applyEventMarkers(series, dataPts, events) {
+  if (!series || !events?.length || !dataPts?.length) return;
+  const times = dataPts.map((p) => p.time || p.date);
+  const markers = [];
+  for (const e of events) {
+    const t = times.find((d) => d >= e.date);
+    if (!t) continue;
+    markers.push({
+      time: t, position: "aboveBar", shape: "square",
+      color: journalCatColor(e.cat),
+      text: "🚩 " + (e.label.length > 16 ? e.label.slice(0, 15) + "…" : e.label),
+    });
+  }
+  if (!markers.length) return;
+  try {
+    if (typeof LightweightCharts !== "undefined" && LightweightCharts.createSeriesMarkers) {
+      LightweightCharts.createSeriesMarkers(series, markers);
+      return;
+    }
+  } catch { /* fall through to v4 */ }
+  try { series.setMarkers(markers); } catch { /* markers are cosmetic */ }
+}
+// Impact of an event: % change of `key` from the event date to date+k days
+// (first available point at or after each date — daily data can have gaps).
+function dateAddDays(dateStr, k) {
+  const d = new Date(dateStr + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + k);
+  return d.toISOString().slice(0, 10);
+}
+function valueAtOrAfter(series, key, date, maxSlipDays = 4) {
+  if (!series) return null;
+  const limit = dateAddDays(date, maxSlipDays);
+  for (const p of series) {
+    if (p.date >= date && p[key] != null) return p.date <= limit ? p[key] : null;
+  }
+  return null;
+}
+function pctFrom(series, key, date, k) {
+  const v0 = valueAtOrAfter(series, key, date);
+  const v1 = valueAtOrAfter(series, key, dateAddDays(date, k));
+  if (v0 == null || v1 == null || v0 === 0) return null;
+  return (v1 / v0 - 1) * 100;
+}
+
 // ---- custom-indicator help ---------------------------------------------
 // Custom indicators aren't self-explanatory like "Prix", so every one of them
 // carries a `help` descriptor (what it is / how to read it / an example / how
@@ -284,7 +354,9 @@ function buildTopbar(active) {
     ["screener.html", "Screener"],
     ["studio.html", "Studio"],
     ["dash.html", "Mon Dash"],
+    ["journal.html", "Journal"],
     ["signals.html", "Signaux"],
+    ["admin.html", "Admin"],
   ];
   const nav = document.createElement("nav");
   nav.className = "topbar";

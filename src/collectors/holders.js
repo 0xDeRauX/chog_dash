@@ -20,6 +20,28 @@ const addrFromTopic = (t) => "0x" + t.slice(26).toLowerCase();
 const STATE_DIR = path.resolve("data/holders-state");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// ---- USD tiers ($-value buckets of holders) ------------------------------
+// Only computable where we see every balance ourselves (thirdweb ledger,
+// Solana scan). Thresholds in USD; converted to raw token units via the day's
+// price. tiers = { lt50, t50_500, t500_5k, t5k_50k, gt50k }.
+const TIER_USD = [50, 500, 5000, 50000];
+const TIER_KEYS = ["lt50", "t50_500", "t500_5k", "t5k_50k", "gt50k"];
+function tierThresholdsRaw(priceUsd, decimals) {
+  if (!priceUsd || priceUsd <= 0) return null;
+  // usd → tokens → raw units, at µ-token precision to stay exact in BigInt.
+  return TIER_USD.map((usd) =>
+    (BigInt(Math.round((usd / priceUsd) * 1e6)) * 10n ** BigInt(decimals)) / 1000000n);
+}
+function newTierCounts() { return [0, 0, 0, 0, 0]; }
+function tierBucket(raw, thr) {
+  if (raw < thr[0]) return 0;
+  if (raw < thr[1]) return 1;
+  if (raw < thr[2]) return 2;
+  if (raw < thr[3]) return 3;
+  return 4;
+}
+const tiersObj = (counts) => Object.fromEntries(TIER_KEYS.map((k, i) => [k, counts[i]]));
+
 // ---- Solana (keyless on-chain count) -----------------------------------
 const SPL_TOKEN = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 const SPL_TOKEN_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
@@ -39,11 +61,12 @@ const SOL_ATTEMPTS = 6;
 // response can exceed 512MB (e.g. BONK), past V8's max string length, so we
 // never hold it whole: scan chunks for each account's sliced data and drop the
 // processed prefix. dataSlice(offset 64, length 8) => only the amount field.
-async function streamNonZero(res) {
+async function streamNonZero(res, thrRaw = null) {
   const reader = res.body.getReader();
   const dec = new TextDecoder();
   const MARK = '"data":["';
   let buf = "", holders = 0;
+  const counts = newTierCounts();
   for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -55,16 +78,22 @@ async function streamNonZero(res) {
       const b64 = buf.slice(start, end);
       if (b64) {
         const b = Buffer.from(b64, "base64");
-        if (b.length >= 8 && b.readBigUInt64LE(0) > 0n) holders++;
+        if (b.length >= 8) {
+          const v = b.readBigUInt64LE(0);
+          if (v > 0n) {
+            holders++;
+            if (thrRaw) counts[tierBucket(v, thrRaw)]++;
+          }
+        }
       }
       last = end + 1;
     }
     buf = buf.slice(last);
   }
-  return holders;
+  return { holders, tiers: thrRaw ? tiersObj(counts) : null };
 }
 
-async function solanaHolders(cfg) {
+async function solanaHolders(cfg, priceUsd) {
   const program = cfg.program === "token-2022" ? SPL_TOKEN_2022 : SPL_TOKEN;
   const filters = [{ memcmp: { offset: 0, bytes: cfg.mint } }];
   // Classic token accounts are exactly 165B; Token-2022 vary (extensions), so
@@ -74,6 +103,8 @@ async function solanaHolders(cfg) {
     jsonrpc: "2.0", id: 1, method: "getProgramAccounts",
     params: [program, { encoding: "base64", dataSlice: { offset: 64, length: 8 }, filters }],
   });
+  // The scan reads every balance anyway — bucketing by $ value is free.
+  const thrRaw = cfg.decimals != null ? tierThresholdsRaw(priceUsd, cfg.decimals) : null;
   let lastErr;
   for (let attempt = 0; attempt < SOL_ATTEMPTS; attempt++) {
     const rpc = SOL_RPCS[attempt % SOL_RPCS.length];
@@ -82,12 +113,12 @@ async function solanaHolders(cfg) {
         method: "POST", headers: { "Content-Type": "application/json" }, body,
       });
       if (!res.ok) { lastErr = new Error(`HTTP ${res.status} @ ${rpc}`); await sleep(8000 * (attempt + 1)); continue; }
-      const holders = await streamNonZero(res);
+      const { holders, tiers } = await streamNonZero(res, thrRaw);
       // These tokens always have holders; a 0 means the RPC returned an error
       // body or truncated (some providers cap large getProgramAccounts) — retry
       // rather than record a bogus 0.
       if (holders === 0) { lastErr = new Error(`empty result @ ${rpc}`); await sleep(8000 * (attempt + 1)); continue; }
-      return holders;
+      return { holders, tiers };
     } catch (e) {
       lastErr = e; await sleep(8000 * (attempt + 1));
     }
@@ -200,7 +231,7 @@ function saveState(symbol, lastBlock, balances) {
   fs.writeFileSync(path.join(STATE_DIR, `${symbol}.json`), JSON.stringify(obj));
 }
 
-async function thirdwebHolders(symbol, cfg) {
+async function thirdwebHolders(symbol, cfg, priceUsd) {
   if (!CONFIG.THIRDWEB_SECRET_KEY) throw new Error("Missing THIRDWEB_SECRET_KEY");
   const { lastBlock, balances } = loadState(symbol);
   // Snapshot balances before applying this run's transfers, so we can diff the
@@ -252,6 +283,15 @@ async function thirdwebHolders(symbol, cfg) {
   let holders = 0;
   for (const b of balances.values()) if (b > 0n) holders++;
 
+  // $-value tiers from the full ledger (needs today's price + decimals).
+  let tiers = null;
+  const thrRaw = cfg.decimals != null ? tierThresholdsRaw(priceUsd, cfg.decimals) : null;
+  if (thrRaw) {
+    const counts = newTierCounts();
+    for (const b of balances.values()) if (b > 0n) counts[tierBucket(b, thrRaw)]++;
+    tiers = tiersObj(counts);
+  }
+
   // Flows: compare each address's balance to its pre-run value.
   let accumulating = 0, distributing = 0, newHolders = 0, churned = 0;
   const addrs = new Set([...before.keys(), ...balances.keys()]);
@@ -266,22 +306,23 @@ async function thirdwebHolders(symbol, cfg) {
   const flows = { accumulating, distributing, newHolders, churned };
 
   saveState(symbol, headBlock, balances);
-  return { holders, calls, lastBlock: headBlock, flows };
+  return { holders, calls, lastBlock: headBlock, flows, tiers };
 }
 
 // ---- public -------------------------------------------------------------
-export async function collectHoldersForAsset(asset) {
+export async function collectHoldersForAsset(asset, priceUsd) {
   const cfg = asset.holders;
   if (!cfg) return null;
   if (cfg.source === "blockscout") {
     return { symbol: asset.symbol, holders: await blockscoutHolders(cfg) };
   }
   if (cfg.source === "thirdweb") {
-    const { holders, calls, flows } = await thirdwebHolders(asset.symbol, cfg);
-    return { symbol: asset.symbol, holders, calls, flows };
+    const { holders, calls, flows, tiers } = await thirdwebHolders(asset.symbol, cfg, priceUsd);
+    return { symbol: asset.symbol, holders, calls, flows, tiers };
   }
   if (cfg.source === "solana") {
-    return { symbol: asset.symbol, holders: await solanaHolders(cfg) };
+    const { holders, tiers } = await solanaHolders(cfg, priceUsd);
+    return { symbol: asset.symbol, holders, tiers };
   }
   if (cfg.source === "coinmetrics") {
     return { symbol: asset.symbol, holders: await coinmetricsHolders(cfg) };
@@ -301,7 +342,7 @@ export async function collectHoldersForAsset(asset) {
   return null;
 }
 
-export async function collectAllHolders(assets) {
+export async function collectAllHolders(assets, prices = {}) {
   const results = [];
   let prevSolana = false;
   for (const asset of assets) {
@@ -310,7 +351,7 @@ export async function collectAllHolders(assets) {
     // rate-limit us (a fresh run after BONK's ~500MB pull otherwise 429s).
     if (prevSolana && asset.holders.source === "solana") await sleep(12000);
     try {
-      const r = await collectHoldersForAsset(asset);
+      const r = await collectHoldersForAsset(asset, prices[asset.symbol]);
       if (r) results.push(r);
     } catch (err) {
       console.error(`Skipped ${asset.symbol}: ${err.message}`);

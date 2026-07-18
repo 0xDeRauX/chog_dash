@@ -896,6 +896,35 @@ body.studio-app .topbar { flex: none; }
 }
 body.drawing #draw-canvas { pointer-events: auto; cursor: crosshair; }
 
+/* right-click options on a drawing (TradingView-style) */
+.draw-ctx-menu {
+  position: absolute;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 11px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
+  padding: 10px;
+  min-width: 172px;
+}
+.draw-ctx-menu .ctx-row { display: flex; align-items: center; gap: 7px; }
+.ctx-item {
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: var(--text-2);
+  font-family: var(--font);
+  font-size: 12.5px;
+  text-align: left;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+.ctx-item:hover { background: var(--surface-hover); color: var(--text); }
+.ctx-item.ctx-del:hover { color: var(--down); }
+
 /* floating legend with live crosshair values */
 .float-legend {
   position: absolute;
@@ -1004,6 +1033,38 @@ th:nth-last-child(-n + 3) .help-card { left: auto; right: 0; transform: translat
   color: var(--text-3);
 }
 .help-q b { color: var(--text-2); }
+
+/* ---- journal ------------------------------------------------------------ */
+.journal-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+}
+.journal-form .j-label { flex: 1; min-width: 240px; }
+.j-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: 0;
+  box-shadow: 0 0 6px currentColor;
+}
+.journal-row { cursor: pointer; transition: background 0.12s; }
+.journal-row:hover td { background: var(--surface-2); }
+.journal-row.sel td { background: var(--brand-dim); }
+.j-scope { color: var(--text-3); font-size: 12px; }
+.j-median td { background: var(--surface-2); }
+td.j-strong { font-weight: 700; }
+
+/* ---- admin -------------------------------------------------------------- */
+td.adm-warn { color: #e0a000; }
+td.adm-empty { color: var(--text-3); }
+.adm-gap-block { margin-bottom: 14px; font-size: 13px; }
+.adm-gap-block ul { margin: 8px 0 0; padding-left: 18px; color: var(--text-2); line-height: 1.7; }
+.tile-value.up { color: var(--up); }
+.tile-value.down { color: var(--down); }
 
 /* ---- Mon Dash (personal widget dashboard) ------------------------------ */
 .wrap-dash { max-width: 1400px; }

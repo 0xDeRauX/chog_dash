@@ -89,6 +89,7 @@ async function boot() {
   function renderChart() {
     for (const s of seriesList) chart.removeSeries(s);
     seriesList = [];
+    let priceSeries = null, pricePts = null;
     for (const m of CHART_METRICS) {
       if (!state.active.has(m.id)) continue;
       const dataPts = metricIndexed(a, m, state.window);
@@ -101,7 +102,9 @@ async function boot() {
       });
       s.setData(dataPts);
       seriesList.push(s);
+      if (m.id === "price") { priceSeries = s; pricePts = dataPts; }
     }
+    applyEventMarkers(priceSeries, pricePts, journalEvents()); // global milestones
     chart.timeScale().fitContent();
     document.getElementById("chart-note").innerHTML =
       "Tout indexé base 100 sur la fenêtre. Molette/glisser sur le graphe pour naviguer dans le temps.";

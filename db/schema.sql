@@ -58,6 +58,31 @@ CREATE TABLE IF NOT EXISTS holders_daily (
   PRIMARY KEY (asset_id, date)
 );
 
+-- Holders bucketed by USD value of their balance ($50/$500/$5K/$50K tiers).
+-- Only for tokens whose every balance we see (thirdweb ledger, Solana scans).
+CREATE TABLE IF NOT EXISTS holder_tiers_daily (
+  asset_id INTEGER NOT NULL REFERENCES assets(id),
+  date TEXT NOT NULL,
+  lt50 INTEGER,
+  t50_500 INTEGER,
+  t500_5k INTEGER,
+  t5k_50k INTEGER,
+  gt50k INTEGER,
+  PRIMARY KEY (asset_id, date)
+);
+
+-- Buy vs sell volume: USD split from Binance taker klines where listed,
+-- 24h transaction counts from DexScreener otherwise.
+CREATE TABLE IF NOT EXISTS tradeflow_daily (
+  asset_id INTEGER NOT NULL REFERENCES assets(id),
+  date TEXT NOT NULL,
+  buy_usd REAL,
+  sell_usd REAL,
+  buy_tx INTEGER,
+  sell_tx INTEGER,
+  PRIMARY KEY (asset_id, date)
+);
+
 -- Daily balance flows, only for tokens we index ourselves (thirdweb ledger),
 -- where we can diff each address's balance across the day: how many balances
 -- rose/fell, and how many addresses entered/left the holder set.

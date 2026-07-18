@@ -13,7 +13,9 @@ function loadWidgets() {
 function saveWidgets(widgets) {
   localStorage.setItem(LS_WIDGETS, JSON.stringify(widgets));
 }
-const cfgOf = (w) => ({ ...w.cfg, w: w.cfg.w === "max" ? Infinity : Number(w.cfg.w) || 365 });
+// Saved widgets may predate the price-only-series model — migrate on read.
+const cfgOf = (w) =>
+  migrateCfg(structuredClone({ ...w.cfg, w: w.cfg.w === "max" ? Infinity : Number(w.cfg.w) || 365 }));
 
 async function boot() {
   buildTopbar("mon dash");
@@ -83,6 +85,17 @@ async function boot() {
       renderActions();
     });
     actions.append(b);
+    const ev = document.createElement("button");
+    const showE = localStorage.getItem("chog-dash-showevents") !== "0";
+    ev.className = "btn-ghost" + (showE ? " on" : "");
+    ev.textContent = showE ? "🚩 Jalons ✓" : "🚩 Jalons";
+    ev.title = "Afficher/masquer les jalons du Journal sur les widgets";
+    ev.addEventListener("click", () => {
+      localStorage.setItem("chog-dash-showevents", showE ? "0" : "1");
+      renderActions();
+      render();
+    });
+    actions.append(ev);
     const s = document.createElement("a");
     s.className = "btn-ghost";
     s.href = "studio.html";
@@ -164,6 +177,14 @@ async function boot() {
         () => persistAnd(() => { w.cols = w.cols === 2 ? 1 : 2; })));
       tools.append(mkIco((w.h || "m").toUpperCase(), "Hauteur : S → M → L",
         () => persistAnd(() => { w.h = HEIGHTS[(HEIGHTS.indexOf(w.h || "m") + 1) % HEIGHTS.length]; })));
+      tools.append(mkIco("🚩", "Jalon propre à ce widget (date + libellé)", () => {
+        const date = prompt("Date du jalon (YYYY-MM-DD) :", new Date().toISOString().slice(0, 10));
+        if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+        const label = prompt("Libellé :");
+        if (!label?.trim()) return;
+        journalAdd({ date, label: label.trim(), cat: "projet", scope: w.id });
+        render();
+      }));
       tools.append(mkIco("✎", "Renommer", () => {
         const n = prompt("Nouveau nom :", w.name);
         if (n?.trim()) persistAnd(() => { w.name = n.trim().slice(0, 60); });
@@ -195,6 +216,14 @@ async function boot() {
       const chart = LightweightCharts.createChart(body, studioChartOptions());
       charts.push(chart);
       const res = renderConfig(chart, cfg, ctx, { paneHeight: 80 });
+      // journal milestones: global ones + those scoped to this widget
+      if (localStorage.getItem("chog-dash-showevents") !== "0" && res.anchorSeries && cfg.series[0]) {
+        const evts = journalEvents(w.id);
+        if (evts.length) {
+          const pts0 = seriesPts(bySym[cfg.series[0].sym], mById.price, cfg.w, cfg.mode === "index");
+          applyEventMarkers(res.anchorSeries, pts0, evts);
+        }
+      }
       for (const it of res.items.slice(0, 6)) {
         const chip = document.createElement("span");
         chip.className = "wchip" + (it.struck ? " off" : "");

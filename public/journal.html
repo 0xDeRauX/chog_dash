@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CHOG Intel — Journal</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="journal">
+  <main class="wrap">
+    <header class="page-head">
+      <h1>Journal de bord</h1>
+      <p>Consigne les événements (macro, crypto, projet) et mesure leur impact. Les jalons <b>globaux</b> apparaissent sur tous les graphes du site ; les jalons à portée spécifique seulement sur leur graphe.</p>
+    </header>
+
+    <section class="card">
+      <div class="card-head"><h2>Graphe général — clique une date pour préremplir le formulaire</h2></div>
+      <div class="controls" id="journal-controls"></div>
+      <div class="lw-chart" id="journal-chart" style="height:320px"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Ajouter un jalon</h2></div>
+      <div class="journal-form" id="journal-form"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Jalons</h2></div>
+      <p class="card-sub">Clique un jalon pour voir son impact mesuré sur chaque actif.</p>
+      <div class="table-scroll" id="journal-list"></div>
+    </section>
+
+    <section class="card" id="impact-card" hidden>
+      <div class="card-head"><h2 id="impact-title">Impact</h2></div>
+      <p class="card-sub">Variation depuis la date du jalon (premier point disponible) — memes puis majors, médianes en tête. « — » = pas encore assez de futur.</p>
+      <div class="table-scroll" id="impact-table"></div>
+    </section>
+
+    <p class="foot">CHOG Intel · Journal — jalons stockés localement dans ce navigateur</p>
+  </main>
+
+  <script src="https://unpkg.com/lightweight-charts@5.0.8/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="lib.js"></script>
+  <script src="registry.js"></script>
+  <script src="studio-core.js"></script>
+  <script src="journal.js"></script>
+</body>
+</html>

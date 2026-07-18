@@ -138,6 +138,7 @@ function renderChart(a) {
   function draw() {
     for (const s of seriesList) chart.removeSeries(s);
     seriesList = [];
+    let priceSeries = null, pricePts = null;
     for (const m of CHART_METRICS) {
       if (!state.active.has(m.id)) continue;
       const pts = metricIndexed(a, m, state.window);
@@ -145,7 +146,9 @@ function renderChart(a) {
       const s = chart.addLineSeries({ color: M_COLOR[m.id] || "#836ef9", lineWidth: 2, priceLineVisible: false, lastValueVisible: false });
       s.setData(pts);
       seriesList.push(s);
+      if (m.id === "price") { priceSeries = s; pricePts = pts; }
     }
+    applyEventMarkers(priceSeries, pricePts, journalEvents()); // global milestones
     chart.timeScale().fitContent();
   }
   const controls = document.getElementById("chart-controls");

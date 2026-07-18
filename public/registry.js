@@ -63,6 +63,29 @@ const METRICS = [
     deltas: [7, 30, 90], chart: true,
   },
   {
+    id: "holders50", label: "Holders ≥$50", category: "onchain",
+    series: "holderTiers", vkey: "h50", format: "num",
+    latest: (a) => a.holderTiers?.at(-1)?.h50 ?? null,
+    deltas: [7, 30, 90], chart: true,
+    help: {
+      what: "Nombre de holders dont le solde vaut <b>au moins $50</b> au prix du jour — filtre la poussière (airdrops abandonnés, restes de swaps) pour ne compter que les porteurs réels.",
+      read: "Sa <b>croissance</b> compte plus que son niveau : +5%/semaine = de vrais nouveaux porteurs, pas des wallets à 3 centimes.",
+      example: "CHOG affiche 33K holders mais seulement ~15K valent ≥$50 : la base « engagée » est moitié moindre — et c'est elle qu'il faut suivre.",
+      quality: "Disponible uniquement où l'on voit chaque solde (CHOG + memes Solana). « — » ailleurs.",
+    },
+  },
+  {
+    id: "flowratio", label: "Pression achat", category: "market",
+    series: "tradeflow", vkey: "ratio", format: "pctraw",
+    latest: (a) => a.tradeflow?.at(-1)?.ratio ?? null,
+    deltas: [7, 30], chart: true,
+    help: {
+      what: "Part du volume <b>acheteur</b> dans le volume total : 50% = équilibre, >50% = pression acheteuse, <50% = vendeuse.",
+      read: "En <b>$ réels</b> (carnet Binance, taker buy/sell) pour les actifs listés Binance ; en <b>nombre de transactions</b> DEX (approximation) pour CHOG/CASHCAT/ANSEM/BRETT/FARTCOIN — ⚠️ les deux ne sont pas strictement comparables.",
+      example: "PEPE à 47% d'achat pendant que son prix monte = la hausse se vend dans le carnet (méfiance) ; 58% pendant une baisse = accumulation dans la chute.",
+    },
+  },
+  {
     // Proprietary indicator (M4). Computed client-side from the mention series
     // in lib.js (attached as a.buzz) — plugs into the registry like any metric.
     id: "buzz", label: "Buzz Score", category: "signal",
@@ -108,6 +131,8 @@ const MEASURES = [
   ["discord", "Discord"],
   ["telegram", "Telegram"],
   ["holders", "Holders"],
+  ["holders50", "Holders ≥$50"],
+  ["flowratio", "Pression A/V"],
 ];
 
 // Columns for a given measure. Overview = one value column per metric (+ price

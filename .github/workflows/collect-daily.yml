@@ -64,6 +64,9 @@ jobs:
           blockvision_api_key_monad: ${{ secrets.BLOCKVISION_API_KEY_MONAD }}
         run: npm run collect:holders
 
+      - name: Collect trade flow (buy/sell volume)
+        run: npm run collect:tradeflow
+
       - name: Ingest into SQLite
         run: npm run ingest
 

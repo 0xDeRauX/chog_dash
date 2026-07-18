@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CHOG Intel — Admin</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="admin">
+  <main class="wrap">
+    <header class="page-head">
+      <h1>Admin — supervision des données</h1>
+      <p>Fraîcheur de chaque série (actif × métrique) pour repérer un trou de collecte <b>avant</b> qu'il ne fausse les analyses. Vert = à jour (≤1j, la collecte porte sur la veille), orange = 2j, rouge = ≥3j.</p>
+      <p class="meta-line" id="admin-meta"></p>
+    </header>
+
+    <section class="tiles" id="admin-tiles"></section>
+
+    <section class="card">
+      <div class="card-head"><h2>Fraîcheur par actif × métrique (retard en jours)</h2></div>
+      <div class="table-scroll" id="admin-matrix"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Séries vides — couverture</h2></div>
+      <p class="card-sub">Une série sans aucun point n'est pas forcément un bug : la plupart sont des absences structurelles (pas de source gratuite, pas de canal). Ce qui reste est à investiguer.</p>
+      <div id="admin-gaps"></div>
+    </section>
+
+    <p class="foot">CHOG Intel · Admin — calculé côté client depuis data.json</p>
+  </main>
+
+  <script src="lib.js"></script>
+  <script src="registry.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

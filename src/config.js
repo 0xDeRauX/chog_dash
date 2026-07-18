@@ -14,6 +14,7 @@ export const ASSETS = [
   {
     group: "memes",
     symbol: "CHOG",
+    gtNetwork: "monad", // GeckoTerminal: aggregate 24h trades -> real $ buy/sell split
     chain: "monad",
     coingeckoId: "chog",
     xQuery: '("CHOG" OR "$CHOG" OR "@ChogNFT" OR "@chog_xyz") -is:retweet',
@@ -27,6 +28,7 @@ export const ASSETS = [
   {
     group: "memes",
     symbol: "PEPE",
+    binance: "PEPEUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "ethereum",
     coingeckoId: "pepe",
     xQuery: '("PEPE" OR "$PEPE" OR "@pepecoineth") -is:retweet',
@@ -36,25 +38,28 @@ export const ASSETS = [
   {
     group: "memes",
     symbol: "WIF",
+    binance: "WIFUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "solana",
     coingeckoId: "dogwifcoin",
     xQuery: '("$WIF" OR "dogwifhat") -is:retweet',
     // Solana has no free holder API, so we count SPL token accounts on-chain
     // via a public RPC (keyless). program defaults to the classic Token program.
-    holders: { source: "solana", mint: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" },
+    holders: { source: "solana", mint: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm", decimals: 6 },
   },
   {
     group: "memes",
     symbol: "BONK",
+    binance: "BONKUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "solana",
     coingeckoId: "bonk",
     xQuery: '("BONK" OR "$BONK" OR "@bonk_inu") -is:retweet',
     discordInvite: "qaQa6M6mN2",
-    holders: { source: "solana", mint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" },
+    holders: { source: "solana", mint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", decimals: 5 },
   },
   {
     group: "memes",
     symbol: "BRETT",
+    gtNetwork: "base",
     chain: "base",
     coingeckoId: "based-brett",
     xQuery: '("BRETT" OR "$BRETT" OR "@BasedBrett") -is:retweet',
@@ -65,19 +70,21 @@ export const ASSETS = [
   {
     group: "memes",
     symbol: "PENGU",
+    binance: "PENGUUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "solana",
     coingeckoId: "pudgy-penguins",
     xQuery: '("$PENGU" OR "Pudgy Penguins" OR "@pudgypenguins") -is:retweet',
     discordInvite: "pudgypenguins",
-    holders: { source: "solana", mint: "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv" },
+    holders: { source: "solana", mint: "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv", decimals: 6 },
   },
   {
     group: "memes",
     symbol: "FARTCOIN",
+    binancePerp: "FARTCOINUSDT", // no spot pair -> perp taker klines for buy/sell volume
     chain: "solana",
     coingeckoId: "fartcoin",
     xQuery: '("$FARTCOIN" OR "Fartcoin" OR "@FartCoinOfSOL") -is:retweet',
-    holders: { source: "solana", mint: "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump" },
+    holders: { source: "solana", mint: "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump", decimals: 6 },
   },
   {
     group: "memes",
@@ -89,7 +96,7 @@ export const ASSETS = [
     // Ansem, so the count reflects name buzz, not only the token's community.
     xQuery: '("$ANSEM" OR "ANSEM" OR "@blknoiz06") -is:retweet',
     // Minted on pump.fun with the newer Token-2022 program (not classic SPL).
-    holders: { source: "solana", mint: "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump", program: "token-2022" },
+    holders: { source: "solana", mint: "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump", decimals: 6, program: "token-2022" },
   },
   {
     group: "memes",
@@ -106,6 +113,7 @@ export const ASSETS = [
   {
     group: "majors",
     symbol: "BTC",
+    binance: "BTCUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "bitcoin",
     coingeckoId: "bitcoin",
     xQuery: '("$BTC" OR "Bitcoin" OR "btc") -is:retweet',
@@ -115,6 +123,7 @@ export const ASSETS = [
   {
     group: "majors",
     symbol: "ETH",
+    binance: "ETHUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "ethereum",
     coingeckoId: "ethereum",
     xQuery: '("$ETH" OR "Ethereum" OR "eth" OR "@ethereum") -is:retweet',
@@ -124,6 +133,7 @@ export const ASSETS = [
   {
     group: "majors",
     symbol: "SOL",
+    binance: "SOLUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "solana",
     coingeckoId: "solana",
     xQuery: '("$SOL" OR "Solana" OR "@solana") -is:retweet',
@@ -132,6 +142,7 @@ export const ASSETS = [
   {
     group: "majors",
     symbol: "XRP",
+    binance: "XRPUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "xrp",
     coingeckoId: "ripple",
     xQuery: '("$XRP" OR "Ripple" OR "xrp" OR "@ripple") -is:retweet',
@@ -141,6 +152,7 @@ export const ASSETS = [
   {
     group: "majors",
     symbol: "SUI",
+    binance: "SUIUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "sui",
     coingeckoId: "sui",
     xQuery: '("$SUI" OR "@SuiNetwork") -is:retweet',
@@ -151,6 +163,7 @@ export const ASSETS = [
   {
     group: "majors",
     symbol: "MON",
+    binancePerp: "MONUSDT", // no spot pair -> perp taker klines for buy/sell volume
     chain: "monad",
     coingeckoId: "monad",
     xQuery: '("$MON" OR "Monad" OR "@monad") -is:retweet',
@@ -159,6 +172,7 @@ export const ASSETS = [
   {
     group: "majors",
     symbol: "HYPE",
+    binancePerp: "HYPEUSDT", // no spot pair -> perp taker klines for buy/sell volume
     chain: "hyperliquid",
     coingeckoId: "hyperliquid",
     xQuery: '("$HYPE" OR "Hyperliquid" OR "@HyperliquidX") -is:retweet',
@@ -168,6 +182,7 @@ export const ASSETS = [
   {
     group: "majors",
     symbol: "TAO",
+    binance: "TAOUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "bittensor",
     coingeckoId: "bittensor",
     xQuery: '("$TAO" OR "Bittensor" OR "@bittensor") -is:retweet',
@@ -178,6 +193,7 @@ export const ASSETS = [
   {
     group: "majors",
     symbol: "AKT",
+    binancePerp: "AKTUSDT", // no spot pair -> perp taker klines for buy/sell volume
     chain: "akash",
     coingeckoId: "akash-network",
     // "Akash" alone is a common first name → use the project name + cashtag.
@@ -189,6 +205,7 @@ export const ASSETS = [
   {
     group: "majors",
     symbol: "STRK",
+    binance: "STRKUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "starknet",
     coingeckoId: "starknet",
     xQuery: '("$STRK" OR "Starknet" OR "@starknet") -is:retweet',

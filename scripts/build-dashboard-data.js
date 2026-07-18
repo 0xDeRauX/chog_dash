@@ -73,6 +73,21 @@ const holdersStmt = db.prepare(
 const flowsStmt = db.prepare(
   `SELECT date, accumulating, distributing, new_holders AS newHolders, churned FROM holder_flows_daily WHERE asset_id = ? ORDER BY date`
 );
+// h50 = holders worth ≥ $50, derived once here so the front treats it as a
+// plain series (registry metric holders50).
+const tiersStmt = db.prepare(
+  `SELECT date, lt50, t50_500, t500_5k, t5k_50k, gt50k,
+          (t50_500 + t500_5k + t5k_50k + gt50k) AS h50
+   FROM holder_tiers_daily WHERE asset_id = ? ORDER BY date`
+);
+const tradeflowStmt = db.prepare(
+  `SELECT date, buy_usd AS buyUsd, sell_usd AS sellUsd, buy_tx AS buyTx, sell_tx AS sellTx,
+          CASE
+            WHEN buy_usd IS NOT NULL AND (buy_usd + sell_usd) > 0 THEN 100.0 * buy_usd / (buy_usd + sell_usd)
+            WHEN buy_tx IS NOT NULL AND (buy_tx + sell_tx) > 0 THEN 100.0 * buy_tx / (buy_tx + sell_tx)
+          END AS ratio
+   FROM tradeflow_daily WHERE asset_id = ? ORDER BY date`
+);
 
 const assets = ASSETS.map((cfg) => {
   const row = assetStmt.get(cfg.symbol);
@@ -89,6 +104,8 @@ const assets = ASSETS.map((cfg) => {
     discord,
     telegram: telegramStmt.all(row.id),
     holders: holdersStmt.all(row.id),
+    holderTiers: tiersStmt.all(row.id),
+    tradeflow: tradeflowStmt.all(row.id),
     holderFlows: flowsStmt.all(row.id),
     onchain: computeOnchain(cfg),
     mentions,
