@@ -9,39 +9,81 @@
         "distributing": 0,
         "newHolders": 0,
         "churned": 0
+      },
+      "tiers": {
+        "lt50": 31966,
+        "t50_500": 685,
+        "t500_5k": 235,
+        "t5k_50k": 36,
+        "gt50k": 3
       }
     },
     {
       "symbol": "PEPE",
-      "holders": 569046
+      "holders": 569097
     },
     {
       "symbol": "WIF",
-      "holders": 250945
+      "holders": 250966,
+      "tiers": {
+        "lt50": 231537,
+        "t50_500": 14971,
+        "t500_5k": 3592,
+        "t5k_50k": 663,
+        "gt50k": 203
+      }
     },
     {
       "symbol": "BONK",
-      "holders": 1002883
+      "holders": 1003012,
+      "tiers": {
+        "lt50": 966241,
+        "t50_500": 28776,
+        "t500_5k": 5652,
+        "t5k_50k": 2076,
+        "gt50k": 267
+      }
     },
     {
       "symbol": "BRETT",
-      "holders": 948728
+      "holders": 948733
     },
     {
       "symbol": "PENGU",
-      "holders": 536968
+      "holders": 537022,
+      "tiers": {
+        "lt50": 491547,
+        "t50_500": 34495,
+        "t500_5k": 8638,
+        "t5k_50k": 1929,
+        "gt50k": 413
+      }
     },
     {
       "symbol": "FARTCOIN",
-      "holders": 160797
+      "holders": 160787,
+      "tiers": {
+        "lt50": 144235,
+        "t50_500": 11655,
+        "t500_5k": 3829,
+        "t5k_50k": 832,
+        "gt50k": 236
+      }
     },
     {
       "symbol": "ANSEM",
-      "holders": 130961
+      "holders": 130417,
+      "tiers": {
+        "lt50": 110999,
+        "t50_500": 12450,
+        "t500_5k": 5279,
+        "t5k_50k": 1444,
+        "gt50k": 245
+      }
     },
     {
       "symbol": "CASHCAT",
-      "holders": 32083
+      "holders": 32257
     },
     {
       "symbol": "BTC",
@@ -57,19 +99,19 @@
     },
     {
       "symbol": "SUI",
-      "holders": 27356901
+      "holders": 27358380
     },
     {
       "symbol": "HYPE",
-      "holders": 248469
+      "holders": 248348
     },
     {
       "symbol": "TAO",
-      "holders": 547529
+      "holders": 547754
     },
     {
       "symbol": "AKT",
-      "holders": 1148656
+      "holders": 1148686
     }
   ]
 }
