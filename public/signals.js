@@ -36,6 +36,15 @@ function defineSignals() {
       id: "regime", label: "Régime A/P", build: regimeSignal,
       help: { what: "Intensité des mentions signée par la direction du prix.", quality: "Testé ici même — voir son IC ci-dessous." },
     },
+    {
+      id: "flow", label: "Pression achat",
+      help: {
+        what: "Part du volume <b>acheteur</b> (taker) dans le volume total du jour — le facteur le plus prédictif de notre étude déclencheurs (+0.34 pour le lendemain).",
+        read: "Son IC est suivi ici en continu : s'il se dégrade, l'edge s'est évaporé — ne pas trader un chiffre d'étude périmé.",
+        quality: "Mesuré sur les flux $ Binance (et tx DEX ailleurs). Historique 365j.",
+      },
+      build: (a) => mapFromSeries(a.tradeflow, "ratio"),
+    },
   ];
   RAW_SIGNALS = [
     { id: "volume", label: "Volume (z)", build: (a) => zScoreByDate(a.prices, "volume") },
