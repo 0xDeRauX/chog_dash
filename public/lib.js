@@ -253,6 +253,31 @@ async function loadData() {
     a.buzz = buzzSeries(a); // computed indicators — plug into the registry like any series
     a.divergence = divergenceSeries(a);
   }
+  // Radar tokens reshaped as pseudo-assets (symbol "SYM@chain") so the token
+  // page and the Studio can reuse the whole metric/indicator machinery on them.
+  data.radarAssets = [];
+  for (const [chain, toks] of Object.entries(data.radar || {})) {
+    for (const t of toks) {
+      const a = {
+        group: "radar", radar: t, chain, address: t.address,
+        symbol: `${t.symbol}@${chain}`,
+        latestChange24h: lastValue(t.series, "d24"),
+        marketCap: lastValue(t.series, "fdv"),
+        prices: t.series.map((p) => ({ date: p.date, price: p.price, volume: p.vol })),
+        liquidity: t.series.map((p) => ({ date: p.date, liq: p.liq })),
+        mentions: t.mentions || [],
+        telegram: t.series.filter((p) => p.tg != null).map((p) => ({ date: p.date, members: p.tg })),
+        discord: t.series.filter((p) => p.dc != null).map((p) => ({ date: p.date, members: p.dc })),
+        holders: t.series.filter((p) => p.holders != null).map((p) => ({ date: p.date, holders: p.holders })),
+        tradeflow: t.series.filter((p) => p.ratio != null).map((p) => ({ date: p.date, ratio: p.ratio })),
+        holderTiers: [], holderFlows: [], onchain: null,
+        tvl: tvlByChain[chain] || [],
+      };
+      a.buzz = buzzSeries(a);
+      a.divergence = divergenceSeries(a);
+      data.radarAssets.push(a);
+    }
+  }
   return data;
 }
 
@@ -355,6 +380,7 @@ function buildTopbar(active) {
     ["studio.html", "Studio"],
     ["dash.html", "Mon Dash"],
     ["journal.html", "Journal"],
+    ["radar.html", "Radar"],
     ["signals.html", "Signaux"],
     ["admin.html", "Admin"],
   ];

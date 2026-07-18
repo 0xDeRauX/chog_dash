@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CHOG Intel — Token radar</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="radar-token">
+  <main class="wrap">
+    <a href="radar.html" class="back-link">← Radar</a>
+    <header class="asset-head" id="asset-head"></header>
+
+    <section class="stat-row" id="stats"></section>
+
+    <section class="card">
+      <div class="card-head"><h2>Graphe — indicateurs indexés base 100</h2><a class="btn-ghost" id="open-studio">Ouvrir dans le Studio →</a></div>
+      <div class="controls" id="chart-controls"></div>
+      <div class="lw-chart" id="chart"></div>
+      <div class="legend-note" id="chart-note"></div>
+    </section>
+
+    <p class="foot">CHOG Intel · Radar — GeckoTerminal + DexScreener + Blockscout + Discord/Telegram publics · graphes <a href="https://www.tradingview.com/" rel="noopener">TradingView Lightweight Charts</a></p>
+  </main>
+
+  <script src="https://unpkg.com/lightweight-charts@5.0.8/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="lib.js"></script>
+  <script src="registry.js"></script>
+  <script src="radar-token.js"></script>
+</body>
+</html>

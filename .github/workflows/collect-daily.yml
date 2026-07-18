@@ -29,6 +29,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Discover chain radar (Monad + Robinhood + Base)
+        run: npm run collect:radar
+
       - name: Collect X mentions
         env:
           X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}

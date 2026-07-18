@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CHOG Intel — Radar</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="radar">
+  <main class="wrap">
+    <header class="page-head">
+      <h1>Radar de chaîne</h1>
+      <p>Découverte automatique des memes de chaque chaîne (GeckoTerminal + DexScreener + Blockscout, sans configuration) et classement par le <b>Score Radar</b> — conçu pour repérer ce qui <i>se met en place</i>, pas ce qui a déjà pompé.</p>
+      <p class="meta-line" id="radar-meta"></p>
+    </header>
+
+    <div class="filterbar" id="radar-tabs"></div>
+    <div class="table-scroll" id="radar-table"></div>
+
+    <section class="card" id="radar-funnel">
+      <div class="card-head"><h2>Suivi mentions X — activation manuelle</h2></div>
+      <p class="card-sub">Aucune collecte automatique : le suivi du cashtag d'un token radar (~$0.15/mois) s'active et se désactive <b>uniquement depuis la page <a href="admin.html">Admin</a></b>. Combiné au backfill de prix (gratuit, GeckoTerminal) et au backfill de mentions (payant), la <b>Divergence attention/prix</b> devient calculable immédiatement.</p>
+      <div id="radar-promoted"></div>
+    </section>
+
+    <p class="foot">CHOG Intel · Radar — l'historique s'accumule chaque jour : les tendances (pression 3j, volume 7j, Δholders) affinent le score automatiquement · graphes <a href="https://www.tradingview.com/" rel="noopener">TradingView Lightweight Charts</a></p>
+  </main>
+
+  <script src="https://unpkg.com/lightweight-charts@5.0.8/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="lib.js"></script>
+  <script src="registry.js"></script>
+  <script src="radar.js"></script>
+</body>
+</html>

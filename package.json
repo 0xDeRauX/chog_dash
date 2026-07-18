@@ -17,7 +17,8 @@
     "backfill": "node scripts/backfill.js",
     "ingest": "node scripts/ingest.js",
     "build:dashboard": "node scripts/build-dashboard-data.js",
-    "collect:tradeflow": "node scripts/collect-tradeflow.js"
+    "collect:tradeflow": "node scripts/collect-tradeflow.js",
+    "collect:radar": "node scripts/collect-chainradar.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",

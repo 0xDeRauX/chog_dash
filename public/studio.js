@@ -30,7 +30,9 @@ async function boot() {
   }
 
   const data = await loadData();
-  const assets = data.assets;
+  // Radar tokens ("SYM@chain") join the asset list: short history, but every
+  // metric indicator works on them like on config assets.
+  const assets = data.assets.concat(data.radarAssets || []);
   const bySym = Object.fromEntries(assets.map((a) => [a.symbol, a]));
   const metrics = METRICS.filter((m) => m.series);
   const mById = Object.fromEntries(metrics.map((m) => [m.id, m]));

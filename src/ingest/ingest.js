@@ -261,6 +261,68 @@ export function ingestAll() {
     }
   }
 
+  // Chain Radar snapshots + promoted-token mentions (keyed by chain+address —
+  // discovered tokens live outside the assets table).
+  const upsertRadar = db.prepare(`
+    INSERT INTO chain_radar_daily (chain, address, date, symbol, price, liq, vol, d24, pools, buys, sells, holders, fdv, age, pinned, tg_members, dc_members, socials, crit)
+    VALUES (@chain, @address, @date, @symbol, @price, @liq, @vol, @d24, @pools, @buys, @sells, @holders, @fdv, @age, @pinned, @tgMembers, @dcMembers, @socials, @crit)
+    ON CONFLICT(chain, address, date) DO UPDATE SET
+      symbol = excluded.symbol, price = excluded.price, liq = excluded.liq, vol = excluded.vol,
+      d24 = excluded.d24, pools = excluded.pools, buys = excluded.buys, sells = excluded.sells,
+      holders = excluded.holders, fdv = excluded.fdv, age = excluded.age, pinned = excluded.pinned,
+      tg_members = excluded.tg_members, dc_members = excluded.dc_members, socials = excluded.socials, crit = excluded.crit
+  `);
+  let radarRows = 0;
+  for (const file of readRawFiles("chainradar")) {
+    if (!file.chains) continue; // skip the promoted.json state file
+    for (const [chain, toks] of Object.entries(file.chains)) {
+      for (const t of toks) {
+        upsertRadar.run({
+          chain, address: t.address, date: file.date, symbol: t.symbol ?? null,
+          price: t.price ?? null, liq: t.liq ?? null, vol: t.vol ?? null, d24: t.d24 ?? null,
+          pools: t.pools ?? null, buys: t.buys ?? null, sells: t.sells ?? null,
+          holders: t.holders ?? null, fdv: t.fdv ?? null, age: t.age ?? null,
+          pinned: t.pinned ? 1 : 0,
+          tgMembers: t.tgMembers ?? null, dcMembers: t.dcMembers ?? null, crit: t.crit ?? null,
+          socials: (t.tgUrl || t.dcUrl || t.twUrl) ? JSON.stringify({ tg: t.tgUrl, dc: t.dcUrl, tw: t.twUrl }) : null,
+        });
+        radarRows++;
+      }
+    }
+  }
+  // Backfilled price/volume history for radar tokens (GT OHLCV). Fills ONLY
+  // what the daily snapshots don't have: existing values win via COALESCE.
+  const upsertRadarHist = db.prepare(`
+    INSERT INTO chain_radar_daily (chain, address, date, symbol, price, vol)
+    VALUES (@chain, @address, @date, @symbol, @price, @vol)
+    ON CONFLICT(chain, address, date) DO UPDATE SET
+      symbol = COALESCE(chain_radar_daily.symbol, excluded.symbol),
+      price = COALESCE(chain_radar_daily.price, excluded.price),
+      vol = COALESCE(chain_radar_daily.vol, excluded.vol)
+  `);
+  for (const hist of readRawFiles("chainradar-history")) {
+    for (const point of hist.series) {
+      upsertRadarHist.run({
+        chain: hist.chain, address: hist.address, date: point.date,
+        symbol: hist.symbol ?? null, price: point.price ?? null, vol: point.vol ?? null,
+      });
+      radarRows++;
+    }
+  }
+
+  const upsertRadarMentions = db.prepare(`
+    INSERT INTO radar_mentions_daily (chain, address, date, count)
+    VALUES (@chain, @address, @date, @count)
+    ON CONFLICT(chain, address, date) DO UPDATE SET count = excluded.count
+  `);
+  for (const file of readRawFiles("radar-mentions")) {
+    for (const r of file.results || []) {
+      if (r.count == null) continue;
+      upsertRadarMentions.run({ chain: r.chain, address: r.address, date: file.date, count: r.count });
+      radarRows++;
+    }
+  }
+
   db.close();
-  return { mentionRows, priceRows, tvlRows, discordRows, telegramRows, holderRows, flowRows, tierRows, tradeflowRows };
+  return { mentionRows, priceRows, tvlRows, discordRows, telegramRows, holderRows, flowRows, tierRows, tradeflowRows, radarRows };
 }

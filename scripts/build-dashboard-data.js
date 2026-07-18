@@ -128,10 +128,63 @@ for (const chainKey of Object.keys(CHAINS)) {
   if (series.length) tvlByChain[chainKey] = series;
 }
 
+// Chain Radar: last 60 days per discovered token, grouped per chain, with
+// promoted-token mentions attached.
+const radarStmt = db.prepare(`
+  SELECT chain, address, date, symbol, price, liq, vol, d24, buys, sells, holders, fdv, age, pinned,
+         tg_members AS tgMembers, dc_members AS dcMembers, socials, crit
+  FROM chain_radar_daily WHERE date >= date('now', '-60 day') ORDER BY chain, address, date
+`);
+const radarMentionsStmt = db.prepare(`
+  SELECT date, count FROM radar_mentions_daily WHERE chain = ? AND address = ? ORDER BY date
+`);
+const radar = {};
+{
+  const byKey = new Map();
+  for (const r of radarStmt.all()) {
+    const key = r.chain + ":" + r.address;
+    if (!byKey.has(key)) {
+      byKey.set(key, { chain: r.chain, address: r.address, symbol: r.symbol, age: r.age, pinned: !!r.pinned, series: [] });
+    }
+    const t = byKey.get(key);
+    t.symbol = r.symbol || t.symbol;
+    t.age = r.age || t.age;
+    t.pinned = t.pinned || !!r.pinned;
+    t.crit = r.crit; // latest day wins
+    const txTot = (r.buys || 0) + (r.sells || 0);
+    t.series.push({
+      date: r.date, price: r.price, liq: r.liq, vol: r.vol, d24: r.d24,
+      holders: r.holders, fdv: r.fdv,
+      tg: r.tgMembers, dc: r.dcMembers,
+      ratio: txTot > 0 ? (100 * r.buys) / txTot : null,
+    });
+    if (r.socials) { try { t.socials = JSON.parse(r.socials); } catch { /* keep last valid */ } }
+  }
+  // Config assets appearing in the radar (CHOG, CASHCAT, BRETT…) reuse their
+  // already-collected mention series instead of paying for the cashtag twice.
+  const assetMentions = new Map(assets.map((a) => [a.symbol.toUpperCase(), a.mentions]));
+  for (const t of byKey.values()) {
+    const shared = assetMentions.get((t.symbol || "").toUpperCase());
+    t.mentions = shared?.length ? shared : radarMentionsStmt.all(t.chain, t.address);
+    if (shared?.length) t.mentionsShared = true;
+    (radar[t.chain] ??= []).push(t);
+  }
+}
+
+// Manually tracked radar tokens (Admin-managed) — the UI shows the list and
+// offers enable/disable without guessing from mention presence.
+let radarTracked = [];
+try {
+  const st = JSON.parse(fs.readFileSync(path.resolve("data/raw/chainradar/promoted.json"), "utf8"));
+  radarTracked = st.tracked || st.promoted || [];
+} catch { /* no tracked list yet */ }
+
 const data = {
   generatedAt: new Date().toISOString(),
   assets,
   tvlByChain,
+  radar,
+  radarTracked,
 };
 
 db.close();

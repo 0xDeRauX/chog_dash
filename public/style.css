@@ -1571,3 +1571,40 @@ body.studio-dragging .drop-zones { display: flex; }
     height: 280px;
   }
 }
+
+/* Radar — detail panel opened by clicking a row */
+.radar-detail td { padding: 0; border-bottom: 1px solid var(--grid); }
+.radar-detail-box { padding: 14px 16px 18px; background: color-mix(in srgb, var(--brand) 4%, transparent); }
+.radar-detail-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; font-size: 14px; }
+.radar-detail-head .dim { color: var(--text-3); font-size: 12px; }
+.radar-links a { color: var(--brand-bright); text-decoration: none; font-size: 12px; }
+.radar-links a:hover { text-decoration: underline; }
+.radar-charts { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.radar-chart-cell { background: var(--panel); border: 1px solid var(--grid); border-radius: 8px; padding: 8px 8px 4px; }
+.radar-chart-title { font-size: 11px; color: var(--text-2); margin: 0 0 4px 4px; display: flex; justify-content: space-between; }
+.radar-chart-title span { color: var(--text-1); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Radar — off-criteria rows (hidden by default, toggleable) */
+.screener-row.radar-off td { opacity: 0.45; }
+.screener-row.radar-off:hover td { opacity: 0.8; }
+.radar-crit-badge { font-size: 12px; color: var(--text-3); }
+
+/* Admin — manual collection panel */
+.adm-collect-token label { font-size: 12px; color: var(--text-2); display: block; margin-bottom: 6px; }
+.adm-token-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.adm-token-row input { flex: 1; max-width: 420px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 13px; }
+.adm-collect-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
+.adm-collect-block { background: color-mix(in srgb, var(--brand) 4%, transparent); border: 1px solid var(--grid); border-radius: 10px; padding: 14px 16px; }
+.adm-collect-block h3 { margin: 0 0 6px; font-size: 14px; }
+.adm-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 12px; }
+.btn-primary { background: var(--brand); color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-primary:hover { filter: brightness(1.1); }
+.adm-backfill-row { display: flex; gap: 14px; margin: 10px 0; flex-wrap: wrap; }
+.adm-backfill-row label { font-size: 12px; color: var(--text-2); display: flex; flex-direction: column; gap: 4px; }
+.adm-backfill-row input, .adm-backfill-row select { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; color: var(--text); font-size: 13px; }
+.adm-backfill-row input { width: 90px; }
+.adm-backfill-row select { min-width: 200px; }
+.adm-run-msg { font-size: 13px; margin-top: 12px; }
+.adm-run-msg.up { color: var(--pos, #35d07f); }
+.adm-run-msg.down { color: var(--neg, #e05555); }
+.adm-chips .wchip.off { text-decoration: none; }

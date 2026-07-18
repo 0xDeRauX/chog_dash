@@ -95,3 +95,37 @@ CREATE TABLE IF NOT EXISTS holder_flows_daily (
   churned INTEGER,
   PRIMARY KEY (asset_id, date)
 );
+
+-- Chain Radar: daily snapshots of the top discovered memes per chain
+-- (GeckoTerminal + DexScreener + Blockscout, no config needed).
+CREATE TABLE IF NOT EXISTS chain_radar_daily (
+  chain TEXT NOT NULL,
+  address TEXT NOT NULL,
+  date TEXT NOT NULL,
+  symbol TEXT,
+  price REAL,
+  liq REAL,
+  vol REAL,
+  d24 REAL,
+  pools INTEGER,
+  buys INTEGER,
+  sells INTEGER,
+  holders INTEGER,
+  fdv REAL,
+  age TEXT,
+  pinned INTEGER,
+  tg_members INTEGER,
+  dc_members INTEGER,
+  socials TEXT,
+  crit TEXT,
+  PRIMARY KEY (chain, address, date)
+);
+
+-- X mentions for radar-promoted tokens (cashtag queries, budget-capped).
+CREATE TABLE IF NOT EXISTS radar_mentions_daily (
+  chain TEXT NOT NULL,
+  address TEXT NOT NULL,
+  date TEXT NOT NULL,
+  count INTEGER,
+  PRIMARY KEY (chain, address, date)
+);
