@@ -185,6 +185,7 @@ function buildCollectPanel(data) {
         <p class="card-sub" id="adm-track-cost"></p>
         <button class="btn-primary" id="adm-run-track">Activer le suivi</button>
         <button class="btn-ghost" id="adm-run-phist">Backfill prix (gratuit)</button>
+        <p class="card-sub">« Backfill prix » ne modifie <b>pas</b> la liste de suivi : il ne récupère que l'historique de prix (gratuit) des tokens sélectionnés — utile pour explorer leurs graphes avant de décider de payer le suivi des mentions. « Activer le suivi » lance les deux.</p>
       </div>
       <div class="adm-collect-block">
         <h3>Backfill mentions X <span class="dim">💰 payant</span></h3>
