@@ -127,5 +127,264 @@ async function boot() {
   mk("⚠️ Séries vides inexpliquées — à investiguer en priorité", unknown, "down");
   mk("∅ Absences structurelles (documentées)", cells.filter((c) => c.lag == null && c.reason), "dim");
   if (!unknown.length && !structural) gaps.innerHTML = '<p class="card-sub">Aucune série vide.</p>';
+
+  buildCollectPanel(data);
+}
+
+/* ---- manual collection: dispatches the collect-manual GitHub workflow ----
+   The static site can't run collectors itself (no runtime, secret API keys) —
+   the professional pattern is remote-triggering CI: a fine-grained GitHub
+   token (stored ONLY in this browser's localStorage) calls the REST API to
+   dispatch the workflow, then polls the run status live. */
+const GH_REPO = "0xDeRauX/chog_dash";
+const GH_WORKFLOW = "collect-manual.yml";
+const PAT_KEY = "chog-gh-pat";
+const COLLECTORS = [
+  ["radar", "Radar (découverte)"], ["mentions", "Mentions X (3 derniers j) 💰"],
+  ["prices", "Prix"], ["tvl", "TVL"], ["discord", "Discord"],
+  ["telegram", "Telegram"], ["holders", "Holders"], ["tradeflow", "Achat/Vente"],
+];
+// User rule: no mention backfill where mentions predate the token's creation
+// (the cashtag existed before the coin → old counts are unrelated noise).
+const NO_BACKFILL = new Set(["CHOG", "ANSEM"]);
+
+function ghHeaders() {
+  return {
+    Authorization: `Bearer ${localStorage.getItem(PAT_KEY) || ""}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+}
+
+function buildCollectPanel(data) {
+  const host = document.getElementById("admin-collect");
+  if (!host) return;
+  host.innerHTML = `
+    <div class="adm-collect-token">
+      <label>Token GitHub <span class="dim">(fine-grained, repo ${GH_REPO}, permission « Actions : Read and write » — stocké uniquement dans ce navigateur)</span></label>
+      <div class="adm-token-row">
+        <input type="password" id="gh-pat" placeholder="github_pat_…" autocomplete="off" />
+        <button class="btn-ghost" id="gh-pat-save">Enregistrer</button>
+      </div>
+    </div>
+    <div class="adm-collect-grid">
+      <div class="adm-collect-block">
+        <h3>Relancer des collecteurs</h3>
+        <p class="card-sub">Coche ce qui a raté la veille (matrice ci-dessus) — l'ingestion upserte, donc relancer répare sans dupliquer.</p>
+        <div id="adm-colls" class="adm-chips"></div>
+        <p class="card-sub" id="adm-colls-cost"></p>
+        <button class="btn-primary" id="adm-run-colls">Lancer la collecte</button>
+      </div>
+      <div class="adm-collect-block">
+        <h3>Suivi mentions X — tokens radar</h3>
+        <p class="card-sub">Active/désactive le comptage quotidien du cashtag d'un token radar (~$0.15/mois par token, ~$0.005/jour). Rien n'est automatique : cette liste est la seule source du suivi. Le backfill de <b>prix</b> (GeckoTerminal) est gratuit et rend la Divergence calculable dès que les mentions existent.</p>
+        <div id="adm-tracked" class="adm-chips"></div>
+        <div class="adm-backfill-row">
+          <label>Ajouter <select id="adm-track-add" multiple size="5"></select></label>
+        </div>
+        <p class="card-sub" id="adm-track-cost"></p>
+        <button class="btn-primary" id="adm-run-track">Activer le suivi</button>
+        <button class="btn-ghost" id="adm-run-phist">Backfill prix (gratuit)</button>
+      </div>
+      <div class="adm-collect-block">
+        <h3>Backfill mentions X <span class="dim">💰 payant</span></h3>
+        <p class="card-sub">Récupère l'historique des mentions sur N jours (X counts/all : $0.01 par tranche de 31j par actif). CHOG et ANSEM sont exclus — leurs cashtags existaient avant le token (règle d'intégrité).</p>
+        <div class="adm-backfill-row">
+          <label>Jours <input type="number" id="adm-bf-days" value="30" min="1" max="1500" /></label>
+          <label>Actifs <select id="adm-bf-syms" multiple size="6"></select></label>
+        </div>
+        <p class="card-sub" id="adm-bf-cost"></p>
+        <button class="btn-primary" id="adm-run-bf">Lancer le backfill</button>
+      </div>
+    </div>
+    <div id="adm-run-status"></div>`;
+
+  // token field
+  const patInput = host.querySelector("#gh-pat");
+  if (localStorage.getItem(PAT_KEY)) patInput.placeholder = "•••••••• (token enregistré)";
+  host.querySelector("#gh-pat-save").addEventListener("click", () => {
+    if (patInput.value.trim()) {
+      localStorage.setItem(PAT_KEY, patInput.value.trim());
+      patInput.value = "";
+      patInput.placeholder = "•••••••• (token enregistré)";
+      status("Token enregistré dans ce navigateur.", "");
+    }
+  });
+
+  // collector chips + live cost (only X mentions cost money: 1 requête
+  // $0.005 par actif config + par token radar suivi, à chaque exécution)
+  const colls = host.querySelector("#adm-colls");
+  const collsCost = host.querySelector("#adm-colls-cost");
+  const nTracked = (data.radarTracked || []).length;
+  const selected = new Set();
+  const updateCollsCost = () => {
+    if (!selected.size) { collsCost.textContent = "Coût : — (rien de coché)"; return; }
+    if (selected.has("mentions")) {
+      const n = data.assets.length + nTracked;
+      collsCost.textContent = `Coût de cette exécution : mentions ${data.assets.length} actifs config + ${nTracked} radar suivis × $0.005 = ~$${(n * 0.005).toFixed(2)} — le reste est gratuit.`;
+    } else {
+      collsCost.textContent = "Coût de cette exécution : $0 — collecteurs 100% gratuits.";
+    }
+  };
+  for (const [id, label] of COLLECTORS) {
+    const b = document.createElement("button");
+    b.className = "wchip off";
+    b.textContent = label;
+    b.addEventListener("click", () => {
+      selected.has(id) ? selected.delete(id) : selected.add(id);
+      b.classList.toggle("off");
+      updateCollsCost();
+    });
+    colls.append(b);
+  }
+  updateCollsCost();
+
+  // ---- mention-tracking management (the ONLY path that changes the list) --
+  const trackedEl = host.querySelector("#adm-tracked");
+  const tracked = data.radarTracked || [];
+  const untrackSel = new Set();
+  if (!tracked.length) {
+    trackedEl.innerHTML = '<span class="dim" style="font-size:12px">Aucun token suivi.</span>';
+  }
+  for (const t of tracked) {
+    const b = document.createElement("button");
+    b.className = "wchip";
+    b.title = "Cliquer pour marquer à désactiver";
+    b.textContent = `$${t.symbol} · ${t.chain}`;
+    b.addEventListener("click", () => {
+      const key = `${t.chain}:${t.address}`;
+      untrackSel.has(key) ? untrackSel.delete(key) : untrackSel.add(key);
+      b.classList.toggle("off");
+      b.textContent = (untrackSel.has(key) ? "✕ " : "") + `$${t.symbol} · ${t.chain}`;
+      updateTrackCost();
+    });
+    trackedEl.append(b);
+  }
+  const trackAddSel = host.querySelector("#adm-track-add");
+  const trackedKeys = new Set(tracked.map((t) => `${t.chain}:${t.address}`));
+  for (const [chain, toks] of Object.entries(data.radar || {})) {
+    const og = document.createElement("optgroup");
+    og.label = "Radar · " + chain;
+    for (const t of toks) {
+      const key = `${chain}:${t.address}`;
+      if (trackedKeys.has(key) || t.mentionsShared || !/^[A-Z0-9]{3,12}$/.test(t.symbol)) continue;
+      og.append(new Option(`$${t.symbol}${t.crit ? " 🚷" : ""}`, key));
+    }
+    if (og.children.length) trackAddSel.append(og);
+  }
+  const trackCostEl = host.querySelector("#adm-track-cost");
+  const updateTrackCost = () => {
+    const nAdd = [...trackAddSel.selectedOptions].length;
+    const parts = [];
+    if (nAdd) parts.push(`+${nAdd} suivi(s) = ~$${(nAdd * 0.15).toFixed(2)}/mois de plus`);
+    if (untrackSel.size) parts.push(`−${untrackSel.size} désactivation(s)`);
+    const total = (tracked.length + nAdd - untrackSel.size) * 0.15;
+    trackCostEl.textContent = (parts.length ? parts.join(" · ") + " → " : "")
+      + `coût récurrent après application : ~$${Math.max(0, total).toFixed(2)}/mois (${Math.max(0, tracked.length + nAdd - untrackSel.size)} token(s)).`;
+  };
+  trackAddSel.addEventListener("change", updateTrackCost);
+  updateTrackCost();
+
+  // backfill asset select: config assets + eligible radar tokens (chain:addr)
+  const sel = host.querySelector("#adm-bf-syms");
+  const ogC = document.createElement("optgroup");
+  ogC.label = "Actifs suivis";
+  for (const a of data.assets) {
+    if (NO_BACKFILL.has(a.symbol)) continue;
+    ogC.append(new Option(a.symbol, a.symbol));
+  }
+  sel.append(ogC);
+  for (const [chain, toks] of Object.entries(data.radar || {})) {
+    const og = document.createElement("optgroup");
+    og.label = "Radar · " + chain;
+    for (const t of toks.filter((x) => !x.crit && !x.mentionsShared)) {
+      og.append(new Option(`$${t.symbol}`, `${chain}:${t.address}`));
+    }
+    if (og.children.length) sel.append(og);
+  }
+  const daysEl = host.querySelector("#adm-bf-days");
+  const costEl = host.querySelector("#adm-bf-cost");
+  const updateCost = () => {
+    const n = [...sel.selectedOptions].length;
+    const days = Number(daysEl.value) || 0;
+    const cost = n * Math.ceil(days / 31) * 0.01;
+    costEl.textContent = n
+      ? `Coût estimé : ${n} actif(s) × ${Math.ceil(days / 31)} req = ~$${cost.toFixed(2)}`
+      : "Sélectionne au moins un actif (Ctrl+clic pour multi-sélection).";
+  };
+  sel.addEventListener("change", updateCost);
+  daysEl.addEventListener("input", updateCost);
+  updateCost();
+
+  const statusEl = host.querySelector("#adm-run-status");
+  function status(msg, cls) {
+    statusEl.innerHTML = `<p class="adm-run-msg ${cls}">${msg}</p>`;
+  }
+
+  async function dispatch(inputs, what) {
+    if (!localStorage.getItem(PAT_KEY)) return status("⚠️ Enregistre d'abord un token GitHub.", "down");
+    status(`Déclenchement (${what})…`, "");
+    const res = await fetch(`https://api.github.com/repos/${GH_REPO}/actions/workflows/${GH_WORKFLOW}/dispatches`, {
+      method: "POST", headers: ghHeaders(),
+      body: JSON.stringify({ ref: "main", inputs }),
+    });
+    if (res.status !== 204) {
+      const body = await res.text();
+      return status(`❌ Échec du déclenchement (HTTP ${res.status}) — token invalide/expiré, ou le workflow n'est pas encore poussé sur main. ${body.slice(0, 140)}`, "down");
+    }
+    status("✅ Workflow déclenché — démarrage…", "up");
+    setTimeout(poll, 6000);
+  }
+
+  let pollTimer = null;
+  async function poll() {
+    clearTimeout(pollTimer);
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${GH_REPO}/actions/workflows/${GH_WORKFLOW}/runs?per_page=1`,
+        { headers: ghHeaders() });
+      const run = (await res.json()).workflow_runs?.[0];
+      if (!run) return status("Run introuvable — vérifie l'onglet Actions du repo.", "down");
+      const link = `<a href="${run.html_url}" target="_blank" rel="noopener">voir le run ↗</a>`;
+      if (run.status !== "completed") {
+        status(`⏳ Run en cours (${run.status}) — ${link}`, "");
+        pollTimer = setTimeout(poll, 10000);
+      } else if (run.conclusion === "success") {
+        status(`✅ Terminé avec succès — data.json déployé. <button class="btn-ghost" onclick="location.reload()">Recharger les données</button> · ${link}`, "up");
+      } else {
+        status(`❌ Run terminé en « ${run.conclusion} » — ${link}`, "down");
+      }
+    } catch (e) {
+      status("❌ Erreur de suivi : " + e.message, "down");
+    }
+  }
+
+  host.querySelector("#adm-run-colls").addEventListener("click", () => {
+    if (!selected.size) return status("⚠️ Coche au moins un collecteur.", "down");
+    dispatch({ collectors: [...selected].join(","), mentions_days: "0", mentions_symbols: "" },
+      "collecteurs : " + [...selected].join(", "));
+  });
+  host.querySelector("#adm-run-track").addEventListener("click", () => {
+    const add = [...trackAddSel.selectedOptions].map((o) => o.value);
+    if (!add.length && !untrackSel.size) return status("⚠️ Sélectionne des tokens à activer et/ou à désactiver.", "down");
+    if (add.length && !confirm(`Activer le suivi de ${add.length} token(s) ≈ +$${(add.length * 0.15).toFixed(2)}/mois. Confirmer ?`)) return;
+    dispatch({ collectors: "none", track: add.join(","), untrack: [...untrackSel].join(","), price_history: add.join(",") },
+      "suivi mentions : " + (add.length ? "+" + add.length : "") + (untrackSel.size ? " −" + untrackSel.size : ""));
+  });
+  host.querySelector("#adm-run-phist").addEventListener("click", () => {
+    const sel2 = [...trackAddSel.selectedOptions].map((o) => o.value);
+    const target = sel2.length ? sel2.join(",") : "tracked";
+    dispatch({ collectors: "none", price_history: target },
+      "backfill prix (gratuit) : " + (sel2.length ? sel2.length + " token(s)" : "tous les suivis"));
+  });
+  host.querySelector("#adm-run-bf").addEventListener("click", () => {
+    const syms = [...sel.selectedOptions].map((o) => o.value);
+    const days = Number(daysEl.value) || 0;
+    if (!syms.length || !days) return status("⚠️ Choisis des actifs et un nombre de jours.", "down");
+    const cost = (syms.length * Math.ceil(days / 31) * 0.01).toFixed(2);
+    if (!confirm(`Backfill ${days}j × ${syms.length} actif(s) ≈ $${cost} (facturé sur l'API X). Confirmer ?`)) return;
+    dispatch({ collectors: "none", mentions_days: String(days), mentions_symbols: syms.join(",") },
+      `backfill mentions ${days}j`);
+  });
 }
 boot();

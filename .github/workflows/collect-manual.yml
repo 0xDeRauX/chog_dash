@@ -1,0 +1,163 @@
+name: Manual collection
+
+# Triggered from the Admin page (or the Actions tab) to re-run one or more
+# collectors — e.g. after a failed nightly run — or to backfill X mentions
+# over N days for chosen assets. Ends like the daily run: ingest, rebuild,
+# commit, deploy. Mentions steps are PAID (X API) and only run when requested.
+on:
+  workflow_dispatch:
+    inputs:
+      collectors:
+        description: "Collecteurs à relancer (csv: radar,prices,tvl,discord,telegram,holders,tradeflow,mentions — ou all)"
+        default: "all"
+        type: string
+      mentions_days:
+        description: "Backfill mentions X sur N jours (0 = pas de backfill; >7 = counts/all payant $0.01/31j/actif)"
+        default: "0"
+        type: string
+      mentions_symbols:
+        description: "Actifs du backfill (csv de symboles config, et/ou chain:address pour les tokens radar; vide = tous les actifs config)"
+        default: ""
+        type: string
+      track:
+        description: "Activer le suivi mentions X de tokens radar (csv chain:address) — gratuit à l'activation, ~$0.15/mois/token ensuite"
+        default: ""
+        type: string
+      untrack:
+        description: "Désactiver le suivi mentions X (csv chain:address)"
+        default: ""
+        type: string
+      price_history:
+        description: "Backfill GRATUIT du prix (GeckoTerminal OHLCV) pour ces tokens radar (csv chain:address, ou 'tracked' pour tous les suivis)"
+        default: ""
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      SEL: ${{ inputs.collectors }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      - name: Update mention-tracking list (radar)
+        if: inputs.track != '' || inputs.untrack != ''
+        env:
+          TRACK: ${{ inputs.track }}
+          UNTRACK: ${{ inputs.untrack }}
+        run: |
+          if [ -n "$TRACK" ]; then node scripts/radar-track.js --add="$TRACK"; fi
+          if [ -n "$UNTRACK" ]; then node scripts/radar-track.js --remove="$UNTRACK"; fi
+
+      - name: Backfill radar prices (free, GeckoTerminal OHLCV)
+        if: inputs.price_history != ''
+        env:
+          PH: ${{ inputs.price_history }}
+        run: |
+          if [ "$PH" = "tracked" ]; then node scripts/backfill-radar-prices.js
+          else node scripts/backfill-radar-prices.js --only="$PH"; fi
+
+      - name: Discover chain radar
+        if: env.SEL == 'all' || contains(env.SEL, 'radar')
+        run: npm run collect:radar
+
+      - name: Collect X mentions (daily window)
+        if: env.SEL == 'all' || contains(env.SEL, 'mentions')
+        env:
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+        run: npm run collect:mentions
+
+      - name: Backfill X mentions (paid)
+        if: inputs.mentions_days != '0' && inputs.mentions_days != ''
+        env:
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+          DAYS: ${{ inputs.mentions_days }}
+          SYMS: ${{ inputs.mentions_symbols }}
+        run: |
+          CONFIG_SYMS=$(echo "$SYMS" | tr ',' '\n' | grep -v ':' | paste -sd, -) || true
+          RADAR_KEYS=$(echo "$SYMS" | tr ',' '\n' | grep ':' | paste -sd, -) || true
+          if [ -z "$SYMS" ] || [ -n "$CONFIG_SYMS" ]; then
+            node scripts/backfill-mentions.js "$DAYS" --force ${CONFIG_SYMS:+--only=$CONFIG_SYMS}
+          fi
+          if [ -n "$RADAR_KEYS" ]; then
+            node scripts/backfill-radar-mentions.js "$DAYS" --only="$RADAR_KEYS"
+          fi
+
+      - name: Collect prices
+        if: env.SEL == 'all' || contains(env.SEL, 'prices')
+        run: npm run collect:prices
+
+      - name: Collect chain TVL
+        if: env.SEL == 'all' || contains(env.SEL, 'tvl')
+        run: npm run collect:tvl
+
+      - name: Collect Discord members
+        if: env.SEL == 'all' || contains(env.SEL, 'discord')
+        run: npm run collect:discord
+
+      - name: Collect Telegram members
+        if: env.SEL == 'all' || contains(env.SEL, 'telegram')
+        run: npm run collect:telegram
+
+      - name: Restore holder state
+        if: env.SEL == 'all' || contains(env.SEL, 'holders')
+        uses: actions/cache@v4
+        with:
+          path: data/holders-state
+          key: holders-state-${{ github.run_id }}
+          restore-keys: |
+            holders-state-
+
+      - name: Collect holders
+        if: env.SEL == 'all' || contains(env.SEL, 'holders')
+        env:
+          THIRDWEB_SECRET_KEY: ${{ secrets.THIRDWEB_SECRET_KEY }}
+          TAOSTATS_API_KEY: ${{ secrets.TAOSTATS_API_KEY }}
+          blockvision_api_key_sui: ${{ secrets.BLOCKVISION_API_KEY_SUI }}
+          blockvision_api_key_monad: ${{ secrets.BLOCKVISION_API_KEY_MONAD }}
+        run: npm run collect:holders
+
+      - name: Collect trade flow
+        if: env.SEL == 'all' || contains(env.SEL, 'tradeflow')
+        run: npm run collect:tradeflow
+
+      - name: Ingest into SQLite
+        run: npm run ingest
+
+      - name: Build dashboard data
+        run: npm run build:dashboard
+
+      - name: Commit collected data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main || true
+          git add data/raw public/data.json
+          git diff --cached --quiet || git commit -m "Manual collection (${{ inputs.collectors }}) $(date -u +%Y-%m-%d)"
+          git push
+      - name: Upload dashboard artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

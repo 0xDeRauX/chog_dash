@@ -22,6 +22,12 @@
     </section>
 
     <section class="card">
+      <div class="card-head"><h2>Collecte manuelle — relance &amp; backfill</h2></div>
+      <p class="card-sub">Le site est statique : les collecteurs tournent dans <b>GitHub Actions</b>. Cette section déclenche le workflow <code>collect-manual</code> à distance — pour relancer une collecte ratée la veille, ou backfiller les mentions X sur N jours. À la fin du run, data.json est commité et déployé automatiquement (~2 min), il suffit de recharger la page.</p>
+      <div id="admin-collect"></div>
+    </section>
+
+    <section class="card">
       <div class="card-head"><h2>Séries vides — couverture</h2></div>
       <p class="card-sub">Une série sans aucun point n'est pas forcément un bug : la plupart sont des absences structurelles (pas de source gratuite, pas de canal). Ce qui reste est à investiguer.</p>
       <div id="admin-gaps"></div>
