@@ -10,7 +10,7 @@
 //        (default: every tracked token)
 import fs from "fs";
 import path from "path";
-import { loadTracked } from "../src/collectors/chainradar.js";
+import { loadTracked, gtJson } from "../src/collectors/chainradar.js";
 
 const GT = "https://api.geckoterminal.com/api/v2";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -31,14 +31,16 @@ fs.mkdirSync(outDir, { recursive: true });
 
 for (const t of targets) {
   try {
-    const pools = await (await fetch(`${GT}/networks/${t.chain}/tokens/${t.address}/pools`, { headers: { accept: "application/json" } })).json();
+    // gtJson retries with backoff on 429 — the free tier is ~30 req/min and
+    // a naive fetch turned rate limits into fake "no pool" results.
+    const pools = await gtJson(`${GT}/networks/${t.chain}/tokens/${t.address}/pools`);
     if (!(pools.data || []).length) { console.error(`${t.chain}:${t.address}: aucun pool GT`); continue; }
     // some pools (nad.fun bonding curves) have no OHLCV — try the next ones
     let list = [], symbol = null;
     for (const pool of pools.data.slice(0, 4)) {
       symbol = symbol || (pool.attributes.name || "").split(" / ")[0].trim().toUpperCase();
-      await sleep(600);
-      const ohlcv = await (await fetch(`${GT}/networks/${t.chain}/pools/${pool.attributes.address}/ohlcv/day?limit=1000`, { headers: { accept: "application/json" } })).json();
+      await sleep(2100);
+      const ohlcv = await gtJson(`${GT}/networks/${t.chain}/pools/${pool.attributes.address}/ohlcv/day?limit=1000`);
       list = ohlcv.data?.attributes?.ohlcv_list || [];
       if (list.length) break;
     }
@@ -50,7 +52,7 @@ for (const t of targets) {
     const file = path.join(outDir, `${t.chain}_${t.address}.json`);
     fs.writeFileSync(file, JSON.stringify({ chain: t.chain, address: t.address, symbol, series }, null, 2));
     console.log(`$${symbol} (${t.chain}): ${series.length} jours (${series[0].date} → ${series.at(-1).date})`);
-    await sleep(600);
+    await sleep(2100); // stay under GT's ~30 req/min free tier
   } catch (err) {
     console.error(`${t.chain}:${t.address}: ${err.message}`);
   }

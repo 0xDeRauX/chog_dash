@@ -44,7 +44,7 @@ const PIN = {
 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function gtJson(url, tries = 4) {
+export async function gtJson(url, tries = 4) {
   for (let i = 1; ; i++) {
     const res = await fetch(url, { headers: { accept: "application/json" } });
     if (res.ok) return res.json();
