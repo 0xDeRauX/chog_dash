@@ -17,15 +17,15 @@
     },
     {
       "symbol": "ANSEM",
-      "buyTx": 6683,
-      "sellTx": 6763,
-      "volUsd": 2718506.1
+      "buyTx": 6685,
+      "sellTx": 6760,
+      "volUsd": 2718524.66
     },
     {
       "symbol": "CASHCAT",
-      "buyTx": 8933,
-      "sellTx": 6278,
-      "volUsd": 13622120.24
+      "buyTx": 8852,
+      "sellTx": 6277,
+      "volUsd": 13591751.22
     }
   ]
 }
