@@ -1,0 +1,31 @@
+{
+  "date": "2026-07-19",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "buyTx": 68,
+      "sellTx": 82,
+      "volUsd": 6102.28,
+      "buyUsd": 3370.3836497344932,
+      "sellUsd": 2731.112635989091
+    },
+    {
+      "symbol": "BRETT",
+      "buyTx": 15,
+      "sellTx": 46,
+      "volUsd": 4384.73
+    },
+    {
+      "symbol": "ANSEM",
+      "buyTx": 7271,
+      "sellTx": 7895,
+      "volUsd": 8207246.37
+    },
+    {
+      "symbol": "CASHCAT",
+      "buyTx": 3615,
+      "sellTx": 2573,
+      "volUsd": 3819953.14
+    }
+  ]
+}
