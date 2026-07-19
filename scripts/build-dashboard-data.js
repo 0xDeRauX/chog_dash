@@ -80,6 +80,11 @@ const tiersStmt = db.prepare(
           (t50_500 + t500_5k + t5k_50k + gt50k) AS h50
    FROM holder_tiers_daily WHERE asset_id = ? ORDER BY date`
 );
+const pnlStmt = db.prepare(
+  `SELECT date, holders, in_profit AS inProfit, pct_in_profit AS pctInProfit,
+          x10, x2_10, x1_2, l0_50, l50, realized_usd AS realizedUsd, realized_big_usd AS realizedBigUsd
+   FROM pnl_daily WHERE asset_id = ? ORDER BY date`
+);
 const tradeflowStmt = db.prepare(
   `SELECT date, buy_usd AS buyUsd, sell_usd AS sellUsd, buy_tx AS buyTx, sell_tx AS sellTx,
           CASE
@@ -106,6 +111,11 @@ const assets = ASSETS.map((cfg) => {
     holders: holdersStmt.all(row.id),
     holderTiers: tiersStmt.all(row.id),
     tradeflow: tradeflowStmt.all(row.id),
+    pnl: pnlStmt.all(row.id),
+    pnlIndexedTo: (() => {
+      try { return JSON.parse(fs.readFileSync(path.resolve(`data/raw/pnl/${cfg.symbol}.json`), "utf8")).indexedToDate ?? null; }
+      catch { return null; }
+    })(),
     holderFlows: flowsStmt.all(row.id),
     onchain: computeOnchain(cfg),
     mentions,

@@ -118,10 +118,12 @@ jobs:
         run: npm run collect:telegram
 
       - name: Restore holder state
-        if: env.SEL == 'all' || contains(env.SEL, 'holders')
+        if: env.SEL == 'all' || contains(env.SEL, 'holders') || contains(env.SEL, 'pnl')
         uses: actions/cache@v4
         with:
-          path: data/holders-state
+          path: |
+            data/holders-state
+            data/pnl-state
           key: holders-state-${{ github.run_id }}
           restore-keys: |
             holders-state-
@@ -138,6 +140,12 @@ jobs:
       - name: Collect trade flow
         if: env.SEL == 'all' || contains(env.SEL, 'tradeflow')
         run: npm run collect:tradeflow
+
+      - name: Replay holder PnL ledger (CHOG)
+        if: env.SEL == 'all' || contains(env.SEL, 'pnl')
+        env:
+          THIRDWEB_SECRET_KEY: ${{ secrets.THIRDWEB_SECRET_KEY }}
+        run: npm run collect:pnl
 
       - name: Ingest into SQLite
         run: npm run ingest

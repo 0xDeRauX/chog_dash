@@ -15,6 +15,7 @@ const FAMS = [
   { id: "tiers", label: "Tranches $", last: (a) => a.holderTiers?.at(-1)?.date },
   { id: "tradeflow", label: "Achat/Vente", last: (a) => a.tradeflow?.at(-1)?.date },
   { id: "flows", label: "Flux ledger", last: (a) => a.holderFlows?.at(-1)?.date },
+  { id: "pnl", label: "PnL holders", last: (a) => a.pnl?.at(-1)?.date },
 ];
 
 // Known structural absences — an empty series here is EXPECTED, not a bug.
@@ -25,6 +26,7 @@ function structuralReason(a, famId) {
   if (famId === "holders" && ["SOL", "MON", "STRK"].includes(sym)) return "pas de source gratuite (SOL flou · MON trop récent · STRK payant)";
   if (famId === "tiers" && !TIER_OK.includes(sym)) return "nécessite le scan complet des soldes (CHOG + memes Solana uniquement)";
   if (famId === "flows" && sym !== "CHOG") return "grand livre CHOG uniquement";
+  if (famId === "pnl" && sym !== "CHOG") return "reconstruction du coût d'entrée — grand livre CHOG uniquement";
   if (famId === "discord") return "pas de serveur Discord officiel connu";
   if (famId === "telegram") return "pas de canal Telegram référencé (CoinGecko)";
   return null;
@@ -79,6 +81,11 @@ async function boot() {
   tile("En retard ≥3j", String(late), late ? "down" : "up");
   tile("Vides structurelles", String(structural), "", "absences documentées");
   tile("⚠️ À investiguer", String(unknown.length), unknown.length ? "down" : "up", unknown.length ? "séries vides inexpliquées" : "rien d'anormal");
+  const chog = data.assets.find((x) => x.symbol === "CHOG");
+  if (chog?.pnlIndexedTo) {
+    const lag = Math.round((Date.now() - new Date(chog.pnlIndexedTo + "T00:00:00Z")) / 864e5);
+    if (lag > 2) tile("Indexeur on-chain Monad", lag + "j de retard", "down", `thirdweb bloqué au ${chog.pnlIndexedTo} — holders/tranches/PnL CHOG datent de là`);
+  }
 
   // ---- matrix ----
   const host = document.getElementById("admin-matrix");
@@ -143,6 +150,7 @@ const COLLECTORS = [
   ["radar", "Radar (découverte)"], ["mentions", "Mentions X (3 derniers j) 💰"],
   ["prices", "Prix"], ["tvl", "TVL"], ["discord", "Discord"],
   ["telegram", "Telegram"], ["holders", "Holders"], ["tradeflow", "Achat/Vente"],
+  ["pnl", "PnL holders"],
 ];
 // User rule: no mention backfill where mentions predate the token's creation
 // (the cashtag existed before the coin → old counts are unrelated noise).

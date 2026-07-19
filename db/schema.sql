@@ -129,3 +129,21 @@ CREATE TABLE IF NOT EXISTS radar_mentions_daily (
   count INTEGER,
   PRIMARY KEY (chain, address, date)
 );
+
+-- Daily holder-PnL aggregates (assets with a full transfer ledger — CHOG).
+-- Tranches are counts of wallets by unrealized multiple (price / avg cost).
+CREATE TABLE IF NOT EXISTS pnl_daily (
+  asset_id INTEGER NOT NULL REFERENCES assets(id),
+  date TEXT NOT NULL,
+  holders INTEGER,
+  in_profit INTEGER,
+  pct_in_profit REAL,
+  x10 INTEGER,
+  x2_10 INTEGER,
+  x1_2 INTEGER,
+  l0_50 INTEGER,
+  l50 INTEGER,
+  realized_usd REAL,
+  realized_big_usd REAL,
+  PRIMARY KEY (asset_id, date)
+);

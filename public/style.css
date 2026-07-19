@@ -1615,3 +1615,17 @@ body.studio-dragging .drop-zones { display: flex; }
 .table-scroll.expanded table { width: 100%; }
 .hero-sig-comp .hero-sig-val { font-size: 26px; font-weight: 800; }
 .hero-sig-sub { font-size: 12px; color: var(--text-3); font-weight: 500; margin-left: 2px; }
+
+/* CHOG 360 — holder PnL section */
+.pnl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 22px; }
+.pnl-head { display: flex; gap: 28px; margin-bottom: 12px; }
+.pnl-big { font-size: 24px; font-weight: 800; }
+.pnl-big.up { color: var(--up); }
+.pnl-big.down { color: var(--down); }
+.pnl-sub { margin: 0 0 10px; font-size: 13px; color: var(--text-2); }
+.pnl-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pnl-table th { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--border); }
+.pnl-table td { padding: 7px 8px; text-align: right; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+.pnl-table td.up { color: var(--up); }
+.pnl-table td.down { color: var(--down); }
+.pnl-lag { background: color-mix(in srgb, #e0a000 12%, transparent); border: 1px solid color-mix(in srgb, #e0a000 40%, transparent); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin: 0 0 14px; }

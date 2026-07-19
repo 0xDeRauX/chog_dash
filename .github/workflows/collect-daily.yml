@@ -54,7 +54,9 @@ jobs:
       - name: Restore holder state
         uses: actions/cache@v4
         with:
-          path: data/holders-state
+          path: |
+            data/holders-state
+            data/pnl-state
           key: holders-state-${{ github.run_id }}
           restore-keys: |
             holders-state-
@@ -69,6 +71,13 @@ jobs:
 
       - name: Collect trade flow (buy/sell volume)
         run: npm run collect:tradeflow
+
+      # After prices (cost basis needs the day's price) and holders (shares the
+      # cached state directory). Incremental: only new blocks are folded.
+      - name: Replay holder PnL ledger (CHOG)
+        env:
+          THIRDWEB_SECRET_KEY: ${{ secrets.THIRDWEB_SECRET_KEY }}
+        run: npm run collect:pnl
 
       - name: Ingest into SQLite
         run: npm run ingest

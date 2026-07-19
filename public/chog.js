@@ -115,6 +115,91 @@ function renderHero(el, a, assets) {
   }
 }
 
+// --- holder PnL (replayed ledger): today's tranches + the tops study ------
+function renderPnl(el, a) {
+  if (!el) return;
+  const pnl = a.pnl || [];
+  if (!pnl.length) {
+    el.innerHTML = '<p class="card-sub">Le grand livre PnL n\'est pas encore construit — première collecte à venir.</p>';
+    return;
+  }
+  const last = pnl.at(-1);
+  const lagDays = Math.round((Date.now() - new Date(last.date + "T00:00:00Z")) / 864e5);
+  const lagBanner = lagDays > 2
+    ? `<p class="pnl-lag">⚠️ L'indexeur on-chain (thirdweb Insight) est en retard de <b>${lagDays} jours</b> sur la chaîne Monad : le grand livre s'arrête au <b>${last.date}</b>. Tranches, % en gain et compte de holders reflètent cette date — rien n'est extrapolé. (Le même retard affecte la série Holders CHOG.)</p>`
+    : "";
+  const inProfitHelp = METRIC_BY_ID.inprofit?.help;
+  const tranches = [
+    ["≥ ×10", last.x10, "up"],
+    ["×2 – ×10", last.x2_10, "up"],
+    ["0 à +100%", last.x1_2, "up"],
+    ["0 à −50%", last.l0_50, "down"],
+    ["≤ −50%", last.l50, "down"],
+  ];
+  const pctBar = (n) => last.holders ? ((n / last.holders) * 100).toFixed(1) + "%" : "—";
+  const realized7 = pnl.slice(-7).reduce((s2, r) => s2 + (r.realizedUsd || 0), 0);
+
+  // Tops study: local maxima (price = max over ±10j) followed by a ≥20% drop
+  // within 15j → what did the PnL table look like THAT day?
+  const prices = (a.prices || []).filter((p) => p.price != null);
+  const pnlBy = new Map(pnl.map((r) => [r.date, r]));
+  const tops = [];
+  for (let i = 10; i < prices.length - 10; i++) {
+    const p = prices[i];
+    const win = prices.slice(i - 10, i + 11);
+    if (p.price < Math.max(...win.map((x) => x.price))) continue;
+    const after = prices.slice(i + 1, i + 16).map((x) => x.price);
+    if (!after.length || Math.min(...after) > p.price * 0.8) continue;
+    const row = pnlBy.get(p.date);
+    if (!row) continue;
+    const prev3 = pnl.filter((r) => r.date < p.date).slice(-3);
+    tops.push({
+      date: p.date, price: p.price,
+      pct: row.pctInProfit,
+      realized3: prev3.reduce((s2, r) => s2 + (r.realizedUsd || 0), 0) + (row.realizedUsd || 0),
+      big3: prev3.reduce((s2, r) => s2 + (r.realizedBigUsd || 0), 0) + (row.realizedBigUsd || 0),
+    });
+    i += 10; // one top per window
+  }
+
+  el.innerHTML = `${lagBanner}
+    <div class="pnl-grid">
+      <div class="pnl-col">
+        <div class="pnl-head">
+          <div><div class="stat-mini-label">% de holders en gain <span id="pnl-help"></span></div>
+          <div class="pnl-big">${last.pctInProfit != null ? last.pctInProfit.toFixed(1) + "%" : "—"}</div></div>
+          <div><div class="stat-mini-label">PnL réalisé (7j)</div>
+          <div class="pnl-big ${realized7 >= 0 ? "up" : "down"}">${fmtUsdCompact(Math.abs(realized7))}${realized7 < 0 ? " de pertes" : ""}</div></div>
+        </div>
+        <table class="pnl-table">
+          <thead><tr><th style="text-align:left">Tranche (multiple du coût d'entrée)</th><th># holders</th><th>part</th></tr></thead>
+          <tbody>${tranches.map(([lbl, n, cls]) =>
+            `<tr><td style="text-align:left" class="${cls}">${lbl}</td><td>${fmtCompact(n)}</td><td>${pctBar(n || 0)}</td></tr>`).join("")}
+          </tbody>
+        </table>
+        <p class="card-sub">Au ${last.date} · ${fmtCompact(last.holders)} holders valorisés (poussière <$0.01 et pools exclus). Coût d'entrée estimé au prix du jour de chaque transfert.</p>
+      </div>
+      <div class="pnl-col">
+        <h4 class="pnl-sub">Les tops passés — dans quel contexte la montée s'est arrêtée</h4>
+        ${tops.length ? `<table class="pnl-table">
+          <thead><tr><th style="text-align:left">Top</th><th>Prix</th><th>% en gain ce jour</th><th>Réalisé (top ±3j)</th><th>dont gros (≥$5K)</th></tr></thead>
+          <tbody>${tops.slice(-6).reverse().map((t) =>
+            `<tr><td style="text-align:left">${t.date}</td><td>${fmtPrice(t.price)}</td>
+             <td class="${t.pct >= 80 ? "down" : ""}">${t.pct != null ? t.pct.toFixed(1) + "%" : "—"}</td>
+             <td>${fmtUsdCompact(t.realized3)}</td><td>${fmtUsdCompact(t.big3)}</td></tr>`).join("")}
+          </tbody>
+        </table>
+        <p class="card-sub">Un « top » = plus haut sur ±10j suivi d'une baisse ≥20% sous 15j. Si les tops arrivent systématiquement à % en gain élevé + accélération du réalisé, c'est un signal de distribution mesuré — vérifiable ici, pas supposé.</p>`
+        : '<p class="card-sub">Aucun top détecté encore (plus haut ±10j suivi d\'une baisse ≥20%) — la table se remplira avec l\'historique.</p>'}
+      </div>
+    </div>`;
+  if (inProfitHelp) {
+    const slot = el.querySelector("#pnl-help");
+    const ico = helpIcon(inProfitHelp, "% en gain");
+    if (slot && ico) slot.append(ico);
+  }
+}
+
 // --- chart (price + indexed overlays) -----------------------------------
 function metricIndexed(a, m, win) {
   const w = windowed(a[m.series], win).filter((p) => p[m.vkey] != null);
@@ -362,6 +447,7 @@ async function boot() {
   renderPillars(document.getElementById("pillars"), a, data.assets);
   renderPositioning(document.getElementById("positioning"), a, data.assets);
   renderOnchain(document.getElementById("onchain"), a);
+  renderPnl(document.getElementById("pnl-body"), a);
   renderSignals(document.getElementById("signals-feed"), a);
 }
 boot();

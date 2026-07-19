@@ -75,6 +75,19 @@ const METRICS = [
     },
   },
   {
+    // From the CHOG PnL ledger (replayed transfer history × daily prices).
+    id: "inprofit", label: "% en gain", category: "onchain",
+    series: "pnl", vkey: "pctInProfit", format: "pctraw",
+    latest: (a) => lastValue(a.pnl, "pctInProfit"),
+    deltas: [7, 30], chart: true,
+    help: {
+      what: "Part des holders dont le <b>coût moyen d'entrée</b> (reconstruit depuis chaque transfert, valorisé au prix du jour du transfert) est inférieur au prix actuel.",
+      read: "<b>>85%</b> = presque tout le monde gagne — zone historique de distribution (les tops se forment quand il n'y a plus personne à mettre en gain) · <b><40%</b> = majorité sous l'eau, vendeurs épuisés potentiels.",
+      example: "CHOG à 90% en gain après une montée : chaque holder est tenté de prendre profit — la table des tranches dit qui (petits ×1-2 ou gros ×10+).",
+      quality: "Estimation : prix du jour (pas du swap exact), transferts P2P héritent du coût, airdrops = coût zéro. Grand livre CHOG uniquement — « — » ailleurs.",
+    },
+  },
+  {
     id: "flowratio", label: "Pression achat", category: "market",
     series: "tradeflow", vkey: "ratio", format: "pctraw",
     latest: (a) => a.tradeflow?.at(-1)?.ratio ?? null,
