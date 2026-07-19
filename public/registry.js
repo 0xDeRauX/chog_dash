@@ -99,6 +99,32 @@ const METRICS = [
     },
   },
   {
+    // Proprietary indicator (M7): relative community velocity.
+    id: "velocity", label: "Vélocité comm.", category: "signal",
+    series: "velocity", vkey: "vel", format: "signed",
+    latest: (a) => lastValue(a.velocity, "vel"),
+    chart: true,
+    help: {
+      what: "Croissance communautaire sur 7 jours (holders + membres Telegram) <b>moins la médiane de son groupe</b> le même jour. Mesure les <b>parts d'attention</b> : grandir ne suffit pas, il faut grandir plus vite que les autres.",
+      read: "<b>+2</b> = la communauté croît 2 points de % plus vite que le meme médian cette semaine · <b>0</b> = dans la moyenne · <b>négatif</b> = elle perd du terrain relatif, même si elle grossit en absolu.",
+      example: "CHOG +4%/7j de holders quand la médiane des memes fait +1% → vélocité +3 : la communauté gagne des parts. Si tous font +4%, vélocité 0 — c'est le marché, pas CHOG.",
+      quality: "⏳ Indicateur neuf : son IC sera mesuré comme les autres après accumulation d'historique (le calcul démarre dès aujourd'hui sur les données existantes).",
+    },
+  },
+  {
+    // Proprietary indicator (M8): the daily 0-100 composite verdict.
+    id: "composite", label: "Score composite", category: "signal",
+    series: "composite", vkey: "score", format: "num",
+    latest: (a) => lastValue(a.composite, "score"),
+    chart: true,
+    help: {
+      what: "Tous nos signaux en <b>un chiffre 0-100</b> : Pression achat, Divergence, Buzz et Vélocité (chacun en z-score, borné à ±3σ), <b>pondérés par leur IC réellement mesuré</b> sur nos données — recalculé à chaque chargement, pas des poids d'intuition.",
+      read: "<b>50</b> = journée neutre · <b>>65</b> = plusieurs signaux validés s'alignent au-dessus de leur norme (configuration rare) · <b><35</b> = signaux dégradés. À lire comme un baromètre quotidien, pas un ordre d'achat.",
+      example: "Divergence +1.8σ, pression achat 58% (+1.2σ), buzz +0.5σ → composite ≈ 72 : l'attention monte, les acheteurs dominent, le prix n'a pas encore suivi — le cas d'école de l'accumulation silencieuse.",
+      quality: "Les poids suivent les IC mesurés (Pression ≈ 0.3, Divergence ≈ 0.13, Buzz ≈ 0.07, Vélocité provisoire 0.05). Le composite lui-même sera backtesté (IC) sur la page Signaux une fois assez d'historique accumulé.",
+    },
+  },
+  {
     // Proprietary indicator (M5-lite): normalized attention − normalized price.
     // High positive = attention leading price (silent accumulation).
     id: "divergence", label: "Divergence", category: "signal",
@@ -122,8 +148,10 @@ const DELTA_LABEL = { 1: "24h", 7: "7j", 30: "30j", 90: "90j" };
 // metrics; each other id = one metric with its value + every delta period.
 const MEASURES = [
   ["overview", "Vue d'ensemble"],
+  ["composite", "Composite"],
   ["buzz", "Buzz"],
   ["divergence", "Divergence"],
+  ["velocity", "Vélocité"],
   ["price", "Prix"],
   ["volume", "Volume"],
   ["tvl", "TVL"],

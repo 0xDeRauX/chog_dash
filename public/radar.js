@@ -103,6 +103,7 @@ const COLS = [
   ["tg", "Telegram", (t) => t.series.at(-1)?.tg, (v) => v == null ? "—" : fmtCompact(v)],
   ["dc", "Discord", (t) => t.series.at(-1)?.dc, (v) => v == null ? "—" : fmtCompact(v)],
   ["mentions", "Mentions X", (t) => t.mentions?.at(-1)?.count, (v) => v == null ? "—" : fmtCompact(v)],
+  ["div", "Divergence", (t) => t.divLast, (v) => v == null ? "—" : (v >= 0 ? "+" : "") + v.toFixed(2), (v) => v == null ? "" : v >= 1 ? "up" : v <= -1 ? "down" : ""],
   ["age", "Âge", (t) => t.f.ageDays, (v) => v == null ? "—" : v + "j"],
 ];
 
@@ -115,9 +116,25 @@ async function boot() {
     "Dernière découverte : " + new Date(data.generatedAt).toLocaleString("fr-FR") +
     " · " + chains.map((c) => `${c} (${radar[c].length})`).join(" · ");
 
+  // Divergence attention/prix par token, calculée ici même dès que le token a
+  // ~11 jours communs de mentions + prix (backfills compris).
+  for (const c of chains) {
+    for (const t of radar[c] || []) {
+      if ((t.mentions || []).length < 11 || t.series.length < 11) continue;
+      const mz = zScoreByDate(t.mentions, "count");
+      const pz = zScoreByDate(t.series.filter((p) => p.price != null).map((p) => ({ date: p.date, price: p.price })), "price");
+      let lastDate = null, lastVal = null;
+      for (const [d, m] of mz) {
+        if (pz.has(d) && (lastDate == null || d > lastDate)) { lastDate = d; lastVal = m - pz.get(d); }
+      }
+      t.divLast = lastVal;
+    }
+  }
+
   let current = chains.includes("robinhood") ? "robinhood" : chains[0];
   let sortKey = "score", sortDir = -1;
   let showAll = false;
+  let expanded = false;
 
   const tabs = document.getElementById("radar-tabs");
   function renderTabs() {
@@ -132,6 +149,15 @@ async function boot() {
       seg.append(b);
     }
     tabs.append(seg);
+    const exp = document.createElement("button");
+    exp.className = "wchip" + (expanded ? "" : " off");
+    exp.textContent = expanded ? "⛶ Réduire le tableau" : "⛶ Étendre le tableau";
+    exp.addEventListener("click", () => {
+      expanded = !expanded;
+      host.classList.toggle("expanded", expanded);
+      renderTabs();
+    });
+    tabs.append(exp);
     // off-criteria visibility toggle
     const all = computeScores(radar[current] || []);
     const nOff = all.filter((t) => t.crit).length;

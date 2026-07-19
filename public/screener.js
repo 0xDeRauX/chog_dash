@@ -87,7 +87,15 @@ async function boot() {
   search.className = "search-input";
   search.placeholder = "Rechercher…";
   search.addEventListener("input", () => { state.search = search.value.trim().toUpperCase(); renderRows(); });
-  filters.append(measureGroup, groupCtl, search);
+  const expandBtn = document.createElement("button");
+  expandBtn.className = "wchip off";
+  expandBtn.textContent = "⛶ Étendre le tableau";
+  expandBtn.addEventListener("click", () => {
+    const on = document.getElementById("screener").classList.toggle("expanded");
+    expandBtn.classList.toggle("off", !on);
+    expandBtn.textContent = on ? "⛶ Réduire le tableau" : "⛶ Étendre le tableau";
+  });
+  filters.append(measureGroup, groupCtl, search, expandBtn);
 
   const host = document.getElementById("screener");
   let tbody;

@@ -59,10 +59,14 @@ function renderHero(el, a, assets) {
   const d24 = a.latestChange24h;
   const buzz = lastValue(a.buzz, "buzz");
   const div = lastValue(a.divergence, "div");
+  const comp = lastValue(a.composite, "score");
+  const vel = lastValue(a.velocity, "vel");
   const hold7 = pctOverDays(a.holders, "holders", 7);
   const dcls = d24 == null ? "" : d24 >= 0 ? "up" : "down";
   const bcls = buzz == null ? "" : buzz >= 1 ? "up" : buzz <= -1 ? "down" : "";
   const vcls = div == null ? "" : div >= 0.5 ? "up" : div <= -0.5 ? "down" : "";
+  const ccls = comp == null ? "" : comp >= 65 ? "up" : comp <= 35 ? "down" : "";
+  const velcls = vel == null ? "" : vel >= 1 ? "up" : vel <= -1 ? "down" : "";
   el.innerHTML = `
     <div class="hero-main">
       <div class="hero-id">
@@ -78,6 +82,14 @@ function renderHero(el, a, assets) {
       </div>
     </div>
     <div class="hero-signals">
+      <div class="hero-sig hero-sig-comp">
+        <div class="hero-sig-lbl" id="hero-comp-lbl">Score composite</div>
+        <div class="hero-sig-val ${ccls}">${comp ?? "—"}<span class="hero-sig-sub">/100</span></div>
+      </div>
+      <div class="hero-sig">
+        <div class="hero-sig-lbl" id="hero-vel-lbl">Vélocité comm.</div>
+        <div class="hero-sig-val ${velcls}">${fmtBy("signed", vel)}</div>
+      </div>
       <div class="hero-sig">
         <div class="hero-sig-lbl">Market cap</div>
         <div class="hero-sig-val">${fmtUsdCompact(a.marketCap)}</div>
@@ -95,6 +107,12 @@ function renderHero(el, a, assets) {
         <div class="hero-sig-val ${vcls}">${fmtBy("signed", div)}</div>
       </div>
     </div>`;
+  // ⓘ help cards on the proprietary tiles (same registry help as everywhere)
+  for (const [sel, mid] of [["#hero-comp-lbl", "composite"], ["#hero-vel-lbl", "velocity"]]) {
+    const lbl = el.querySelector(sel);
+    const m = METRIC_BY_ID[mid];
+    if (lbl && m?.help) { const ico = helpIcon(m.help, m.label); if (ico) lbl.append(ico); }
+  }
 }
 
 // --- chart (price + indexed overlays) -----------------------------------

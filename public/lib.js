@@ -244,6 +244,84 @@ function lastValue(series, key) {
   return null;
 }
 
+// Relative community velocity (M7): community growth vs the peer group.
+// Per date: mean 7-day % growth of holders + telegram members, minus the
+// MEDIAN of the same figure across the asset's group that day. Positive =
+// the community grows faster than its peers (gaining attention share).
+function velocitySeries(assets) {
+  const g7 = (series, key) => {
+    const s = (series || []).filter((p) => p[key] != null);
+    const out = new Map();
+    for (let i = 0; i < s.length; i++) {
+      const past = s.find((p) => p.date >= dateAddDays(s[i].date, -7));
+      if (past && past.date < s[i].date && past[key] > 0) out.set(s[i].date, (s[i][key] / past[key] - 1) * 100);
+    }
+    return out;
+  };
+  const growth = assets.map((a) => {
+    const h = g7(a.holders, "holders"), t = g7(a.telegram, "members");
+    const dates = new Set([...h.keys(), ...t.keys()]);
+    const m = new Map();
+    for (const d of dates) {
+      const vals = [h.get(d), t.get(d)].filter((v) => v != null);
+      if (vals.length) m.set(d, vals.reduce((x, y) => x + y, 0) / vals.length);
+    }
+    return m;
+  });
+  assets.forEach((a, i) => {
+    const out = [];
+    for (const [d, g] of growth[i]) {
+      const peers = assets.map((b, j) => (b.group === a.group && j !== i ? growth[j].get(d) : null))
+        .filter((v) => v != null).sort((x, y) => x - y);
+      if (peers.length >= 3) out.push({ date: d, vel: g - peers[Math.floor(peers.length / 2)] });
+    }
+    a.velocity = out.sort((x, y) => x.date.localeCompare(y.date));
+  });
+}
+
+// Composite score (M8): one 0-100 daily number per asset blending our signals,
+// each as a z-score, WEIGHTED BY THE LIVE MEASURED IC (recomputed from the
+// data at every load, per the empirical-validation rule; hardcoded fallbacks
+// only when history is too short to measure).
+const COMPOSITE_FALLBACK_W = { flow: 0.34, divergence: 0.13, buzz: 0.07, velocity: 0.05 };
+function compositeWeights(assets) {
+  const memes = assets.filter((a) => a.group === "memes");
+  const builders = {
+    flow: (a) => zScoreByDate(a.tradeflow, "ratio"),
+    divergence: (a) => new Map((a.divergence || []).map((p) => [p.date, p.div])),
+    buzz: (a) => new Map((a.buzz || []).map((p) => [p.date, p.buzz])),
+    velocity: (a) => new Map((a.velocity || []).map((p) => [p.date, p.vel])),
+  };
+  const w = {};
+  for (const [k, build] of Object.entries(builders)) {
+    const { ic, n } = icPooled(memes, build, 7);
+    w[k] = ic != null && n >= 60 ? Math.max(0.02, Math.abs(ic)) : COMPOSITE_FALLBACK_W[k];
+  }
+  return w;
+}
+function compositeSeries(a, w) {
+  const parts = {
+    flow: zScoreByDate(a.tradeflow, "ratio"),
+    divergence: new Map((a.divergence || []).map((p) => [p.date, p.div])),
+    buzz: new Map((a.buzz || []).map((p) => [p.date, p.buzz])),
+    velocity: new Map((a.velocity || []).map((p) => [p.date, p.vel])),
+  };
+  const dates = new Set();
+  for (const m of Object.values(parts)) for (const d of m.keys()) dates.add(d);
+  const out = [];
+  for (const d of [...dates].sort()) {
+    let num = 0, den = 0;
+    for (const [k, m] of Object.entries(parts)) {
+      const v = m.get(d);
+      if (v == null) continue;
+      num += w[k] * Math.max(-3, Math.min(3, v)); // clamp outliers
+      den += w[k];
+    }
+    if (den > 0) out.push({ date: d, score: Math.round(Math.max(0, Math.min(100, 50 + 20 * (num / den)))) });
+  }
+  return out;
+}
+
 // ---- data ---------------------------------------------------------------
 async function loadData() {
   const data = await fetch("./data.json").then((r) => r.json());
@@ -253,6 +331,10 @@ async function loadData() {
     a.buzz = buzzSeries(a); // computed indicators — plug into the registry like any series
     a.divergence = divergenceSeries(a);
   }
+  velocitySeries(data.assets); // M7 needs every asset (peer medians) — after the loop
+  const compW = compositeWeights(data.assets); // M8 weights = live measured ICs
+  data.compositeWeights = compW;
+  for (const a of data.assets) a.composite = compositeSeries(a, compW);
   // Radar tokens reshaped as pseudo-assets (symbol "SYM@chain") so the token
   // page and the Studio can reuse the whole metric/indicator machinery on them.
   data.radarAssets = [];

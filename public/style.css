@@ -1608,3 +1608,10 @@ body.studio-dragging .drop-zones { display: flex; }
 .adm-run-msg.up { color: var(--pos, #35d07f); }
 .adm-run-msg.down { color: var(--neg, #e05555); }
 .adm-chips .wchip.off { text-decoration: none; }
+
+/* Expanded tables (screener/radar): break out of the centered column so every
+   column fits without horizontal scrolling */
+.table-scroll.expanded { width: calc(100vw - 32px); margin-left: calc(50% - 50vw + 16px); }
+.table-scroll.expanded table { width: 100%; }
+.hero-sig-comp .hero-sig-val { font-size: 26px; font-weight: 800; }
+.hero-sig-sub { font-size: 12px; color: var(--text-3); font-weight: 500; margin-left: 2px; }
