@@ -112,14 +112,20 @@ export async function collectPnl(asset) {
     if (!d || d >= today || doneDates.has(d)) { realizedToday = 0; realizedBigToday = 0; return; }
     const px = priceAt(d);
     if (px == null) { realizedToday = 0; realizedBigToday = 0; return; }
-    let holders = 0, inProfit = 0, x10 = 0, x2 = 0, x1 = 0, l50 = 0, l50p = 0;
+    // Two cohorts: BUYERS (real cost basis — the informative population) vs
+    // the AIRDROP cohort (cost $0, in profit at any price by construction —
+    // counting them froze pctInProfit near 79% forever). % and tranches are
+    // buyers-only; the airdrop count stays visible as its own line.
+    let holders = 0, airdrop = 0, buyers = 0, inProfit = 0, x10 = 0, x2 = 0, x1 = 0, l50 = 0, l50p = 0;
     for (const [addr, [bal, cost]] of st.wallets) {
       if (bal <= 0n || st.pools.has(addr)) continue;
       const tokens = Number(bal) / dec;
       if (tokens * px < 0.01) continue; // dust
       holders++;
       const avg = cost > 0 && tokens > 0 ? cost / tokens : 0;
-      const ratio = avg > 0 ? px / avg : Infinity; // cost 0 (airdrop/mint) = pure gain
+      if (avg <= 0) { airdrop++; continue; }
+      buyers++;
+      const ratio = px / avg;
       if (ratio > 1) inProfit++;
       if (ratio >= 10) x10++;
       else if (ratio >= 2) x2++;
@@ -128,8 +134,8 @@ export async function collectPnl(asset) {
       else l50p++;
     }
     series.push({
-      date: d, holders, inProfit,
-      pctInProfit: holders ? Number(((inProfit / holders) * 100).toFixed(2)) : null,
+      date: d, holders, airdrop, buyers, inProfit,
+      pctInProfit: buyers ? Number(((inProfit / buyers) * 100).toFixed(2)) : null,
       x10, x2_10: x2, x1_2: x1, l0_50: l50, l50: l50p,
       realizedUsd: Math.round(realizedToday),
       realizedBigUsd: Math.round(realizedBigToday),

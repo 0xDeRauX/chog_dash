@@ -136,7 +136,8 @@ function renderPnl(el, a) {
     ["0 à −50%", last.l0_50, "down"],
     ["≤ −50%", last.l50, "down"],
   ];
-  const pctBar = (n) => last.holders ? ((n / last.holders) * 100).toFixed(1) + "%" : "—";
+  // tranche shares are over BUYERS; the airdrop line is shown against total
+  const pctBar = (n) => last.buyers ? ((n / last.buyers) * 100).toFixed(1) + "%" : "—";
   const realized7 = pnl.slice(-7).reduce((s2, r) => s2 + (r.realizedUsd || 0), 0);
 
   // Tops study: local maxima (price = max over ±10j) followed by a ≥20% drop
@@ -166,23 +167,24 @@ function renderPnl(el, a) {
     <div class="pnl-grid">
       <div class="pnl-col">
         <div class="pnl-head">
-          <div><div class="stat-mini-label">% de holders en gain <span id="pnl-help"></span></div>
+          <div><div class="stat-mini-label">% des acheteurs en gain <span id="pnl-help"></span></div>
           <div class="pnl-big">${last.pctInProfit != null ? last.pctInProfit.toFixed(1) + "%" : "—"}</div></div>
           <div><div class="stat-mini-label">PnL réalisé (7j)</div>
           <div class="pnl-big ${realized7 >= 0 ? "up" : "down"}">${fmtUsdCompact(Math.abs(realized7))}${realized7 < 0 ? " de pertes" : ""}</div></div>
         </div>
         <table class="pnl-table">
-          <thead><tr><th style="text-align:left">Tranche (multiple du coût d'entrée)</th><th># holders</th><th>part</th></tr></thead>
+          <thead><tr><th style="text-align:left">Tranche (multiple du coût d'entrée)</th><th># acheteurs</th><th>part</th></tr></thead>
           <tbody>${tranches.map(([lbl, n, cls]) =>
             `<tr><td style="text-align:left" class="${cls}">${lbl}</td><td>${fmtCompact(n)}</td><td>${pctBar(n || 0)}</td></tr>`).join("")}
+            <tr class="pnl-airdrop-row"><td style="text-align:left">🎁 Cohorte airdrop (coût $0 — hors %)</td><td>${fmtCompact(last.airdrop)}</td><td>${last.holders ? ((last.airdrop / last.holders) * 100).toFixed(1) + "% du total" : "—"}</td></tr>
           </tbody>
         </table>
-        <p class="card-sub">Au ${last.date} · ${fmtCompact(last.holders)} holders valorisés (poussière <$0.01 et pools exclus). Coût d'entrée estimé au prix du jour de chaque transfert.</p>
+        <p class="card-sub">Au ${last.date} · ${fmtCompact(last.buyers)} acheteurs (coût réel) + ${fmtCompact(last.airdrop)} wallets airdrop sur ${fmtCompact(last.holders)} holders valorisés (poussière <$0.01 et pools exclus). Les airdrops sont en gain par construction — les compter figeait le % : ils sont sortis du calcul mais restent affichés (risque de vente à tout prix).</p>
       </div>
       <div class="pnl-col">
         <h4 class="pnl-sub">Les tops passés — dans quel contexte la montée s'est arrêtée</h4>
         ${tops.length ? `<table class="pnl-table">
-          <thead><tr><th style="text-align:left">Top</th><th>Prix</th><th>% en gain ce jour</th><th>Réalisé (top ±3j)</th><th>dont gros (≥$5K)</th></tr></thead>
+          <thead><tr><th style="text-align:left">Top</th><th>Prix</th><th>% acheteurs en gain</th><th>Réalisé (top ±3j)</th><th>dont gros (≥$5K)</th></tr></thead>
           <tbody>${tops.slice(-6).reverse().map((t) =>
             `<tr><td style="text-align:left">${t.date}</td><td>${fmtPrice(t.price)}</td>
              <td class="${t.pct >= 80 ? "down" : ""}">${t.pct != null ? t.pct.toFixed(1) + "%" : "—"}</td>

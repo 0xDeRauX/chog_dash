@@ -1629,3 +1629,4 @@ body.studio-dragging .drop-zones { display: flex; }
 .pnl-table td.up { color: var(--up); }
 .pnl-table td.down { color: var(--down); }
 .pnl-lag { background: color-mix(in srgb, #e0a000 12%, transparent); border: 1px solid color-mix(in srgb, #e0a000 40%, transparent); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin: 0 0 14px; }
+.pnl-airdrop-row td { color: var(--text-3); border-top: 1px solid var(--border); }

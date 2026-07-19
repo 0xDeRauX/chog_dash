@@ -264,10 +264,11 @@ export function ingestAll() {
   // Chain Radar snapshots + promoted-token mentions (keyed by chain+address —
   // discovered tokens live outside the assets table).
   const upsertPnl = db.prepare(`
-    INSERT INTO pnl_daily (asset_id, date, holders, in_profit, pct_in_profit, x10, x2_10, x1_2, l0_50, l50, realized_usd, realized_big_usd)
-    VALUES (@assetId, @date, @holders, @inProfit, @pctInProfit, @x10, @x2_10, @x1_2, @l0_50, @l50, @realizedUsd, @realizedBigUsd)
+    INSERT INTO pnl_daily (asset_id, date, holders, airdrop, buyers, in_profit, pct_in_profit, x10, x2_10, x1_2, l0_50, l50, realized_usd, realized_big_usd)
+    VALUES (@assetId, @date, @holders, @airdrop, @buyers, @inProfit, @pctInProfit, @x10, @x2_10, @x1_2, @l0_50, @l50, @realizedUsd, @realizedBigUsd)
     ON CONFLICT(asset_id, date) DO UPDATE SET
-      holders = excluded.holders, in_profit = excluded.in_profit, pct_in_profit = excluded.pct_in_profit,
+      holders = excluded.holders, airdrop = excluded.airdrop, buyers = excluded.buyers,
+      in_profit = excluded.in_profit, pct_in_profit = excluded.pct_in_profit,
       x10 = excluded.x10, x2_10 = excluded.x2_10, x1_2 = excluded.x1_2,
       l0_50 = excluded.l0_50, l50 = excluded.l50,
       realized_usd = excluded.realized_usd, realized_big_usd = excluded.realized_big_usd
@@ -278,7 +279,8 @@ export function ingestAll() {
     if (!asset) continue;
     for (const r of file.series || []) {
       upsertPnl.run({
-        assetId: asset.id, date: r.date, holders: r.holders ?? null, inProfit: r.inProfit ?? null,
+        assetId: asset.id, date: r.date, holders: r.holders ?? null, airdrop: r.airdrop ?? null,
+        buyers: r.buyers ?? null, inProfit: r.inProfit ?? null,
         pctInProfit: r.pctInProfit ?? null, x10: r.x10 ?? null, x2_10: r.x2_10 ?? null,
         x1_2: r.x1_2 ?? null, l0_50: r.l0_50 ?? null, l50: r.l50 ?? null,
         realizedUsd: r.realizedUsd ?? null, realizedBigUsd: r.realizedBigUsd ?? null,

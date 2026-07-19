@@ -136,6 +136,8 @@ CREATE TABLE IF NOT EXISTS pnl_daily (
   asset_id INTEGER NOT NULL REFERENCES assets(id),
   date TEXT NOT NULL,
   holders INTEGER,
+  airdrop INTEGER,
+  buyers INTEGER,
   in_profit INTEGER,
   pct_in_profit REAL,
   x10 INTEGER,

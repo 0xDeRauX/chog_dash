@@ -81,7 +81,7 @@ const tiersStmt = db.prepare(
    FROM holder_tiers_daily WHERE asset_id = ? ORDER BY date`
 );
 const pnlStmt = db.prepare(
-  `SELECT date, holders, in_profit AS inProfit, pct_in_profit AS pctInProfit,
+  `SELECT date, holders, airdrop, buyers, in_profit AS inProfit, pct_in_profit AS pctInProfit,
           x10, x2_10, x1_2, l0_50, l50, realized_usd AS realizedUsd, realized_big_usd AS realizedBigUsd
    FROM pnl_daily WHERE asset_id = ? ORDER BY date`
 );

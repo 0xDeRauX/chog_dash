@@ -68,20 +68,34 @@ export async function blockDater(minBlock, maxBlock) {
 // topics[], data, transaction_hash, log_index) in ascending block order.
 export async function* transferLogs(contract, topic0, fromBlock) {
   const head = await headBlock();
-  for (let start = fromBlock; start <= head; start += SPAN + 1) {
-    const end = Math.min(start + SPAN, head);
-    const r = await rpc({
-      jsonrpc: "2.0", id: 1, method: "eth_getLogs",
-      params: [{ address: contract, topics: [topic0], fromBlock: "0x" + start.toString(16), toBlock: "0x" + end.toString(16) }],
-    });
-    if (r.error) throw new Error(`eth_getLogs: ${JSON.stringify(r.error).slice(0, 120)}`);
-    const logs = (r.result || []).map((l) => ({
+  const getLogs = async (start, end) => rpc({
+    jsonrpc: "2.0", id: 1, method: "eth_getLogs",
+    params: [{ address: contract, topics: [topic0], fromBlock: "0x" + start.toString(16), toBlock: "0x" + end.toString(16) }],
+  });
+  // dense periods (token launch) exceed the 50K-logs-per-response cap →
+  // bisect the window until it fits
+  async function* fetchRange(start, end) {
+    const r = await getLogs(start, end);
+    if (r.error) {
+      const msg = JSON.stringify(r.error);
+      if ((r.error.code === -32005 || /more than \d+ logs/i.test(msg)) && end > start) {
+        const mid = Math.floor((start + end) / 2);
+        yield* fetchRange(start, mid);
+        yield* fetchRange(mid + 1, end);
+        return;
+      }
+      throw new Error(`eth_getLogs: ${msg.slice(0, 120)}`);
+    }
+    yield (r.result || []).map((l) => ({
       block_number: parseInt(l.blockNumber, 16),
       log_index: parseInt(l.logIndex, 16),
       transaction_hash: l.transactionHash,
       topics: l.topics,
       data: l.data,
     })).sort((a, b) => a.block_number - b.block_number || a.log_index - b.log_index);
-    yield { logs, upTo: end, head };
+  }
+  for (let start = fromBlock; start <= head; start += SPAN + 1) {
+    const end = Math.min(start + SPAN, head);
+    for await (const logs of fetchRange(start, end)) yield { logs, upTo: end, head };
   }
 }
