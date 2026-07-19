@@ -14,8 +14,10 @@ const todayUTCstr = () => new Date().toISOString().slice(0, 10);
 // ---- Binance (spot OR perp futures — same kline shape) -------------------
 // Assets without a spot pair often have a USDT perp (HYPE, MON, FARTCOIN, AKT):
 // perp taker flow is a fine buy/sell-pressure proxy, with the same history.
+// Spot goes through data-api.binance.vision: api.binance.com geo-blocks (451)
+// the US-based GitHub runners, which silently starved the CI collection.
 async function binanceKlines(symbol, days, perp = false) {
-  const base = perp ? "https://fapi.binance.com/fapi/v1/klines" : "https://api.binance.com/api/v3/klines";
+  const base = perp ? "https://fapi.binance.com/fapi/v1/klines" : "https://data-api.binance.vision/api/v3/klines";
   const url = new URL(base);
   url.searchParams.set("symbol", symbol);
   url.searchParams.set("interval", "1d");
@@ -34,6 +36,28 @@ async function binanceKlines(symbol, days, perp = false) {
   }
   return out;
 }
+// ---- OKX Rubik taker volume (daily buy/sell $, keyless, NOT geo-blocked) --
+// Primary source for perp-only assets: fapi.binance.com is unreachable from
+// CI (451), and mixing venues per-run would zigzag the $ magnitudes — OKX
+// everywhere keeps each asset single-venue. Row shape: [ts, sellVol, buyVol]
+// (checked against Binance fapi: buy ratios agree within 0.1pt).
+async function okxTakerVolume(ccy, days) {
+  const url = `https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=${ccy}&instType=CONTRACTS&period=1D`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`OKX HTTP ${res.status} for ${ccy}`);
+  const rows = (await res.json()).data || [];
+  if (!rows.length) throw new Error(`OKX: no taker data for ${ccy}`);
+  const today = todayUTCstr();
+  return rows
+    .map(([ts, sell, buy]) => ({
+      date: new Date(Number(ts)).toISOString().slice(0, 10),
+      buyUsd: Number(buy), sellUsd: Number(sell),
+    }))
+    .filter((p) => p.date < today) // drop the running day
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-days);
+}
+
 const binancePair = (asset) => asset.binance
   ? { symbol: asset.binance, perp: false }
   : asset.binancePerp ? { symbol: asset.binancePerp, perp: true } : null;
@@ -109,7 +133,15 @@ export async function collectTradeflow(assets) {
     try {
       const pair = binancePair(asset);
       if (pair) {
-        const series = await binanceKlines(pair.symbol, 5, pair.perp);
+        let series;
+        if (pair.perp) {
+          // OKX first (single venue, reachable from CI); Binance fapi as the
+          // fallback for coins OKX doesn't list (AKT — local runs only).
+          try { series = await okxTakerVolume(pair.symbol.replace(/USDT$/, ""), 5); }
+          catch { series = await binanceKlines(pair.symbol, 5, pair.perp); }
+        } else {
+          series = await binanceKlines(pair.symbol, 5, pair.perp);
+        }
         if (series.length) results.push({ symbol: asset.symbol, series });
       } else {
         const address = asset.holders?.contract || asset.holders?.mint;

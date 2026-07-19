@@ -81,7 +81,7 @@ const METRICS = [
     deltas: [7, 30], chart: true,
     help: {
       what: "Part du volume <b>acheteur</b> dans le volume total : 50% = équilibre, >50% = pression acheteuse, <50% = vendeuse.",
-      read: "En <b>$ réels</b> (carnet Binance, taker buy/sell) pour les actifs listés Binance ; en <b>nombre de transactions</b> DEX (approximation) pour CHOG/CASHCAT/ANSEM/BRETT/FARTCOIN — ⚠️ les deux ne sont pas strictement comparables.",
+      read: "En <b>$ réels</b> (taker buy/sell) : carnet Binance pour le spot, carnet OKX pour les perps (FARTCOIN/MON/HYPE) ; en <b>nombre de transactions</b> DEX pour CHOG/CASHCAT/ANSEM/BRETT — ⚠️ les sources ne sont pas strictement comparables entre elles.",
       example: "PEPE à 47% d'achat pendant que son prix monte = la hausse se vend dans le carnet (méfiance) ; 58% pendant une baisse = accumulation dans la chute.",
     },
   },
