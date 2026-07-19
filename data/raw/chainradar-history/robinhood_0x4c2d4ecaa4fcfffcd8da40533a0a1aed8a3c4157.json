@@ -1,0 +1,12 @@
+{
+  "chain": "robinhood",
+  "address": "0x4c2d4ecaa4fcfffcd8da40533a0a1aed8a3c4157",
+  "symbol": "MEMESTOCK",
+  "series": [
+    {
+      "date": "2026-07-19",
+      "price": 4.44212526889662e-7,
+      "vol": 2715648.138698112
+    }
+  ]
+}

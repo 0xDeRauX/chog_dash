@@ -1,0 +1,12 @@
+{
+  "chain": "robinhood",
+  "address": "0xb805b15174e0c4d48abf8e69c5cd01e631979a37",
+  "symbol": "CRYPTOCATS",
+  "series": [
+    {
+      "date": "2026-07-19",
+      "price": 0.000196000743105555,
+      "vol": 2178124.678270813
+    }
+  ]
+}

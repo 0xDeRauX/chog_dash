@@ -1,0 +1,12 @@
+{
+  "chain": "robinhood",
+  "address": "0x82a0fd8436f68ecef62b04984e7975b926a60567",
+  "symbol": "RINF",
+  "series": [
+    {
+      "date": "2026-07-19",
+      "price": 0.00000183430915475499,
+      "vol": 8511435.052154182
+    }
+  ]
+}
