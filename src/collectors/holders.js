@@ -13,6 +13,7 @@
 import fs from "fs";
 import path from "path";
 import { CONFIG } from "../config.js";
+import { hyperRpcAvailable, transferLogs } from "../lib/monadLogs.js";
 
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 const ZERO = "0x0000000000000000000000000000000000000000";
@@ -246,6 +247,21 @@ async function thirdwebHolders(symbol, cfg, priceUsd) {
   let seenBlock = -1;
   let seen = new Set();
   let calls = 0;
+  if (hyperRpcAvailable()) {
+    // Live source (Envio HyperRPC) — thirdweb Insight froze at ~75.28M on
+    // Monad and would silently serve a 2-month-old ledger.
+    for await (const { logs } of transferLogs(cfg.contract, TRANSFER_TOPIC, cursor)) {
+      calls++;
+      for (const e of logs) {
+        const from = addrFromTopic(e.topics[1]);
+        const to = addrFromTopic(e.topics[2]);
+        const v = BigInt(e.data && e.data !== "0x" ? e.data : "0x0");
+        if (from !== ZERO) balances.set(from, (balances.get(from) || 0n) - v);
+        if (to !== ZERO) balances.set(to, (balances.get(to) || 0n) + v);
+        headBlock = Math.max(headBlock, e.block_number);
+      }
+    }
+  } else {
   const LIMIT = 1000, MAX_CALLS = 5000;
 
   while (calls < MAX_CALLS) {
@@ -278,6 +294,7 @@ async function thirdwebHolders(symbol, cfg, priceUsd) {
     }
     if (data.length < LIMIT) break;
     cursor = seenBlock === cursor && processed === 0 ? cursor + 1 : seenBlock;
+  }
   }
 
   let holders = 0;

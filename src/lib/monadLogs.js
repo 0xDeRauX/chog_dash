@@ -1,0 +1,87 @@
+// Monad Transfer-log source via Envio HyperRPC — the replacement for thirdweb
+// Insight, which froze at block ~75.28M (2026-05-17) while the chain moved on.
+// HyperRPC serves eth_getLogs over ~1M-block spans, so a 13M-block gap closes
+// in ~14 calls. Free tier is 5 req/min → hard 13s pacing between calls.
+// eth_getLogs carries no timestamps: block dates come from anchor blocks
+// (batched eth_getBlockByNumber) interpolated linearly — Monad's block time is
+// steady enough (~0.55s) that daily attribution is off by minutes at worst.
+import { CONFIG } from "../config.js";
+
+const SPAN = 1_000_000;
+const PACE_MS = 13_000;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let lastCall = 0;
+async function paced() {
+  const wait = lastCall + PACE_MS - Date.now();
+  if (wait > 0) await sleep(wait);
+  lastCall = Date.now();
+}
+
+const rpcUrl = () => `https://monad.rpc.hypersync.xyz/${CONFIG.HYPERSYNC_API_KEY}`;
+
+async function rpc(body, tries = 4) {
+  for (let t = 1; ; t++) {
+    await paced();
+    const res = await fetch(rpcUrl(), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) return res.json();
+    if (t >= tries) throw new Error(`HyperRPC HTTP ${res.status}: ${(await res.text()).slice(0, 120)}`);
+    await sleep(res.status === 429 ? 20_000 : 4_000 * t);
+  }
+}
+
+export const hyperRpcAvailable = () => !!CONFIG.HYPERSYNC_API_KEY;
+
+export async function headBlock() {
+  const r = await rpc({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] });
+  return parseInt(r.result, 16);
+}
+
+// blockNumber -> "YYYY-MM-DD", by linear interpolation between anchor blocks
+// fetched in ONE batched request (HyperRPC supports JSON-RPC batching).
+export async function blockDater(minBlock, maxBlock) {
+  const anchors = [];
+  const STEP = 400_000;
+  for (let b = minBlock; b <= maxBlock; b += STEP) anchors.push(b);
+  if (anchors.at(-1) !== maxBlock) anchors.push(maxBlock);
+  const batch = anchors.map((b, i) => ({ jsonrpc: "2.0", id: i, method: "eth_getBlockByNumber", params: ["0x" + b.toString(16), false] }));
+  const out = await rpc(batch);
+  const pts = (Array.isArray(out) ? out : [out])
+    .filter((r) => r.result)
+    .map((r) => [parseInt(r.result.number, 16), parseInt(r.result.timestamp, 16)])
+    .sort((a, b) => a[0] - b[0]);
+  if (pts.length < 2) throw new Error("blockDater: not enough anchors");
+  return (bn) => {
+    let i = pts.findIndex(([b]) => b >= bn);
+    if (i <= 0) i = Math.max(1, Math.min(pts.length - 1, i === 0 ? 1 : pts.length - 1));
+    const [b0, t0] = pts[i - 1], [b1, t1] = pts[i];
+    const ts = t0 + ((bn - b0) * (t1 - t0)) / Math.max(1, b1 - b0);
+    return new Date(ts * 1000).toISOString().slice(0, 10);
+  };
+}
+
+// Streams Transfer logs for a contract from `fromBlock` to the chain head.
+// Yields normalized events shaped like thirdweb Insight's (block_number,
+// topics[], data, transaction_hash, log_index) in ascending block order.
+export async function* transferLogs(contract, topic0, fromBlock) {
+  const head = await headBlock();
+  for (let start = fromBlock; start <= head; start += SPAN + 1) {
+    const end = Math.min(start + SPAN, head);
+    const r = await rpc({
+      jsonrpc: "2.0", id: 1, method: "eth_getLogs",
+      params: [{ address: contract, topics: [topic0], fromBlock: "0x" + start.toString(16), toBlock: "0x" + end.toString(16) }],
+    });
+    if (r.error) throw new Error(`eth_getLogs: ${JSON.stringify(r.error).slice(0, 120)}`);
+    const logs = (r.result || []).map((l) => ({
+      block_number: parseInt(l.blockNumber, 16),
+      log_index: parseInt(l.logIndex, 16),
+      transaction_hash: l.transactionHash,
+      topics: l.topics,
+      data: l.data,
+    })).sort((a, b) => a.block_number - b.block_number || a.log_index - b.log_index);
+    yield { logs, upTo: end, head };
+  }
+}

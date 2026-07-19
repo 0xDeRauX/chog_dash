@@ -14,6 +14,7 @@
 import fs from "fs";
 import path from "path";
 import { CONFIG } from "../config.js";
+import { hyperRpcAvailable, transferLogs, blockDater } from "../lib/monadLogs.js";
 
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 const ZERO = "0x0000000000000000000000000000000000000000";
@@ -139,9 +140,32 @@ export async function collectPnl(asset) {
 
   // ---- fetch new transfer events (buffered: the venue pre-pass needs the
   // whole batch before any state is mutated) --------------------------------
+  // Primary source: Envio HyperRPC (live). Legacy fallback: thirdweb Insight
+  // (frozen at block ~75.28M on Monad — kept only for keyless resilience).
   const batch = [];
   let cursor = st.lastBlock > 0 ? st.lastBlock + 1 : (cfg.startBlock || 1);
   let seenBlock = -1, seen = new Set(), calls = 0, events = 0;
+  if (hyperRpcAvailable()) {
+    let minBn = null, maxBn = null;
+    const rawLogs = [];
+    for await (const { logs } of transferLogs(cfg.contract, TRANSFER_TOPIC, cursor)) {
+      calls++;
+      for (const l of logs) {
+        rawLogs.push(l);
+        if (minBn == null || l.block_number < minBn) minBn = l.block_number;
+        if (maxBn == null || l.block_number > maxBn) maxBn = l.block_number;
+      }
+    }
+    if (rawLogs.length) {
+      const dateOf = await blockDater(minBn, maxBn);
+      for (const l of rawLogs) {
+        batch.push([l.block_number, dateOf(l.block_number), addrFromTopic(l.topics[1]), addrFromTopic(l.topics[2]),
+          BigInt(l.data && l.data !== "0x" ? l.data : "0x0")]);
+        st.lastBlock = Math.max(st.lastBlock, l.block_number);
+        events++;
+      }
+    }
+  } else {
   const LIMIT = 1000, MAX_CALLS = 5000;
   while (calls < MAX_CALLS) {
     const url = new URL(`https://${cfg.chainId}.insight.thirdweb.com/v1/events/${cfg.contract}`);
@@ -178,6 +202,7 @@ export async function collectPnl(asset) {
     }
     if (data.length < LIMIT) break;
     cursor = seenBlock === cursor && processed === 0 ? cursor + 1 : seenBlock;
+  }
   }
 
   // ---- venue auto-detection ------------------------------------------------

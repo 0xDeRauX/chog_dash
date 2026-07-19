@@ -132,6 +132,7 @@ jobs:
         if: env.SEL == 'all' || contains(env.SEL, 'holders')
         env:
           THIRDWEB_SECRET_KEY: ${{ secrets.THIRDWEB_SECRET_KEY }}
+          HYPERSYNC_API_KEY: ${{ secrets.HYPERSYNC_API_KEY }}
           TAOSTATS_API_KEY: ${{ secrets.TAOSTATS_API_KEY }}
           blockvision_api_key_sui: ${{ secrets.BLOCKVISION_API_KEY_SUI }}
           blockvision_api_key_monad: ${{ secrets.BLOCKVISION_API_KEY_MONAD }}
@@ -145,6 +146,7 @@ jobs:
         if: env.SEL == 'all' || contains(env.SEL, 'pnl')
         env:
           THIRDWEB_SECRET_KEY: ${{ secrets.THIRDWEB_SECRET_KEY }}
+          HYPERSYNC_API_KEY: ${{ secrets.HYPERSYNC_API_KEY }}
         run: npm run collect:pnl
 
       - name: Ingest into SQLite

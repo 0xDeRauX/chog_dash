@@ -236,6 +236,7 @@ export const CONFIG = {
   TWITTER_API_KEY: process.env.TWITTER_API_KEY,
   X_BEARER_TOKEN: process.env.X_BEARER_TOKEN,
   THIRDWEB_SECRET_KEY: process.env.THIRDWEB_SECRET_KEY,
+  HYPERSYNC_API_KEY: process.env.HYPERSYNC_API_KEY, // Envio HyperRPC (Monad logs)
   // Optional dedicated Solana RPC for the SPL holder counts. Note: Helius's free
   // tier rejects the large getProgramAccounts these need (e.g. BONK ~485MB), so
   // the public mainnet-beta endpoint is actually the reliable default here.
