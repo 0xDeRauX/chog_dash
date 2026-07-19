@@ -3,21 +3,6 @@
   "results": [
     {
       "chain": "robinhood",
-      "address": "0x45242320dbb855eea8fd36804c6487e10e97fcf9",
-      "count": 180
-    },
-    {
-      "chain": "robinhood",
-      "address": "0x56910d4409f3a0c78c64dd8d0545ff0705389870",
-      "count": 13398
-    },
-    {
-      "chain": "robinhood",
-      "address": "0xd7321801caae694090694ff55a9323139f043b88",
-      "count": 1045
-    },
-    {
-      "chain": "robinhood",
       "address": "0xe7b2b30021e5c09ea64ac13bbd6a49a06357de33",
       "count": 8130
     },
@@ -30,6 +15,26 @@
       "chain": "robinhood",
       "address": "0xaa4b6a79df257e50e0079cd812a92262ee3951b0",
       "count": 19
+    },
+    {
+      "chain": "robinhood",
+      "address": "0xf57913a8b83626ada84adbcf89b9a68dac988ad4",
+      "count": 1708
+    },
+    {
+      "chain": "robinhood",
+      "address": "0x45242320dbb855eea8fd36804c6487e10e97fcf9",
+      "count": 180
+    },
+    {
+      "chain": "robinhood",
+      "address": "0x56910d4409f3a0c78c64dd8d0545ff0705389870",
+      "count": 13398
+    },
+    {
+      "chain": "robinhood",
+      "address": "0xd7321801caae694090694ff55a9323139f043b88",
+      "count": 1045
     }
   ]
 }
