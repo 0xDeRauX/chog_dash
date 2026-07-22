@@ -211,6 +211,49 @@ export const ASSETS = [
     xQuery: '("$STRK" OR "Starknet" OR "@starknet") -is:retweet',
     discordInvite: "starknet",
   },
+  {
+    group: "majors",
+    symbol: "ZEC",
+    binance: "ZECUSDT", // spot pair for buy/sell volume (taker klines)
+    chain: "zcash",
+    coingeckoId: "zcash",
+    xQuery: '("$ZEC" OR "Zcash" OR "@Zcash") -is:retweet',
+    discordInvite: "zcash",
+    // Transparent-address balance count (shielded addresses aren't counted).
+    holders: { source: "coinmetrics", cmAsset: "zec" },
+  },
+  {
+    group: "majors",
+    symbol: "ONDO",
+    binance: "ONDOUSDT", // spot pair for buy/sell volume (taker klines)
+    chain: "ethereum",
+    coingeckoId: "ondo-finance",
+    // "Ondo" alone is a common word/name → use the project name + cashtag.
+    xQuery: '("$ONDO" OR "Ondo Finance" OR "@OndoFinance") -is:retweet',
+    discordInvite: "ondofinance",
+    // ERC-20 on Ethereum → Blockscout holder count.
+    holders: { source: "blockscout", base: "https://eth.blockscout.com", contract: "0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3" },
+  },
+  {
+    group: "majors",
+    symbol: "XMR",
+    chain: "monero",
+    coingeckoId: "monero",
+    xQuery: '("$XMR" OR "Monero" OR "@monero") -is:retweet',
+    // Privacy coin: no buy/sell (delisted from Binance, no OKX perp), no
+    // holder count (shielded balances), no CoinGecko-tracked Telegram.
+  },
+  {
+    group: "majors",
+    symbol: "NEAR",
+    binance: "NEARUSDT", // spot pair for buy/sell volume (taker klines)
+    chain: "near",
+    coingeckoId: "near",
+    // "NEAR" alone is a common English word → use the project name + cashtag.
+    xQuery: '("$NEAR" OR "@NEARProtocol" OR "NEAR Protocol") -is:retweet',
+    discordInvite: "nearprotocol",
+    // NEAR account count has no free daily source → holders absent.
+  },
 ];
 
 // Maps each asset's `chain` to its DefiLlama chain name for TVL lookups.
@@ -230,6 +273,9 @@ export const CHAINS = {
   bittensor: "Bittensor",
   akash: null,
   starknet: "Starknet",
+  zcash: "Zcash",
+  monero: "Monero",
+  near: "NEAR",
 };
 
 export const CONFIG = {
