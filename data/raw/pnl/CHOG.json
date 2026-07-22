@@ -1,7 +1,7 @@
 {
  "symbol": "CHOG",
  "indexedToBlock": 89502718,
- "indexedToDate": "2026-07-19",
+ "indexedToDate": "2026-07-21",
  "series": [
   {
    "date": "2025-11-25",
@@ -3545,17 +3545,47 @@
   },
   {
    "date": "2026-07-19",
-   "holders": 26355,
-   "airdrop": 22152,
-   "buyers": 4203,
-   "inProfit": 466,
-   "pctInProfit": 11.09,
-   "x10": 56,
-   "x2_10": 16,
-   "x1_2": 394,
-   "l0_50": 1218,
-   "l50": 2519,
-   "realizedUsd": -540,
+   "holders": 26403,
+   "airdrop": 22187,
+   "buyers": 4216,
+   "inProfit": 518,
+   "pctInProfit": 12.29,
+   "x10": 57,
+   "x2_10": 15,
+   "x1_2": 446,
+   "l0_50": 1279,
+   "l50": 2419,
+   "realizedUsd": -337,
+   "realizedBigUsd": 0
+  },
+  {
+   "date": "2026-07-20",
+   "holders": 26422,
+   "airdrop": 22187,
+   "buyers": 4235,
+   "inProfit": 564,
+   "pctInProfit": 13.32,
+   "x10": 57,
+   "x2_10": 15,
+   "x1_2": 492,
+   "l0_50": 1281,
+   "l50": 2390,
+   "realizedUsd": -5159,
+   "realizedBigUsd": 0
+  },
+  {
+   "date": "2026-07-21",
+   "holders": 26600,
+   "airdrop": 22313,
+   "buyers": 4287,
+   "inProfit": 805,
+   "pctInProfit": 18.78,
+   "x10": 59,
+   "x2_10": 42,
+   "x1_2": 704,
+   "l0_50": 1365,
+   "l50": 2117,
+   "realizedUsd": -1715,
    "realizedBigUsd": 0
   }
  ]
