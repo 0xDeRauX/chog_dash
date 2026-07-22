@@ -1,0 +1,12 @@
+{
+  "chain": "robinhood",
+  "address": "0x52e18e51d4af69c4fa64afcd85c7f76f14baeef4",
+  "symbol": "SPLT",
+  "series": [
+    {
+      "date": "2026-07-18",
+      "price": 0.00000166819453575256,
+      "vol": 4748554.418400473
+    }
+  ]
+}

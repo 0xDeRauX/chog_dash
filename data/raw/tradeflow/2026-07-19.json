@@ -3,11 +3,11 @@
   "results": [
     {
       "symbol": "CHOG",
-      "buyTx": 68,
-      "sellTx": 83,
-      "volUsd": 6227.45,
-      "buyUsd": 3288.1377534665153,
-      "sellUsd": 2938.58250017283
+      "buyTx": 60,
+      "sellTx": 82,
+      "volUsd": 6073,
+      "buyUsd": 4137.237887516411,
+      "sellUsd": 2048.810169650096
     },
     {
       "symbol": "PEPE",
@@ -101,9 +101,9 @@
     },
     {
       "symbol": "BRETT",
-      "buyTx": 15,
-      "sellTx": 42,
-      "volUsd": 4342.14
+      "buyTx": 16,
+      "sellTx": 51,
+      "volUsd": 4722.75
     },
     {
       "symbol": "PENGU",
@@ -167,15 +167,15 @@
     },
     {
       "symbol": "ANSEM",
-      "buyTx": 7221,
-      "sellTx": 7859,
-      "volUsd": 8148009.29
+      "buyTx": 7319,
+      "sellTx": 7319,
+      "volUsd": 8128088.74
     },
     {
       "symbol": "CASHCAT",
-      "buyTx": 3624,
-      "sellTx": 2539,
-      "volUsd": 3799899.25
+      "buyTx": 3808,
+      "sellTx": 2693,
+      "volUsd": 3981372.55
     },
     {
       "symbol": "BTC",
@@ -414,36 +414,6 @@
           "date": "2026-07-18",
           "buyUsd": 3212342.94415,
           "sellUsd": 3152199.3193800002
-        }
-      ]
-    },
-    {
-      "symbol": "AKT",
-      "series": [
-        {
-          "date": "2026-07-14",
-          "buyUsd": 648743.28186,
-          "sellUsd": 632766.07752
-        },
-        {
-          "date": "2026-07-15",
-          "buyUsd": 508332.50584,
-          "sellUsd": 533498.80399
-        },
-        {
-          "date": "2026-07-16",
-          "buyUsd": 456053.92279,
-          "sellUsd": 595841.29275
-        },
-        {
-          "date": "2026-07-17",
-          "buyUsd": 521951.83001,
-          "sellUsd": 601274.7616100002
-        },
-        {
-          "date": "2026-07-18",
-          "buyUsd": 442847.31307,
-          "sellUsd": 426725.11432
         }
       ]
     },

@@ -1,0 +1,12 @@
+{
+  "chain": "robinhood",
+  "address": "0x626ed9ac519c4141cb21c86ab535c551402e4958",
+  "symbol": "FRES",
+  "series": [
+    {
+      "date": "2026-07-19",
+      "price": 0.00000191141259453499,
+      "vol": 5176303.580313025
+    }
+  ]
+}

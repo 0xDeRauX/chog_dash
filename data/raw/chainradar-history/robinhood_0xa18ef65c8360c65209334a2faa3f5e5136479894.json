@@ -1,0 +1,12 @@
+{
+  "chain": "robinhood",
+  "address": "0xa18ef65c8360c65209334a2faa3f5e5136479894",
+  "symbol": "EQFL",
+  "series": [
+    {
+      "date": "2026-07-18",
+      "price": 2.6374941736199e-7,
+      "vol": 4872360.802236054
+    }
+  ]
+}

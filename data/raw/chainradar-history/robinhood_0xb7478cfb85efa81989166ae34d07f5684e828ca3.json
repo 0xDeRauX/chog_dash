@@ -1,0 +1,12 @@
+{
+  "chain": "robinhood",
+  "address": "0xb7478cfb85efa81989166ae34d07f5684e828ca3",
+  "symbol": "JIMOTHY",
+  "series": [
+    {
+      "date": "2026-07-18",
+      "price": 2.12283975847926e-17,
+      "vol": 78297962.24982212
+    }
+  ]
+}

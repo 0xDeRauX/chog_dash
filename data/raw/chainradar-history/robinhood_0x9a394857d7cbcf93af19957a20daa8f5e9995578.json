@@ -1,0 +1,12 @@
+{
+  "chain": "robinhood",
+  "address": "0x9a394857d7cbcf93af19957a20daa8f5e9995578",
+  "symbol": "USDG",
+  "series": [
+    {
+      "date": "2026-07-18",
+      "price": 1.00263940212747,
+      "vol": 0.887232732769775
+    }
+  ]
+}

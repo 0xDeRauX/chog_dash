@@ -1,0 +1,25 @@
+{
+  "date": "2026-07-18",
+  "results": [
+    {
+      "chain": "robinhood",
+      "address": "0xf57913a8b83626ada84adbcf89b9a68dac988ad4",
+      "count": 1797
+    },
+    {
+      "chain": "robinhood",
+      "address": "0x56910d4409f3a0c78c64dd8d0545ff0705389870",
+      "count": 16220
+    },
+    {
+      "chain": "robinhood",
+      "address": "0x45242320dbb855eea8fd36804c6487e10e97fcf9",
+      "count": 5178
+    },
+    {
+      "chain": "robinhood",
+      "address": "0xd7321801caae694090694ff55a9323139f043b88",
+      "count": 2340
+    }
+  ]
+}
