@@ -30,11 +30,12 @@ function loadState(sym) {
       lastBlock: s.lastBlock || 0,
       lastDate: s.lastDate || null,
       pools: new Set(s.pools || []),
+      distributors: new Set(s.distributors || []),
       // wallets: addr -> [balanceRaw(BigInt str), costTotalUsd(number)]
       wallets: new Map(Object.entries(s.wallets || {}).map(([a, [b, c]]) => [a, [BigInt(b), c]])),
     };
   } catch {
-    return { lastBlock: 0, lastDate: null, pools: new Set(), wallets: new Map() };
+    return { lastBlock: 0, lastDate: null, pools: new Set(), distributors: new Set(), wallets: new Map() };
   }
 }
 function saveState(sym, st) {
@@ -43,6 +44,7 @@ function saveState(sym, st) {
     lastBlock: st.lastBlock,
     lastDate: st.lastDate,
     pools: [...st.pools],
+    distributors: [...st.distributors],
     wallets: Object.fromEntries([...st.wallets].map(([a, [b, c]]) => [a, [b.toString(), c]])),
   }));
 }
@@ -118,7 +120,7 @@ export async function collectPnl(asset) {
     // buyers-only; the airdrop count stays visible as its own line.
     let holders = 0, airdrop = 0, buyers = 0, inProfit = 0, x10 = 0, x2 = 0, x1 = 0, l50 = 0, l50p = 0;
     for (const [addr, [bal, cost]] of st.wallets) {
-      if (bal <= 0n || st.pools.has(addr)) continue;
+      if (bal <= 0n || st.pools.has(addr) || st.distributors.has(addr)) continue;
       const tokens = Number(bal) / dec;
       if (tokens * px < 0.01) continue; // dust
       holders++;
@@ -242,6 +244,21 @@ export async function collectPnl(asset) {
       if (turnover > 0 && Number(finalBal) <= turnover / 10000) { st.pools.add(a); detected++; }
     }
     if (detected) console.log(`  venues auto-détectées: ${detected} (routeurs/agrégateurs pass-through bidirectionnels)`);
+
+    // Airdrop/claim distributor: near-ONE-WAY fan-out (a handful of funding
+    // inflows, then hundreds+ of small outbound sends). Opposite signature
+    // from a pool (which is balanced both ways) — this catches mass
+    // distributions that would otherwise pass a diluted near-zero cost basis
+    // to thousands of "buyers", inflating the in-profit count.
+    let distDetected = 0;
+    for (const a of new Set([...inC.keys(), ...outC.keys()])) {
+      if (a === ZERO || st.pools.has(a) || st.distributors.has(a)) continue;
+      const nin = inC.get(a) || 0, nout = outC.get(a) || 0;
+      if (nout < 200 || nin > 10 || nout < nin * 20) continue;
+      st.distributors.add(a);
+      distDetected++;
+    }
+    if (distDetected) console.log(`  distributeurs airdrop détectés: ${distDetected} (fan-out asymétrique — destinataires traités comme coût \$0)`);
   }
 
   // ---- replay the batch, day by day ---------------------------------------
@@ -266,11 +283,16 @@ export async function collectPnl(asset) {
       const px = d ? priceAt(d) : null;
       const fromPool = from === ZERO || st.pools.has(from);
       const toPool = to === ZERO || st.pools.has(to);
+      const fromDistributor = st.distributors.has(from);
       const w = (a) => {
         if (!st.wallets.has(a)) st.wallets.set(a, [0n, 0]);
         return st.wallets.get(a);
       };
-      if (!fromPool) {
+      if (fromDistributor && !toPool) {
+        // airdrop/claim: recipient acquires at cost $0, no cost inherited
+        const tw = w(to);
+        tw[0] += v;
+      } else if (!fromPool) {
         const fw = w(from);
         const balTok = Number(fw[0]) / dec;
         const avg = balTok > 0 && fw[1] > 0 ? fw[1] / balTok : 0;
@@ -289,7 +311,7 @@ export async function collectPnl(asset) {
           tw[1] += outCost;
         }
       }
-      if (fromPool && !toPool) {
+      if (fromPool && !toPool && !fromDistributor) {
         // buy from a venue (or mint: cost 0) → acquired at the day's price
         const tw = w(to);
         tw[0] += v;

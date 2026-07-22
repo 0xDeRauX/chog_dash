@@ -82,9 +82,11 @@ async function boot() {
   tile("Vides structurelles", String(structural), "", "absences documentées");
   tile("⚠️ À investiguer", String(unknown.length), unknown.length ? "down" : "up", unknown.length ? "séries vides inexpliquées" : "rien d'anormal");
   const chog = data.assets.find((x) => x.symbol === "CHOG");
-  if (chog?.pnlIndexedTo) {
-    const lag = Math.round((Date.now() - new Date(chog.pnlIndexedTo + "T00:00:00Z")) / 864e5);
-    if (lag > 2) tile("Indexeur on-chain Monad", lag + "j de retard", "down", `thirdweb bloqué au ${chog.pnlIndexedTo} — holders/tranches/PnL CHOG datent de là`);
+  // Warn only when the on-chain ledger lags behind the price series (real
+  // indexer stall), not when the whole dataset is a few days old.
+  if (chog?.pnlIndexedTo && chog.prices?.at(-1)?.date) {
+    const lag = Math.round((new Date(chog.prices.at(-1).date + "T00:00:00Z") - new Date(chog.pnlIndexedTo + "T00:00:00Z")) / 864e5);
+    if (lag > 2) tile("Indexeur on-chain Monad", lag + "j de retard", "down", `grand livre au ${chog.pnlIndexedTo}, en retard sur les prix — HyperRPC en échec ?`);
   }
 
   // ---- matrix ----

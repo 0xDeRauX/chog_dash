@@ -124,9 +124,15 @@ function renderPnl(el, a) {
     return;
   }
   const last = pnl.at(-1);
-  const lagDays = Math.round((Date.now() - new Date(last.date + "T00:00:00Z")) / 864e5);
-  const lagBanner = lagDays > 2
-    ? `<p class="pnl-lag">⚠️ L'indexeur on-chain (thirdweb Insight) est en retard de <b>${lagDays} jours</b> sur la chaîne Monad : le grand livre s'arrête au <b>${last.date}</b>. Tranches, % en gain et compte de holders reflètent cette date — rien n'est extrapolé. (Le même retard affecte la série Holders CHOG.)</p>`
+  // Warn only when the on-chain ledger lags BEHIND the rest of the data (a real
+  // indexer stall), not when the whole dataset is simply a few days old because
+  // the daily collectors haven't run. Reference = the price series' last date.
+  const priceLast = a.prices?.at(-1)?.date;
+  const ledgerLag = priceLast
+    ? Math.round((new Date(priceLast + "T00:00:00Z") - new Date(last.date + "T00:00:00Z")) / 864e5)
+    : 0;
+  const lagBanner = ledgerLag > 2
+    ? `<p class="pnl-lag">⚠️ L'indexeur on-chain Monad est en retard de <b>${ledgerLag} jours</b> sur le reste des données : le grand livre s'arrête au <b>${last.date}</b> alors que les prix vont jusqu'au ${priceLast}. Tranches, % en gain et holders reflètent cette date — rien n'est extrapolé.</p>`
     : "";
   const inProfitHelp = METRIC_BY_ID.inprofit?.help;
   const tranches = [
