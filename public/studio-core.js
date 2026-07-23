@@ -389,6 +389,59 @@ function cfgToQuery(cfg) {
   return q.toString();
 }
 
+/* Empirically measured overheating zones (thresholds where forward returns
+   were meaningfully worse/better than the pooled median, computed on our own
+   history across memes). Each line is drawn on the indicator's sub-pane.
+   kind: "bear" (red, distribution/overheat) · "bull" (green, accumulation) ·
+   "warn" (orange, elevated) · "mid" (faint reference). */
+const OVERHEAT_ZONES = {
+  rsi: [
+    { v: 65, kind: "bear", title: "surchauffe ≥65 (−23pp/30j)" },
+    { v: 50, kind: "mid", title: "50" },
+    { v: 30, kind: "bull", title: "survente ≤30 (rebond)" },
+  ],
+  flowratio: [
+    { v: 52, kind: "bull", title: "accumulation ≥52% (+5pp/30j)" },
+    { v: 50, kind: "mid", title: "équilibre 50%" },
+    { v: 48, kind: "bear", title: "distribution ≤48% (−4pp)" },
+  ],
+  divergence: [
+    { v: 1, kind: "bull", title: "attention devance ≥1 (+3pp)" },
+    { v: 0, kind: "mid", title: "0" },
+    { v: -1.5, kind: "bear", title: "essoufflement ≤−1.5 (−14pp)" },
+  ],
+  inprofit: [
+    { v: 50, kind: "bear", title: "distribution ≥50% (−33%/30j, 0% win)" },
+    { v: 35, kind: "warn", title: "prudence ≥35%" },
+    { v: 20, kind: "bull", title: "capitulation ≤20% (45% win)" },
+  ],
+  composite: [
+    { v: 65, kind: "bull", title: "signaux alignés ≥65" },
+    { v: 50, kind: "mid", title: "neutre 50" },
+    { v: 35, kind: "bear", title: "signaux dégradés ≤35" },
+  ],
+  buzz: [
+    { v: 2, kind: "warn", title: "pic d'attention ≥2σ" },
+  ],
+};
+const ZONE_COLOR = { bear: "#ff5c6c", bull: "#2fbf71", warn: "#e0a000", mid: "#5a5570" };
+function applyOverheatZones(series, key) {
+  const zones = key && OVERHEAT_ZONES[key];
+  if (!zones || !series.createPriceLine) return;
+  for (const z of zones) {
+    try {
+      series.createPriceLine({
+        price: z.v,
+        color: ZONE_COLOR[z.kind],
+        lineWidth: 1,
+        lineStyle: z.kind === "mid" ? 3 : 2, // dotted mid, dashed zones
+        axisLabelVisible: z.kind !== "mid",
+        title: z.title,
+      });
+    } catch { /* price lines are cosmetic */ }
+  }
+}
+
 /* Draws a full config onto a chart. cfg = { w, mode, series, inds } (already
    migrated). ctx = { bySym, mById }. opts.paneHeight sizes sub-panes.
    Returns { created, items (legend info), anchorSeries }. */
@@ -592,6 +645,16 @@ function renderConfig(chart, cfg, ctx, opts = {}) {
         add(ich.senkouB, { color: "#ff6b6b", lineWidth: w, lineStyle: 2, priceScaleId: src.scale }, pane);
         main = add(ich.chikou, { color: "#a8a2c0", lineWidth: w, lineStyle: 1, priceScaleId: src.scale }, pane);
       }
+    }
+    // Overheating zones on sub-panes: horizontal threshold lines coloured by
+    // the empirically measured forward-return edge of each zone (see
+    // OVERHEAT_ZONES). Only on sub-panes (overlays share the price scale).
+    if (main && !ind.overlay) {
+      const zk = ind.type === "rsi" ? "rsi"
+        : ind.type === "flow" ? "flowratio"
+        : ind.type === "met" ? (ind.metric === "price" ? null : ind.metric)
+        : null;
+      applyOverheatZones(main, zk);
     }
     items.push({ series: main, color: ind.type === "regime" ? "#35d07f" : color, label, struck: false, sub: true, fmt });
   }
