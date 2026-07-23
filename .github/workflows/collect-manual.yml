@@ -124,9 +124,9 @@ jobs:
           path: |
             data/holders-state
             data/pnl-state
-          key: holders-state-${{ github.run_id }}
+          key: chog-ledger-v2-${{ github.run_id }}
           restore-keys: |
-            holders-state-
+            chog-ledger-v2-
 
       - name: Collect holders
         if: env.SEL == 'all' || contains(env.SEL, 'holders')

@@ -99,10 +99,16 @@ export async function collectPnl(asset) {
   const st = loadState(asset.symbol);
   for (const p of await fetchPools(cfg.contract)) st.pools.add(p);
 
-  // Existing aggregate rows (committed raw) — replay appends, never rewrites.
+  // Existing aggregate rows (committed raw) — incremental runs append to them.
+  // A FULL reindex (no cached state) recomputes every day from scratch instead:
+  // trusting a stale committed raw is exactly what let a wrong classification
+  // survive a cache-bust. So when there's no state, start empty and rebuild.
   const rawFile = path.resolve(`data/raw/pnl/${asset.symbol}.json`);
+  const fullReindex = st.lastBlock === 0;
   let series = [];
-  try { series = JSON.parse(fs.readFileSync(rawFile, "utf8")).series || []; } catch { /* first run */ }
+  if (!fullReindex) {
+    try { series = JSON.parse(fs.readFileSync(rawFile, "utf8")).series || []; } catch { /* first run */ }
+  }
   const doneDates = new Set(series.map((r) => r.date));
 
   const priceAt = (d) => prices.get(d) ?? (d < firstPriceDate ? prices.get(firstPriceDate) : null);
