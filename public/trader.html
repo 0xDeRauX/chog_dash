@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CHOG Intel — Trader</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="trader">
+  <main class="wrap">
+    <header class="page-head">
+      <h1>Vue trader — verdict du jour</h1>
+      <p>Un verdict par actif, calculé en direct depuis les <b>zones de surchauffe mesurées</b> (pression achat, divergence, RSI, % en gain on-chain). 🟢 Accumulation = plusieurs signaux favorables · 🔴 Distribution = surchauffe / signaux dégradés. À lire comme un baromètre qui déplace les probabilités, pas un ordre d'achat.</p>
+      <p class="meta-line" id="trader-meta"></p>
+    </header>
+
+    <div class="filterbar" id="trader-filters"></div>
+    <section class="trader-grid" id="trader-grid"></section>
+
+    <p class="foot">CHOG Intel · Trader — verdicts calculés côté client depuis data.json · seuils backtestés sur notre historique (edge vs médiane)</p>
+  </main>
+
+  <script src="lib.js"></script>
+  <script src="registry.js"></script>
+  <script src="trader.js"></script>
+</body>
+</html>

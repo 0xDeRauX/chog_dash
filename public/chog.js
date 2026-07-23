@@ -67,12 +67,16 @@ function renderHero(el, a, assets) {
   const vcls = div == null ? "" : div >= 0.5 ? "up" : div <= -0.5 ? "down" : "";
   const ccls = comp == null ? "" : comp >= 65 ? "up" : comp <= 35 ? "down" : "";
   const velcls = vel == null ? "" : vel >= 1 ? "up" : vel <= -1 ? "down" : "";
+  // live trading verdict (accumulation / neutre / distribution)
+  const vd = assetVerdict(a);
+  const vm = VERDICT_META[vd.verdict];
+  const verdictBadgeHtml = `<span class="hero-verdict ${vm.cls}">${vm.emoji} ${vm.label}</span>`;
   el.innerHTML = `
     <div class="hero-main">
       <div class="hero-id">
         <span class="hero-dot" style="background:${colorOf(CHOG_SYM)}"></span>
         <div>
-          <h1>CHOG <span class="hero-chain">Monad · memecoin</span></h1>
+          <h1>CHOG <span class="hero-chain">Monad · memecoin</span> ${verdictBadgeHtml}</h1>
           <div class="hero-read">${verbalRead(buzz, div, hold7)}</div>
         </div>
       </div>
@@ -81,6 +85,7 @@ function renderHero(el, a, assets) {
         <div class="hero-price-chip ${dcls}">${fmtDelta(d24)} <span>24h</span></div>
       </div>
     </div>
+    <div class="hero-gauges" id="hero-gauges"></div>
     <div class="hero-signals">
       <div class="hero-sig hero-sig-comp">
         <div class="hero-sig-lbl" id="hero-comp-lbl">Score composite</div>
@@ -107,6 +112,12 @@ function renderHero(el, a, assets) {
         <div class="hero-sig-val ${vcls}">${fmtBy("signed", div)}</div>
       </div>
     </div>`;
+  // signal gauges: where each measured signal sits vs its overheating zones
+  const gEl = el.querySelector("#hero-gauges");
+  if (gEl) for (const key of ["flowratio", "divergence", "rsi", "inprofit"]) {
+    const sig = vd.signals.find((s) => s.key === key);
+    gEl.append(signalGauge(key, sig ? sig.value : null));
+  }
   // ⓘ help cards on the proprietary tiles (same registry help as everywhere)
   for (const [sel, mid] of [["#hero-comp-lbl", "composite"], ["#hero-vel-lbl", "velocity"]]) {
     const lbl = el.querySelector(sel);

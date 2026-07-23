@@ -244,6 +244,122 @@ function lastValue(series, key) {
   return null;
 }
 
+// ---- signal zones & per-asset verdict (the trader layer) ----------------
+// Canonical overheating thresholds, MEASURED on our own history (edge = a
+// zone's median forward return minus the pooled median, memes). Shared by the
+// Studio sub-pane bands (studio-core reads these), the gauges and the verdict.
+// Each zone: bull (green, favourable) · bear (red, overheat/distribution) ·
+// warn (orange) · mid (reference). `edge` is the display note.
+const SIGNAL_ZONES = {
+  flowratio: { label: "Pression achat", fmt: (v) => v.toFixed(0) + "%", lo: 40, hi: 60,
+    bands: [{ v: 52, kind: "bull", edge: "+5pp/30j" }, { v: 50, kind: "mid" }, { v: 48, kind: "bear", edge: "−4pp" }] },
+  divergence: { label: "Divergence", fmt: (v) => (v >= 0 ? "+" : "") + v.toFixed(2), lo: -3, hi: 3,
+    bands: [{ v: 1, kind: "bull", edge: "+3pp/30j" }, { v: 0, kind: "mid" }, { v: -1.5, kind: "bear", edge: "−14pp" }] },
+  rsi: { label: "RSI 14", fmt: (v) => v.toFixed(0), lo: 0, hi: 100,
+    bands: [{ v: 65, kind: "bear", edge: "−23pp/30j" }, { v: 50, kind: "mid" }, { v: 30, kind: "bull", edge: "rebond" }] },
+  inprofit: { label: "% en gain", fmt: (v) => v.toFixed(0) + "%", lo: 0, hi: 100,
+    bands: [{ v: 50, kind: "bear", edge: "−33%/30j, 0% win" }, { v: 35, kind: "warn" }, { v: 20, kind: "bull", edge: "45% win" }] },
+  composite: { label: "Composite", fmt: (v) => String(Math.round(v)), lo: 0, hi: 100,
+    bands: [{ v: 65, kind: "bull" }, { v: 50, kind: "mid" }, { v: 35, kind: "bear" }] },
+  buzz: { label: "Buzz", fmt: (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "σ", lo: -2, hi: 3,
+    bands: [{ v: 2, kind: "warn", edge: "pic" }] },
+};
+const ZONE_HEX = { bear: "#ff5c6c", bull: "#2fbf71", warn: "#e0a000", mid: "#5a5570", neutral: "#8a84a6" };
+
+// Latest Wilder-ish RSI(14) from a price series.
+function rsiLast(prices, period = 14) {
+  const pr = (prices || []).filter((p) => p.price != null).map((p) => p.price);
+  if (pr.length < period + 1) return null;
+  let g = 0, l = 0;
+  for (let i = pr.length - period; i < pr.length; i++) {
+    const ch = pr[i] - pr[i - 1];
+    if (ch >= 0) g += ch; else l -= ch;
+  }
+  const ag = g / period, al = l / period;
+  if (al === 0) return 100;
+  return 100 - 100 / (1 + ag / al);
+}
+
+// Which zone a value falls in for a signal: "bull" | "bear" | "neutral".
+// Directionality is inferred from the bands (a value beyond a bull band =
+// bull; beyond a bear band = bear). Handles both "high is good" (flowratio)
+// and "high is bad" (inprofit, rsi) by reading each band's kind.
+function zoneOf(key, v) {
+  const z = SIGNAL_ZONES[key];
+  if (!z || v == null) return "neutral";
+  const bull = z.bands.find((b) => b.kind === "bull");
+  const bear = z.bands.find((b) => b.kind === "bear");
+  // is "bull" the high side or the low side?
+  const bullHigh = !bear || (bull && bull.v > bear.v);
+  if (bull && (bullHigh ? v >= bull.v : v <= bull.v)) return "bull";
+  if (bear && (bullHigh ? v <= bear.v : v >= bear.v)) return "bear";
+  return "neutral";
+}
+
+// Per-asset trading verdict from the signals that have data. Returns
+// { verdict: "accumulation"|"distribution"|"neutre", score, signals:[...] }.
+// score = (#bull − #bear); the label follows the net and the presence of the
+// strong on-chain distribution flag.
+function assetVerdict(a) {
+  const vals = {
+    flowratio: lastValue(a.tradeflow, "ratio"),
+    divergence: lastValue(a.divergence, "div"),
+    rsi: rsiLast(a.prices),
+    inprofit: a.pnl?.length ? lastValue(a.pnl, "pctInProfit") : null,
+    composite: a.composite?.length ? lastValue(a.composite, "score") : null,
+  };
+  const signals = [];
+  let bull = 0, bear = 0;
+  for (const [key, v] of Object.entries(vals)) {
+    if (v == null) continue;
+    const zone = zoneOf(key, v);
+    if (zone === "bull") bull++; else if (zone === "bear") bear++;
+    signals.push({ key, label: SIGNAL_ZONES[key].label, value: v, zone, fmt: SIGNAL_ZONES[key].fmt });
+  }
+  // post-pump veto: chasing a fresh >15%/3d pump measured −9%/7j
+  const d3 = (a.prices || []).slice(-4);
+  const pumped = d3.length >= 2 && d3[0].price > 0 && d3.at(-1).price / d3[0].price - 1 >= 0.15;
+  if (pumped) { bear++; signals.push({ key: "pump", label: "Pompe récente", value: null, zone: "bear", fmt: () => "≥+15%/3j" }); }
+  const net = bull - bear;
+  let verdict = "neutre";
+  if (net >= 2 || (net >= 1 && bear === 0)) verdict = "accumulation";
+  else if (net <= -2 || (bear >= 1 && vals.inprofit != null && vals.inprofit >= 50)) verdict = "distribution";
+  return { verdict, score: net, bull, bear, signals };
+}
+const VERDICT_META = {
+  accumulation: { emoji: "🟢", label: "Accumulation", cls: "v-bull" },
+  neutre: { emoji: "⚪", label: "Neutre", cls: "v-neutral" },
+  distribution: { emoji: "🔴", label: "Distribution", cls: "v-bear" },
+};
+
+// Reusable horizontal gauge: shows where `value` sits on a signal's scale,
+// with the coloured zone bands behind it. Returns a DOM element.
+function signalGauge(key, value, opts = {}) {
+  const z = SIGNAL_ZONES[key];
+  const wrap = document.createElement("div");
+  wrap.className = "gauge";
+  if (!z || value == null) { wrap.innerHTML = `<div class="gauge-lbl">${z?.label || key}</div><div class="gauge-track"></div><div class="gauge-val">—</div>`; return wrap; }
+  const pct = (v) => Math.max(0, Math.min(100, ((v - z.lo) / (z.hi - z.lo)) * 100));
+  const zone = zoneOf(key, value);
+  // build zone segments as a gradient over the track
+  const bull = z.bands.find((b) => b.kind === "bull");
+  const bear = z.bands.find((b) => b.kind === "bear");
+  const bullHigh = !bear || (bull && bull.v > bear.v);
+  const stops = [];
+  if (bear) { const p = pct(bear.v); stops.push(bullHigh ? `${ZONE_HEX.bear} 0 ${p}%` : `${ZONE_HEX.bull} 0 ${p}%`); }
+  if (bull) { const p = pct(bull.v); stops.push(bullHigh ? `transparent ${pct(bear?.v ?? z.lo)}% ${p}%` : ``); }
+  // simpler: 3-stop gradient bear→neutral→bull along the axis
+  const grad = bullHigh
+    ? `linear-gradient(90deg, ${ZONE_HEX.bear} 0 ${pct(bear?.v ?? z.lo)}%, ${ZONE_HEX.mid}44 ${pct(bear?.v ?? z.lo)}% ${pct(bull?.v ?? z.hi)}%, ${ZONE_HEX.bull} ${pct(bull?.v ?? z.hi)}% 100%)`
+    : `linear-gradient(90deg, ${ZONE_HEX.bull} 0 ${pct(bull?.v ?? z.lo)}%, ${ZONE_HEX.mid}44 ${pct(bull?.v ?? z.lo)}% ${pct(bear?.v ?? z.hi)}%, ${ZONE_HEX.bear} ${pct(bear?.v ?? z.hi)}% 100%)`;
+  wrap.innerHTML = `<div class="gauge-lbl">${z.label}</div>
+    <div class="gauge-track" style="background:${grad}">
+      <span class="gauge-needle" style="left:${pct(value)}%"></span>
+    </div>
+    <div class="gauge-val" style="color:${ZONE_HEX[zone] || ZONE_HEX.neutral}">${z.fmt(value)}</div>`;
+  return wrap;
+}
+
 // Relative community velocity (M7): community growth vs the peer group.
 // Per date: mean 7-day % growth of holders + telegram members, minus the
 // MEDIAN of the same figure across the asset's group that day. Positive =
@@ -458,6 +574,7 @@ function helpIcon(help, label) {
 function buildTopbar(active) {
   const tabs = [
     ["index.html", "CHOG"],
+    ["trader.html", "Trader"],
     ["screener.html", "Screener"],
     ["studio.html", "Studio"],
     ["dash.html", "Mon Dash"],

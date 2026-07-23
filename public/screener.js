@@ -183,7 +183,14 @@ async function boot() {
       const chain = document.createElement("span");
       chain.className = "asset-chain";
       chain.textContent = a.chain;
-      cell.append(dot, sym, chain, sparkline(a.prices));
+      // live trading verdict badge (accumulation / neutre / distribution)
+      const vd = assetVerdict(a);
+      const vm = VERDICT_META[vd.verdict];
+      const vbadge = document.createElement("span");
+      vbadge.className = "scr-verdict " + vm.cls;
+      vbadge.title = `${vm.label} · ${vd.bull} signaux favorables / ${vd.bear} défavorables`;
+      vbadge.textContent = vm.emoji;
+      cell.append(dot, sym, chain, vbadge, sparkline(a.prices));
       asset.append(cell);
       tr.append(rank, asset);
 

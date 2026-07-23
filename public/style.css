@@ -1630,3 +1630,48 @@ body.studio-dragging .drop-zones { display: flex; }
 .pnl-table td.down { color: var(--down); }
 .pnl-lag { background: color-mix(in srgb, #e0a000 12%, transparent); border: 1px solid color-mix(in srgb, #e0a000 40%, transparent); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin: 0 0 14px; }
 .pnl-airdrop-row td { color: var(--text-3); border-top: 1px solid var(--border); }
+
+/* ── Trader view: verdict cards + gauges ────────────────────────────────── */
+.trader-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-top: 18px; }
+.tcard { display: flex; flex-direction: column; gap: 12px; background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--border-strong); border-radius: 12px; padding: 16px; text-decoration: none; color: inherit; transition: transform .12s, border-color .12s; }
+.tcard:hover { transform: translateY(-2px); border-color: var(--brand); }
+.tcard.v-bull { border-left-color: #2fbf71; }
+.tcard.v-bear { border-left-color: #ff5c6c; }
+.tcard.v-neutral { border-left-color: #5a5570; }
+.tcard-head { display: flex; justify-content: space-between; align-items: flex-start; }
+.tcard-id { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tcard-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.tcard-sym { font-size: 18px; font-weight: 800; }
+.tcard-sub { font-size: 11px; color: var(--text-3); }
+.tcard-price { text-align: right; }
+.tcard-px { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tcard-d24 { font-size: 12px; font-variant-numeric: tabular-nums; }
+.tcard-d24.up { color: var(--up); } .tcard-d24.down { color: var(--down); }
+.tcard-verdict { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; font-size: 13px; padding: 4px 10px; border-radius: 999px; }
+.tcard-verdict.v-bull { background: color-mix(in srgb, #2fbf71 18%, transparent); color: #2fbf71; }
+.tcard-verdict.v-bear { background: color-mix(in srgb, #ff5c6c 18%, transparent); color: #ff5c6c; }
+.tcard-verdict.v-neutral { background: color-mix(in srgb, #8a84a6 15%, transparent); color: var(--text-2); }
+.tcard-score { opacity: .7; margin-left: 2px; font-variant-numeric: tabular-nums; }
+.tcard-gauges { display: flex; flex-direction: column; gap: 7px; }
+.tcard-empty { font-size: 12px; color: var(--text-3); margin: 0; }
+.tcard-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.tchip { font-size: 11px; padding: 2px 7px; border-radius: 6px; background: var(--chip); }
+.tchip.up { color: #2fbf71; background: color-mix(in srgb, #2fbf71 12%, transparent); }
+.tchip.down { color: #ff5c6c; background: color-mix(in srgb, #ff5c6c 12%, transparent); }
+.tchip.strong { font-weight: 600; }
+
+/* Reusable signal gauge (also used on asset/CHOG pages) */
+.gauge { display: grid; grid-template-columns: 78px 1fr 54px; align-items: center; gap: 8px; }
+.gauge-lbl { font-size: 11px; color: var(--text-2); }
+.gauge-track { position: relative; height: 7px; border-radius: 4px; background: var(--chip); overflow: visible; }
+.gauge-needle { position: absolute; top: 50%; width: 3px; height: 13px; border-radius: 2px; background: var(--text); transform: translate(-50%, -50%); box-shadow: 0 0 0 1.5px var(--panel); }
+.gauge-val { font-size: 12px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Verdict badge in headers (CHOG hero, screener) */
+.hero-verdict { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; vertical-align: middle; margin-left: 8px; }
+.hero-verdict.v-bull { background: color-mix(in srgb, #2fbf71 18%, transparent); color: #2fbf71; }
+.hero-verdict.v-bear { background: color-mix(in srgb, #ff5c6c 18%, transparent); color: #ff5c6c; }
+.hero-verdict.v-neutral { background: color-mix(in srgb, #8a84a6 15%, transparent); color: var(--text-2); }
+.hero-gauges { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 20px; margin-top: 14px; }
+@supports not (grid-template-columns: repeat(auto-fit, minmax(220px,1fr))) { .hero-gauges { grid-template-columns: 1fr 1fr; } }
+.scr-verdict { font-size: 12px; margin: 0 2px; }
