@@ -14,6 +14,7 @@ export const ASSETS = [
   {
     group: "memes",
     symbol: "CHOG",
+    flow: { net: "monad", addr: "0x350035555e10d9afaf1566aaebfced5ba6c27777" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     gtNetwork: "monad", // GeckoTerminal: aggregate 24h trades -> real $ buy/sell split
     chain: "monad",
     coingeckoId: "chog",
@@ -28,6 +29,7 @@ export const ASSETS = [
   {
     group: "memes",
     symbol: "PEPE",
+    flow: { net: "eth", addr: "0x6982508145454ce325ddbe47a25d4ec3d2311933" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     binance: "PEPEUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "ethereum",
     coingeckoId: "pepe",
@@ -38,6 +40,7 @@ export const ASSETS = [
   {
     group: "memes",
     symbol: "WIF",
+    flow: { net: "solana", addr: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     binance: "WIFUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "solana",
     coingeckoId: "dogwifcoin",
@@ -49,6 +52,7 @@ export const ASSETS = [
   {
     group: "memes",
     symbol: "BONK",
+    flow: { net: "solana", addr: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     binance: "BONKUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "solana",
     coingeckoId: "bonk",
@@ -59,6 +63,7 @@ export const ASSETS = [
   {
     group: "memes",
     symbol: "BRETT",
+    flow: { net: "base", addr: "0x532f27101965dd16442E59d40670FaF5eBB142E4" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     gtNetwork: "base",
     chain: "base",
     coingeckoId: "based-brett",
@@ -70,6 +75,7 @@ export const ASSETS = [
   {
     group: "memes",
     symbol: "PENGU",
+    flow: { net: "solana", addr: "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     binance: "PENGUUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "solana",
     coingeckoId: "pudgy-penguins",
@@ -80,6 +86,7 @@ export const ASSETS = [
   {
     group: "memes",
     symbol: "FARTCOIN",
+    flow: { net: "solana", addr: "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     binancePerp: "FARTCOINUSDT", // no spot pair -> perp taker klines for buy/sell volume
     chain: "solana",
     coingeckoId: "fartcoin",
@@ -89,6 +96,7 @@ export const ASSETS = [
   {
     group: "memes",
     symbol: "ANSEM",
+    flow: { net: "solana", addr: "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     chain: "solana",
     coingeckoId: "the-black-bull",
     // Cashtag + the word (X search is case-insensitive, so "ANSEM" also matches
@@ -101,6 +109,7 @@ export const ASSETS = [
   {
     group: "memes",
     symbol: "CASHCAT",
+    flow: { net: "robinhood", addr: "0x020bfc650a365f8bb26819deaabf3e21291018b4" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     chain: "robinhood",
     coingeckoId: "cash-cat",
     xQuery: '("$CASHCAT" OR "Cash Cat" OR "CashCat") -is:retweet',
@@ -123,6 +132,7 @@ export const ASSETS = [
   {
     group: "majors",
     symbol: "ETH",
+    flow: { net: "eth", addr: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     binance: "ETHUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "ethereum",
     coingeckoId: "ethereum",
@@ -133,6 +143,7 @@ export const ASSETS = [
   {
     group: "majors",
     symbol: "SOL",
+    flow: { net: "solana", addr: "So11111111111111111111111111111111111111112" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     binance: "SOLUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "solana",
     coingeckoId: "solana",
@@ -225,6 +236,7 @@ export const ASSETS = [
   {
     group: "majors",
     symbol: "ONDO",
+    flow: { net: "eth", addr: "0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     binance: "ONDOUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "ethereum",
     coingeckoId: "ondo-finance",

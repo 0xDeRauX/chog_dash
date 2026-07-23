@@ -18,6 +18,10 @@ const FAMS = [
   { id: "pnl", label: "PnL holders", last: (a) => a.pnl?.at(-1)?.date },
 ];
 
+// Assets whose buy/sell is sourced 100% on-chain (DEX). Others have no
+// representative on-chain trading (CEX-dominated) → no buy/sell, by design.
+const ONCHAIN_FLOW = new Set(["CHOG","PEPE","WIF","BONK","BRETT","PENGU","FARTCOIN","ANSEM","CASHCAT","ETH","SOL","ONDO"]);
+
 // Known structural absences — an empty series here is EXPECTED, not a bug.
 function structuralReason(a, famId) {
   const sym = a.symbol;
@@ -28,7 +32,7 @@ function structuralReason(a, famId) {
   if (famId === "holders" && sym === "NEAR") return "~300M comptes app/spam (SWEAT…) à solde nul — non comparable aux holders à solde, volontairement omis";
   if (famId === "holders" && sym === "XMR") return "coin privée — soldes masqués, pas de compte de holders";
 
-  if (famId === "tradeflow" && sym === "XMR") return "coin privée — délistée de Binance, pas de flux achat/vente";
+  if (famId === "tradeflow" && !ONCHAIN_FLOW.has(sym)) return "pas de trading on-chain DEX représentatif (dominé par les CEX) — omis pour rester 100% on-chain";
   if (famId === "holders" && ["SOL", "MON"].includes(sym)) return "pas de source gratuite (SOL flou · MON trop récent)";
   if (famId === "tiers" && !TIER_OK.includes(sym)) return "nécessite le scan complet des soldes (CHOG + memes Solana uniquement)";
   if (famId === "flows" && sym !== "CHOG") return "grand livre CHOG uniquement";

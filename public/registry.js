@@ -98,9 +98,10 @@ const METRICS = [
     latest: (a) => a.tradeflow?.at(-1)?.ratio ?? null,
     deltas: [7, 30], chart: true,
     help: {
-      what: "Part du volume <b>acheteur</b> dans le volume total : 50% = équilibre, >50% = pression acheteuse, <50% = vendeuse.",
-      read: "En <b>$ réels</b> (taker buy/sell), <b>agrégé multi-venues</b> : Binance + OKX pour le spot, OKX pour les perps (FARTCOIN/MON/HYPE) ; <b>on-chain tous pools</b> (GeckoTerminal) pour les tokens DEX (CHOG/CASHCAT/ANSEM/BRETT). L'arbitrage aligne les venues, mais toutes les bourses ne sont pas couvertes — c'est un proxy solide du flux réel.",
-      example: "PEPE à 47% d'achat pendant que son prix monte = la hausse se vend dans le carnet (méfiance) ; 58% pendant une baisse = accumulation dans la chute.",
+      what: "Part des transactions <b>acheteuses</b> dans le total, <b>100% on-chain</b> : compte des swaps buy/sell agrégé sur <b>tous les pools DEX</b> du token (GeckoTerminal). Aucune donnée d'exchange (CEX).",
+      read: "50% = équilibre · >52% = pression acheteuse (accumulation) · <48% = vendeuse (distribution). Mesure le flux <b>réellement on-chain</b> — pour ETH/SOL c'est le flux DeFi (une part du marché), pour les memes DEX c'est tout le marché.",
+      example: "CHOG à 58% de swaps acheteurs pendant une baisse = accumulation on-chain dans la chute. BTC/XRP n'ont pas ce signal : leur trading est ~100% CEX, un chiffre DEX y serait trompeur (< 1% du volume).",
+      quality: "Snapshot quotidien (le split on-chain n'a pas d'historique récupérable) — la série se construit jour après jour depuis le passage en 100% on-chain.",
     },
   },
   {
