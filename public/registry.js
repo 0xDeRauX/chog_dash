@@ -27,6 +27,11 @@ const METRICS = [
     series: "prices", vkey: "volume", format: "usd",
     latest: (a) => a.prices?.at(-1)?.volume ?? null,
     deltas: [7, 30, 90], chart: true,
+    help: {
+      what: "Volume 24h <b>agrégé sur tous les échanges</b> (source CoinGecko : CEX + DEX rapportés) — pas une seule plateforme.",
+      read: "C'est le volume marché total. Une hausse de volume + prix stable peut signaler une accumulation ; volume + pompe = FOMO.",
+      example: "Le volume CHOG additionne toutes ses paires DEX Monad ; celui de BTC additionne Binance, Coinbase, OKX… (déjà consolidé).",
+    },
   },
   {
     id: "mcap", label: "Market cap", category: "market", format: "usd",
@@ -94,7 +99,7 @@ const METRICS = [
     deltas: [7, 30], chart: true,
     help: {
       what: "Part du volume <b>acheteur</b> dans le volume total : 50% = équilibre, >50% = pression acheteuse, <50% = vendeuse.",
-      read: "En <b>$ réels</b> (taker buy/sell) : carnet Binance pour le spot, carnet OKX pour les perps (FARTCOIN/MON/HYPE) ; en <b>nombre de transactions</b> DEX pour CHOG/CASHCAT/ANSEM/BRETT — ⚠️ les sources ne sont pas strictement comparables entre elles.",
+      read: "En <b>$ réels</b> (taker buy/sell), <b>agrégé multi-venues</b> : Binance + OKX pour le spot, OKX pour les perps (FARTCOIN/MON/HYPE) ; <b>on-chain tous pools</b> (GeckoTerminal) pour les tokens DEX (CHOG/CASHCAT/ANSEM/BRETT). L'arbitrage aligne les venues, mais toutes les bourses ne sont pas couvertes — c'est un proxy solide du flux réel.",
       example: "PEPE à 47% d'achat pendant que son prix monte = la hausse se vend dans le carnet (méfiance) ; 58% pendant une baisse = accumulation dans la chute.",
     },
   },

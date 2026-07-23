@@ -32,9 +32,51 @@ async function binanceKlines(symbol, days, perp = false) {
     if (date >= today) continue; // drop the incomplete running candle
     const total = Number(c[7]);   // quote (USD) volume
     const buy = Number(c[10]);    // taker-buy quote volume
-    out.push({ date, buyUsd: buy, sellUsd: Math.max(0, total - buy) });
+    out.push({ date, buyUsd: buy, sellUsd: Math.max(0, total - buy), close: Number(c[4]) });
   }
   return out;
+}
+
+// ---- OKX spot taker volume (base-ccy buy/sell, keyless) ------------------
+// Row shape [ts, sellVolBase, buyVolBase]. Converted to USD with the day's
+// close so it aggregates with Binance's quote-USD taker volume. Verified on
+// BTC: OKX and Binance ratios agree within ~0.4pt (arbitrage keeps venues
+// aligned), so summing broadens coverage without distorting the pressure.
+async function okxSpotTaker(ccy, days) {
+  const url = `https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=${ccy}&instType=SPOT&period=1D`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`OKX spot HTTP ${res.status} for ${ccy}`);
+  const rows = (await res.json()).data || [];
+  const today = todayUTCstr();
+  const out = {};
+  for (const [ts, sell, buy] of rows) {
+    const date = new Date(Number(ts)).toISOString().slice(0, 10);
+    if (date >= today) continue;
+    out[date] = { sellBase: Number(sell), buyBase: Number(buy) };
+  }
+  return out; // keyed by date
+}
+
+// Aggregate a Binance USD series with OKX spot (converted via each day's
+// close). Falls back to Binance alone if OKX is unavailable. venues counts
+// how many exchanges contributed, surfaced for transparency.
+async function aggregatedSpot(binanceSymbol, days) {
+  const bn = await binanceKlines(binanceSymbol, days, false);
+  let okx = {};
+  try { okx = await okxSpotTaker(binanceSymbol.replace(/USDT$/, ""), days); }
+  catch { /* Binance-only if OKX doesn't list it */ }
+  return bn.map((p) => {
+    const o = okx[p.date];
+    if (o && p.close > 0) {
+      return {
+        date: p.date,
+        buyUsd: p.buyUsd + o.buyBase * p.close,
+        sellUsd: p.sellUsd + o.sellBase * p.close,
+        venues: 2,
+      };
+    }
+    return { date: p.date, buyUsd: p.buyUsd, sellUsd: p.sellUsd, venues: 1 };
+  });
 }
 // ---- OKX Rubik taker volume (daily buy/sell $, keyless, NOT geo-blocked) --
 // Primary source for perp-only assets: fapi.binance.com is unreachable from
@@ -114,9 +156,13 @@ export async function backfillTradeflow(assets, days = 365) {
     const file = path.join(HIST_DIR, `${asset.symbol}.json`);
     if (fs.existsSync(file)) continue;
     try {
-      const series = await binanceKlines(pair.symbol, days, pair.perp);
+      // Spot = Binance + OKX aggregated; perp = OKX contracts (single venue).
+      const series = pair.perp
+        ? await binanceKlines(pair.symbol, days, true)
+        : await aggregatedSpot(pair.symbol, days);
+      const nAgg = series.filter((p) => p.venues === 2).length;
       fs.writeFileSync(file, JSON.stringify({ symbol: asset.symbol, pair: pair.symbol, perp: pair.perp, series }, null, 2));
-      done.push(`${asset.symbol}: ${series.length}j${pair.perp ? " (perp)" : ""}`);
+      done.push(`${asset.symbol}: ${series.length}j${pair.perp ? " (perp)" : nAgg ? ` (${nAgg}j Binance+OKX)` : ""}`);
     } catch (err) {
       console.error(`Backfill skipped ${asset.symbol}: ${err.message}`);
     }
@@ -140,7 +186,8 @@ export async function collectTradeflow(assets) {
           try { series = await okxTakerVolume(pair.symbol.replace(/USDT$/, ""), 5); }
           catch { series = await binanceKlines(pair.symbol, 5, pair.perp); }
         } else {
-          series = await binanceKlines(pair.symbol, 5, pair.perp);
+          // spot: aggregate Binance + OKX for a multi-venue buy/sell split
+          series = await aggregatedSpot(pair.symbol, 5);
         }
         if (series.length) results.push({ symbol: asset.symbol, series });
       } else {

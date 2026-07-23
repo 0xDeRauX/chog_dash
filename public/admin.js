@@ -23,10 +23,13 @@ function structuralReason(a, famId) {
   const sym = a.symbol;
   const TIER_OK = ["CHOG", "WIF", "BONK", "PENGU", "FARTCOIN", "ANSEM"];
   if (famId === "tvl" && a.chain === "akash") return "réseau DePIN — pas de TVL DeFi";
+  if (famId === "tvl" && ["monero", "bitcoin", "xrp"].includes(a.chain)) return "pas de DeFi/TVL sur cette chaîne";
+  if (famId === "holders" && sym === "STRK") return "compte de holders Starknet sans source gratuite (Voyager/Starkscan sur clé)";
+  if (famId === "holders" && sym === "NEAR") return "~300M comptes app/spam (SWEAT…) à solde nul — non comparable aux holders à solde, volontairement omis";
   if (famId === "holders" && sym === "XMR") return "coin privée — soldes masqués, pas de compte de holders";
-  if (famId === "holders" && sym === "NEAR") return "pas de source gratuite pour le compte de comptes NEAR";
+
   if (famId === "tradeflow" && sym === "XMR") return "coin privée — délistée de Binance, pas de flux achat/vente";
-  if (famId === "holders" && ["SOL", "MON", "STRK"].includes(sym)) return "pas de source gratuite (SOL flou · MON trop récent · STRK payant)";
+  if (famId === "holders" && ["SOL", "MON"].includes(sym)) return "pas de source gratuite (SOL flou · MON trop récent)";
   if (famId === "tiers" && !TIER_OK.includes(sym)) return "nécessite le scan complet des soldes (CHOG + memes Solana uniquement)";
   if (famId === "flows" && sym !== "CHOG") return "grand livre CHOG uniquement";
   if (famId === "pnl" && sym !== "CHOG") return "reconstruction du coût d'entrée — grand livre CHOG uniquement";

@@ -252,7 +252,9 @@ export const ASSETS = [
     // "NEAR" alone is a common English word → use the project name + cashtag.
     xQuery: '("$NEAR" OR "@NEARProtocol" OR "NEAR Protocol") -is:retweet',
     discordInvite: "nearprotocol",
-    // NEAR account count has no free daily source → holders absent.
+    // No holder count: NEAR's account total is dominated by ~300M app/spam
+    // accounts (SWEAT etc.) with zero balance — not comparable to the
+    // balance-holder counts used for BTC/ETH/XRP. Kept honest as "—".
   },
 ];
 
