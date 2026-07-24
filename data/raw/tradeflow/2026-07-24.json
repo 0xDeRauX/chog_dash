@@ -1,0 +1,81 @@
+{
+  "date": "2026-07-24",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "buyTx": 1040,
+      "sellTx": 878,
+      "volUsd": 22151.546111097465
+    },
+    {
+      "symbol": "PEPE",
+      "buyTx": 208,
+      "sellTx": 206,
+      "volUsd": 474051.7409785692,
+      "buyUsd": 183398.76251760664,
+      "sellUsd": 203996.64963255785
+    },
+    {
+      "symbol": "WIF",
+      "buyTx": 4991,
+      "sellTx": 4539,
+      "volUsd": 210883.55481022666
+    },
+    {
+      "symbol": "BONK",
+      "buyTx": 17503,
+      "sellTx": 23430,
+      "volUsd": 1562227.7871941486
+    },
+    {
+      "symbol": "BRETT",
+      "buyTx": 1367,
+      "sellTx": 1273,
+      "volUsd": 258913.0618476615
+    },
+    {
+      "symbol": "PENGU",
+      "buyTx": 3622,
+      "sellTx": 3847,
+      "volUsd": 459996.3941367175,
+      "buyUsd": 51769.14958228102,
+      "sellUsd": 84915.77532667639
+    },
+    {
+      "symbol": "FARTCOIN",
+      "buyTx": 7231,
+      "sellTx": 7180,
+      "volUsd": 816317.7510283227
+    },
+    {
+      "symbol": "ANSEM",
+      "buyTx": 32511,
+      "sellTx": 26808,
+      "volUsd": 11485929.81319288
+    },
+    {
+      "symbol": "CASHCAT",
+      "buyTx": 21760,
+      "sellTx": 18657,
+      "volUsd": 15395466.89759909
+    },
+    {
+      "symbol": "ETH",
+      "buyTx": 20216,
+      "sellTx": 18205,
+      "volUsd": 201654959.09707478
+    },
+    {
+      "symbol": "SOL",
+      "buyTx": 230230,
+      "sellTx": 359899,
+      "volUsd": 375224310.4760646
+    },
+    {
+      "symbol": "ONDO",
+      "buyTx": 417,
+      "sellTx": 478,
+      "volUsd": 320588.76320154534
+    }
+  ]
+}
