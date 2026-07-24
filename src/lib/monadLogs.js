@@ -17,12 +17,13 @@ async function paced() {
   lastCall = Date.now();
 }
 
-const rpcUrl = () => `https://monad.rpc.hypersync.xyz/${CONFIG.HYPERSYNC_API_KEY}`;
+// HyperRPC endpoints, one per chain (same free token covers eth/monad/base…).
+const rpcUrl = (chain) => `https://${chain}.rpc.hypersync.xyz/${CONFIG.HYPERSYNC_API_KEY}`;
 
-async function rpc(body, tries = 4) {
+async function rpc(body, chain = "monad", tries = 4) {
   for (let t = 1; ; t++) {
-    await paced();
-    const res = await fetch(rpcUrl(), {
+    await paced(); // pacing is GLOBAL (rate limit is per token, across chains)
+    const res = await fetch(rpcUrl(chain), {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
@@ -35,20 +36,20 @@ async function rpc(body, tries = 4) {
 
 export const hyperRpcAvailable = () => !!CONFIG.HYPERSYNC_API_KEY;
 
-export async function headBlock() {
-  const r = await rpc({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] });
+export async function headBlock(chain = "monad") {
+  const r = await rpc({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] }, chain);
   return parseInt(r.result, 16);
 }
 
 // blockNumber -> "YYYY-MM-DD", by linear interpolation between anchor blocks
 // fetched in ONE batched request (HyperRPC supports JSON-RPC batching).
-export async function blockDater(minBlock, maxBlock) {
+export async function blockDater(minBlock, maxBlock, chain = "monad") {
   const anchors = [];
   const STEP = 400_000;
   for (let b = minBlock; b <= maxBlock; b += STEP) anchors.push(b);
   if (anchors.at(-1) !== maxBlock) anchors.push(maxBlock);
   const batch = anchors.map((b, i) => ({ jsonrpc: "2.0", id: i, method: "eth_getBlockByNumber", params: ["0x" + b.toString(16), false] }));
-  const out = await rpc(batch);
+  const out = await rpc(batch, chain);
   const pts = (Array.isArray(out) ? out : [out])
     .filter((r) => r.result)
     .map((r) => [parseInt(r.result.number, 16), parseInt(r.result.timestamp, 16)])
@@ -66,12 +67,12 @@ export async function blockDater(minBlock, maxBlock) {
 // Streams Transfer logs for a contract from `fromBlock` to the chain head.
 // Yields normalized events shaped like thirdweb Insight's (block_number,
 // topics[], data, transaction_hash, log_index) in ascending block order.
-export async function* transferLogs(contract, topic0, fromBlock) {
-  const head = await headBlock();
+export async function* transferLogs(contract, topic0, fromBlock, chain = "monad") {
+  const head = await headBlock(chain);
   const getLogs = async (start, end) => rpc({
     jsonrpc: "2.0", id: 1, method: "eth_getLogs",
     params: [{ address: contract, topics: [topic0], fromBlock: "0x" + start.toString(16), toBlock: "0x" + end.toString(16) }],
-  });
+  }, chain);
   // dense periods (token launch) exceed the 50K-logs-per-response cap →
   // bisect the window until it fits
   async function* fetchRange(start, end) {

@@ -233,7 +233,7 @@ function saveState(symbol, lastBlock, balances) {
 }
 
 async function thirdwebHolders(symbol, cfg, priceUsd) {
-  if (!CONFIG.THIRDWEB_SECRET_KEY) throw new Error("Missing THIRDWEB_SECRET_KEY");
+  if (!hyperRpcAvailable() && !CONFIG.THIRDWEB_SECRET_KEY) throw new Error("Missing HYPERSYNC_API_KEY / THIRDWEB_SECRET_KEY");
   const { lastBlock, balances } = loadState(symbol);
   // Snapshot balances before applying this run's transfers, so we can diff the
   // day's flows (who accumulated / distributed / entered / left the holder set).
@@ -250,7 +250,7 @@ async function thirdwebHolders(symbol, cfg, priceUsd) {
   if (hyperRpcAvailable()) {
     // Live source (Envio HyperRPC) — thirdweb Insight froze at ~75.28M on
     // Monad and would silently serve a 2-month-old ledger.
-    for await (const { logs } of transferLogs(cfg.contract, TRANSFER_TOPIC, cursor)) {
+    for await (const { logs } of transferLogs(cfg.contract, TRANSFER_TOPIC, cursor, cfg.hyperchain || "monad")) {
       calls++;
       for (const e of logs) {
         const from = addrFromTopic(e.topics[1]);

@@ -90,8 +90,8 @@ const evDate = (e) => {
 
 export async function collectPnl(asset) {
   const cfg = asset.holders;
-  if (cfg?.source !== "thirdweb") throw new Error(`${asset.symbol}: PnL needs the thirdweb ledger`);
-  if (!CONFIG.THIRDWEB_SECRET_KEY) throw new Error("Missing THIRDWEB_SECRET_KEY");
+  if (cfg?.source !== "thirdweb") throw new Error(`${asset.symbol}: PnL needs the ledger source`);
+  if (!hyperRpcAvailable() && !CONFIG.THIRDWEB_SECRET_KEY) throw new Error("Missing HYPERSYNC_API_KEY / THIRDWEB_SECRET_KEY");
   const dec = 10 ** (cfg.decimals ?? 18);
   const prices = priceMap(asset.symbol);
   if (!prices.size) throw new Error(`${asset.symbol}: no price data for cost basis`);
@@ -162,7 +162,7 @@ export async function collectPnl(asset) {
   if (hyperRpcAvailable()) {
     let minBn = null, maxBn = null;
     const rawLogs = [];
-    for await (const { logs } of transferLogs(cfg.contract, TRANSFER_TOPIC, cursor)) {
+    for await (const { logs } of transferLogs(cfg.contract, TRANSFER_TOPIC, cursor, cfg.hyperchain || "monad")) {
       calls++;
       for (const l of logs) {
         rawLogs.push(l);
@@ -171,7 +171,7 @@ export async function collectPnl(asset) {
       }
     }
     if (rawLogs.length) {
-      const dateOf = await blockDater(minBn, maxBn);
+      const dateOf = await blockDater(minBn, maxBn, cfg.hyperchain || "monad");
       for (const l of rawLogs) {
         batch.push([l.block_number, dateOf(l.block_number), addrFromTopic(l.topics[1]), addrFromTopic(l.topics[2]),
           BigInt(l.data && l.data !== "0x" ? l.data : "0x0")]);
