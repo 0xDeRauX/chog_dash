@@ -1675,3 +1675,33 @@ body.studio-dragging .drop-zones { display: flex; }
 .hero-gauges { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 20px; margin-top: 14px; }
 @supports not (grid-template-columns: repeat(auto-fit, minmax(220px,1fr))) { .hero-gauges { grid-template-columns: 1fr 1fr; } }
 .scr-verdict { font-size: 12px; margin: 0 2px; }
+
+/* CHOG 360 — live distribution verdict banner */
+.dist-banner { display: flex; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border); }
+.dist-banner.v-bear { background: color-mix(in srgb, #ff5c6c 12%, transparent); border-color: color-mix(in srgb, #ff5c6c 40%, transparent); }
+.dist-banner.v-warn { background: color-mix(in srgb, #e0a000 12%, transparent); border-color: color-mix(in srgb, #e0a000 40%, transparent); }
+.dist-banner.v-bull { background: color-mix(in srgb, #2fbf71 12%, transparent); border-color: color-mix(in srgb, #2fbf71 40%, transparent); }
+.dist-banner.v-neutral { background: color-mix(in srgb, #8a84a6 10%, transparent); }
+.dist-emoji { font-size: 30px; line-height: 1; }
+.dist-title { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+.dist-txt { font-size: 13px; color: var(--text-2); line-height: 1.45; }
+
+/* Tops study — visual rows */
+.tops-list { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.top-row { border: 1px solid var(--grid); border-left: 3px solid var(--border-strong); border-radius: 8px; padding: 9px 12px; }
+.top-row.top-dist { border-left-color: #ff5c6c; background: color-mix(in srgb, #ff5c6c 5%, transparent); }
+.top-row.top-bounce { border-left-color: #5a5570; }
+.top-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.top-date { font-weight: 600; font-size: 13px; }
+.top-price { color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.top-verdict { margin-left: auto; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+.top-verdict.v-bear { background: color-mix(in srgb, #ff5c6c 18%, transparent); color: #ff5c6c; }
+.top-verdict.v-neutral { background: color-mix(in srgb, #8a84a6 15%, transparent); color: var(--text-2); }
+.top-bars { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; }
+.top-metric { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.top-lbl { color: var(--text-3); min-width: 96px; }
+.top-gauge { flex: 1; height: 6px; background: var(--chip); border-radius: 4px; overflow: hidden; }
+.top-fill { display: block; height: 100%; background: #5a5570; }
+.top-fill.hot { background: #ff5c6c; }
+.top-val { font-variant-numeric: tabular-nums; font-weight: 600; }
+.top-val.up { color: #2fbf71; } .top-val.down { color: #ff5c6c; }

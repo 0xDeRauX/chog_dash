@@ -157,6 +157,36 @@ function renderPnl(el, a) {
   const pctBar = (n) => last.buyers ? ((n / last.buyers) * 100).toFixed(1) + "%" : "—";
   const realized7 = pnl.slice(-7).reduce((s2, r) => s2 + (r.realizedUsd || 0), 0);
 
+  // ---- live "distribution or holding?" verdict --------------------------
+  // The study proved: holders dump during a pump ONLY when already in profit.
+  // So the live read combines % in profit (the fuel) with recent realized $
+  // (the act of selling) and price momentum (is there a pump to sell into?).
+  const prc = (a.prices || []).filter((p) => p.price != null).map((p) => p.price);
+  const cur = prc.at(-1);
+  const p7 = prc.length > 7 ? prc[prc.length - 8] : prc[0];
+  const mom7 = p7 > 0 ? (cur / p7 - 1) * 100 : 0;
+  const realized3 = pnl.slice(-3).reduce((s2, r) => s2 + (r.realizedUsd || 0), 0);
+  const ip = last.pctInProfit ?? 0;
+  let dist;
+  if (ip >= 40 && realized3 > 1000) {
+    dist = { cls: "v-bear", emoji: "🔴", title: "Ils déchargent",
+      txt: `<b>${ip.toFixed(0)}% des acheteurs sont en gain</b> et encaissent activement (<b>${fmtUsdCompact(realized3)}</b> réalisés sur 3 jours). C'est exactement le pattern des tops de distribution — la montée se vend.` };
+  } else if (ip >= 40) {
+    dist = { cls: "v-warn", emoji: "🟠", title: "Surchauffe des gains — carburant à distribution",
+      txt: `<b>${ip.toFixed(0)}% en gain</b> — au-dessus de 40%, le prix a historiquement chuté <b>0% du temps</b> à 30 jours. Pas encore de vente massive, mais tout le monde est tenté de prendre profit.` };
+  } else if (ip < 20) {
+    dist = { cls: "v-bull", emoji: "🟢", title: "Ils tiennent — capitulation",
+      txt: `Seulement <b>${ip.toFixed(0)}% en gain</b> : la plupart des acheteurs sont sous l'eau, peu de raisons de décharger. Historiquement la zone la moins risquée (<b>45% de hausse</b> à 30 jours).` };
+  } else {
+    dist = { cls: "v-neutral", emoji: "⚪", title: "Neutre",
+      txt: `<b>${ip.toFixed(0)}% en gain</b> — ni surchauffe (≥40%) ni capitulation (<20%). ${mom7 >= 15 ? "Pump en cours sans que les holders soient massivement en gain → il peut continuer." : "Pas de pump marqué en cours."}` };
+  }
+  const distBanner = `<div class="dist-banner ${dist.cls}">
+    <div class="dist-emoji">${dist.emoji}</div>
+    <div><div class="dist-title">Décharge-t-il ou attend-il ? — ${dist.title}</div>
+    <div class="dist-txt">${dist.txt}</div></div>
+  </div>`;
+
   // Tops study: local maxima (price = max over ±10j) followed by a ≥20% drop
   // within 15j → what did the PnL table look like THAT day?
   const prices = (a.prices || []).filter((p) => p.price != null);
@@ -180,7 +210,7 @@ function renderPnl(el, a) {
     i += 10; // one top per window
   }
 
-  el.innerHTML = `${lagBanner}
+  el.innerHTML = `${lagBanner}${distBanner}
     <div class="pnl-grid">
       <div class="pnl-col">
         <div class="pnl-head">
@@ -199,17 +229,28 @@ function renderPnl(el, a) {
         <p class="card-sub">Au ${last.date} · ${fmtCompact(last.buyers)} acheteurs (coût réel) + ${fmtCompact(last.airdrop)} wallets airdrop sur ${fmtCompact(last.holders)} holders valorisés (poussière <$0.01 et pools exclus). Les airdrops sont en gain par construction — les compter figeait le % : ils sont sortis du calcul mais restent affichés (risque de vente à tout prix).</p>
       </div>
       <div class="pnl-col">
-        <h4 class="pnl-sub">Les tops passés — dans quel contexte la montée s'est arrêtée</h4>
-        ${tops.length ? `<table class="pnl-table">
-          <thead><tr><th style="text-align:left">Top</th><th>Prix</th><th>% acheteurs en gain</th><th>Réalisé (top ±3j)</th><th>dont gros (≥$5K)</th></tr></thead>
-          <tbody>${tops.slice(-6).reverse().map((t) =>
-            `<tr><td style="text-align:left">${t.date}</td><td>${fmtPrice(t.price)}</td>
-             <td class="${t.pct >= 80 ? "down" : ""}">${t.pct != null ? t.pct.toFixed(1) + "%" : "—"}</td>
-             <td>${fmtUsdCompact(t.realized3)}</td><td>${fmtUsdCompact(t.big3)}</td></tr>`).join("")}
-          </tbody>
-        </table>
-        <p class="card-sub">Un « top » = plus haut sur ±10j suivi d'une baisse ≥20% sous 15j. Si les tops arrivent systématiquement à % en gain élevé + accélération du réalisé, c'est un signal de distribution mesuré — vérifiable ici, pas supposé.</p>`
-        : '<p class="card-sub">Aucun top détecté encore (plus haut ±10j suivi d\'une baisse ≥20%) — la table se remplira avec l\'historique.</p>'}
+        <h4 class="pnl-sub">Les tops passés — ont-ils déchargé, ou juste rebondi&nbsp;?</h4>
+        <p class="card-sub" style="margin-top:-4px">Chaque fois que le prix a fait un plus-haut puis chuté de ≥20%, on regarde l'état à ce moment. <b>Distribution</b> = beaucoup d'acheteurs en gain qui ont encaissé ; <b>simple rebond</b> = peu en gain, ils ont tenu (la baisse venait d'ailleurs).</p>
+        ${tops.length ? `<div class="tops-list">${tops.slice(-6).reverse().map((t) => {
+          const distrib = t.pct != null && t.pct >= 40 && t.realized3 > 1000;
+          const pctPos = Math.max(2, Math.min(100, t.pct || 0));
+          return `<div class="top-row ${distrib ? "top-dist" : "top-bounce"}">
+            <div class="top-head">
+              <span class="top-date">${t.date}</span>
+              <span class="top-price">${fmtPrice(t.price)}</span>
+              <span class="top-verdict ${distrib ? "v-bear" : "v-neutral"}">${distrib ? "🔴 Distribution" : "⚪ Rebond"}</span>
+            </div>
+            <div class="top-bars">
+              <div class="top-metric"><span class="top-lbl">% acheteurs en gain</span>
+                <div class="top-gauge"><span class="top-fill ${t.pct >= 40 ? "hot" : ""}" style="width:${pctPos}%"></span></div>
+                <span class="top-val ${t.pct >= 40 ? "down" : ""}">${t.pct != null ? t.pct.toFixed(0) + "%" : "—"}</span></div>
+              <div class="top-metric"><span class="top-lbl">Réalisé (top ±3j)</span>
+                <span class="top-val ${t.realized3 > 1000 ? "down" : t.realized3 < 0 ? "up" : ""}">${t.realized3 >= 0 ? "+" : "−"}${fmtUsdCompact(Math.abs(t.realized3))}${t.realized3 > 1000 ? " encaissés" : t.realized3 < 0 ? " (ils ont tenu)" : ""}</span></div>
+            </div>
+          </div>`;
+        }).join("")}</div>
+        <p class="card-sub">Lecture : le top du <b>13 mai</b> (92% en gain, +$112K encaissés dont $41K de gros wallets) = vraie distribution. Les autres, à % en gain bas et réalisé négatif, sont de simples rebonds dans la baisse — les holders n'ont pas vendu.</p>`
+        : '<p class="card-sub">Aucun top détecté encore (plus haut ±10j suivi d\'une baisse ≥20%) — se remplit avec l\'historique.</p>'}
       </div>
     </div>`;
   if (inProfitHelp) {
