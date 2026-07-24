@@ -1,25 +1,20 @@
 {
-  "date": "2026-07-20",
+  "date": "2026-07-23",
   "results": [
     {
       "chain": "robinhood",
-      "address": "0xd7321801caae694090694ff55a9323139f043b88",
-      "count": 1290
-    },
-    {
-      "chain": "robinhood",
       "address": "0x1b0e319c6a659f002271b69db8a7df2f911c153e",
-      "count": 3464
+      "count": 7067
     },
     {
       "chain": "robinhood",
       "address": "0x45242320dbb855eea8fd36804c6487e10e97fcf9",
-      "count": 3388
+      "count": 1990
     },
     {
       "chain": "robinhood",
       "address": "0x62c71cd34a52c30d894419cbcc55db2afa8032ea",
-      "count": 5664
+      "count": 3287
     }
   ]
 }
