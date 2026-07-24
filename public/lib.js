@@ -254,11 +254,12 @@ const SIGNAL_ZONES = {
   flowratio: { label: "Pression achat", fmt: (v) => v.toFixed(0) + "%", lo: 40, hi: 60,
     bands: [{ v: 52, kind: "bull", edge: "+5pp/30j" }, { v: 50, kind: "mid" }, { v: 48, kind: "bear", edge: "−4pp" }] },
   divergence: { label: "Divergence", fmt: (v) => (v >= 0 ? "+" : "") + v.toFixed(2), lo: -3, hi: 3,
-    bands: [{ v: 1, kind: "bull", edge: "+3pp/30j" }, { v: 0, kind: "mid" }, { v: -1.5, kind: "bear", edge: "−14pp" }] },
+    bands: [{ v: 1, kind: "bull", edge: "+3pp/30j" }, { v: 0, kind: "mid" }, { v: -1.7, kind: "bear", edge: "−14pp" }] },
   rsi: { label: "RSI 14", fmt: (v) => v.toFixed(0), lo: 0, hi: 100,
-    bands: [{ v: 65, kind: "bear", edge: "−23pp/30j" }, { v: 50, kind: "mid" }, { v: 30, kind: "bull", edge: "rebond" }] },
+    bands: [{ v: 65, kind: "bear", edge: "−23pp/30j, 15% win" }, { v: 50, kind: "mid" }, { v: 30, kind: "bull", edge: "rebond court" }] },
+  // Recalibré: 0% de win historique dès 40% d'acheteurs en gain (pas 50%).
   inprofit: { label: "% en gain", fmt: (v) => v.toFixed(0) + "%", lo: 0, hi: 100,
-    bands: [{ v: 50, kind: "bear", edge: "−33%/30j, 0% win" }, { v: 35, kind: "warn" }, { v: 20, kind: "bull", edge: "45% win" }] },
+    bands: [{ v: 40, kind: "bear", edge: "−37%/30j, 0% win" }, { v: 25, kind: "warn" }, { v: 20, kind: "bull", edge: "45% win" }] },
   composite: { label: "Composite", fmt: (v) => String(Math.round(v)), lo: 0, hi: 100,
     bands: [{ v: 65, kind: "bull" }, { v: 50, kind: "mid" }, { v: 35, kind: "bear" }] },
   buzz: { label: "Buzz", fmt: (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "σ", lo: -2, hi: 3,
@@ -323,7 +324,7 @@ function assetVerdict(a) {
   const net = bull - bear;
   let verdict = "neutre";
   if (net >= 2 || (net >= 1 && bear === 0)) verdict = "accumulation";
-  else if (net <= -2 || (bear >= 1 && vals.inprofit != null && vals.inprofit >= 50)) verdict = "distribution";
+  else if (net <= -2 || (bear >= 1 && vals.inprofit != null && vals.inprofit >= 40)) verdict = "distribution";
   return { verdict, score: net, bull, bear, signals };
 }
 const VERDICT_META = {

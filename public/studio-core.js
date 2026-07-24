@@ -396,7 +396,7 @@ function cfgToQuery(cfg) {
    "warn" (orange, elevated) · "mid" (faint reference). */
 const OVERHEAT_ZONES = {
   rsi: [
-    { v: 65, kind: "bear", title: "surchauffe ≥65 (−23pp/30j)" },
+    { v: 65, kind: "bear", title: "surchauffe ≥65 (−23pp/30j, 15% win)" },
     { v: 50, kind: "mid", title: "50" },
     { v: 30, kind: "bull", title: "survente ≤30 (rebond)" },
   ],
@@ -408,11 +408,11 @@ const OVERHEAT_ZONES = {
   divergence: [
     { v: 1, kind: "bull", title: "attention devance ≥1 (+3pp)" },
     { v: 0, kind: "mid", title: "0" },
-    { v: -1.5, kind: "bear", title: "essoufflement ≤−1.5 (−14pp)" },
+    { v: -1.7, kind: "bear", title: "essoufflement ≤−1.7 (−14pp)" },
   ],
   inprofit: [
-    { v: 50, kind: "bear", title: "distribution ≥50% (−33%/30j, 0% win)" },
-    { v: 35, kind: "warn", title: "prudence ≥35%" },
+    { v: 40, kind: "bear", title: "distribution ≥40% (−37%/30j, 0% win)" },
+    { v: 25, kind: "warn", title: "prudence ≥25%" },
     { v: 20, kind: "bull", title: "capitulation ≤20% (45% win)" },
   ],
   composite: [
