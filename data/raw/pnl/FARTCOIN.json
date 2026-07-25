@@ -1,0 +1,22 @@
+{
+ "symbol": "FARTCOIN",
+ "indexedToDate": "2026-07-25",
+ "source": "dune",
+ "series": [
+  {
+   "date": "2026-07-25",
+   "holders": 160540,
+   "airdrop": 0,
+   "buyers": 160540,
+   "inProfit": 529,
+   "pctInProfit": 0.33,
+   "x10": 0,
+   "x2_10": 0,
+   "x1_2": 529,
+   "l0_50": 11875,
+   "l50": 140287,
+   "realizedUsd": 0,
+   "realizedBigUsd": 0
+  }
+ ]
+}

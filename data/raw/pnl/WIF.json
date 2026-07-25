@@ -1,0 +1,22 @@
+{
+ "symbol": "WIF",
+ "indexedToDate": "2026-07-25",
+ "source": "dune",
+ "series": [
+  {
+   "date": "2026-07-25",
+   "holders": 251313,
+   "airdrop": 0,
+   "buyers": 251313,
+   "inProfit": 2157,
+   "pctInProfit": 0.86,
+   "x10": 0,
+   "x2_10": 372,
+   "x1_2": 1785,
+   "l0_50": 17760,
+   "l50": 231257,
+   "realizedUsd": 0,
+   "realizedBigUsd": 0
+  }
+ ]
+}

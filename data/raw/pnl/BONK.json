@@ -1,0 +1,22 @@
+{
+ "symbol": "BONK",
+ "indexedToDate": "2026-07-25",
+ "source": "dune",
+ "series": [
+  {
+   "date": "2026-07-25",
+   "holders": 900800,
+   "airdrop": 0,
+   "buyers": 900800,
+   "inProfit": 368144,
+   "pctInProfit": 40.87,
+   "x10": 2235,
+   "x2_10": 337509,
+   "x1_2": 28400,
+   "l0_50": 29003,
+   "l50": 501786,
+   "realizedUsd": 0,
+   "realizedBigUsd": 0
+  }
+ ]
+}
