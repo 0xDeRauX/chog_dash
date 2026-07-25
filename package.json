@@ -19,7 +19,9 @@
     "build:dashboard": "node scripts/build-dashboard-data.js",
     "collect:tradeflow": "node scripts/collect-tradeflow.js",
     "collect:radar": "node scripts/collect-chainradar.js",
-    "collect:pnl": "node scripts/collect-pnl.js"
+    "collect:pnl": "node scripts/collect-pnl.js",
+    "backfill:prices-dune": "node scripts/backfill-prices-dune.js",
+    "collect:solana-pnl": "node scripts/collect-solana-pnl.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",
