@@ -227,9 +227,32 @@ function setSeriesMarkers(series, markers) {
 }
 
 // ---- series data ---------------------------------------------------------
+// Timeframe resampling: daily rows → weekly (Monday-anchored) or monthly bars.
+// Set once per render from cfg.tf so every series AND indicator source (they all
+// flow through seriesPts) share the same bar interval — RSI/MACD/SMA are then
+// computed on weekly/monthly bars, TradingView-style. Each bucket keeps the
+// period's LAST row (the "close") but is time-stamped at the period start so
+// every metric aligns on the same bar times.
+let RESAMPLE_TF = "D";
+function periodKey(dateStr, tf) {
+  if (tf === "M") return dateStr.slice(0, 7) + "-01";
+  if (tf === "W") {
+    const d = new Date(dateStr + "T00:00:00Z");
+    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); // back to Monday
+    return d.toISOString().slice(0, 10);
+  }
+  return dateStr;
+}
+function resampleRows(rows, tf) {
+  if (tf === "D" || !tf) return rows;
+  const byPeriod = new Map(); // rows are date-ascending → last write wins = close
+  for (const r of rows) byPeriod.set(periodKey(r.date, tf), { ...r, date: periodKey(r.date, tf) });
+  return [...byPeriod.values()];
+}
 function seriesPts(asset, m, win, indexed) {
-  const w = windowed(asset[m.series], win).filter((p) => p[m.vkey] != null);
+  let w = windowed(asset[m.series], win).filter((p) => p[m.vkey] != null);
   if (!w.length) return [];
+  w = resampleRows(w, RESAMPLE_TF);
   if (!indexed) return w.map((p) => ({ time: p.date, value: p[m.vkey] }));
   const base = indexBase(w.map((p) => p[m.vkey])); // robust vs launch dust (lib.js)
   if (!base) return [];
@@ -447,6 +470,7 @@ function applyOverheatZones(series, key) {
    Returns { created, items (legend info), anchorSeries }. */
 function renderConfig(chart, cfg, ctx, opts = {}) {
   const { bySym, mById } = ctx;
+  RESAMPLE_TF = ["W", "M"].includes(cfg.tf) ? cfg.tf : "D"; // timeframe for all series
   const isRawFmt = (id) => ["z", "signed"].includes(mById[id]?.format);
   const serieColor = (i) => cfg.series[i]?.color || PALETTE[i % PALETTE.length];
   const created = [], items = [], vprofiles = [];
@@ -459,7 +483,9 @@ function renderConfig(chart, cfg, ctx, opts = {}) {
   let minTime = null, maxTime = null;
   const add = (dataPts, o, paneIdx = 0, kind = LightweightCharts.LineSeries) => {
     if (!dataPts.length) return null;
-    const s = chart.addSeries(kind, { priceLineVisible: false, lastValueVisible: false, ...o }, paneIdx);
+    // Value labels on the axis + the dashed "last price" line, TradingView-style
+    // (per series: price AND every indicator). A caller can still override.
+    const s = chart.addSeries(kind, { priceLineVisible: true, lastValueVisible: true, ...o }, paneIdx);
     s.setData(dataPts);
     created.push(s);
     if (!paneAnchors[paneIdx]) paneAnchors[paneIdx] = s;
@@ -658,8 +684,30 @@ function renderConfig(chart, cfg, ctx, opts = {}) {
     }
     items.push({ series: main, color: ind.type === "regime" ? "#35d07f" : color, label, struck: false, sub: true, fmt });
   }
+  // Pane sizing. Give every pane a deterministic, readable share of the chart
+  // height so the same clean layout is restored on every open/refresh/saved
+  // view — instead of a fixed pixel height that gets cramped once several
+  // sub-panes stack up. Proportional stretch factors auto-adapt to the real
+  // container height and survive window/fullscreen resizes. Small Mon Dash
+  // tiles pass an explicit paneHeight and keep the compact fixed sizing.
   try {
-    chart.panes().forEach((p, i) => { if (i > 0) p.setHeight(opts.paneHeight || 130); });
+    const panes = chart.panes();
+    const nSub = panes.length - 1;
+    if (nSub > 0) {
+      const canStretch = typeof panes[0].setStretchFactor === "function";
+      if (opts.paneHeight && !opts.fitPanes) {
+        panes.forEach((p, i) => { if (i > 0) p.setHeight(opts.paneHeight); });
+      } else if (canStretch) {
+        // Price pane ≈ half the height; sub-panes split the rest evenly (each
+        // stays readable even with 4-5 stacked). Never let the price shrink
+        // below ~55% when there's a single sub-pane.
+        const priceF = Math.max(1.4, nSub);
+        panes[0].setStretchFactor(priceF);
+        for (let i = 1; i < panes.length; i++) panes[i].setStretchFactor(1);
+      } else {
+        panes.forEach((p, i) => { if (i > 0) p.setHeight(opts.paneHeight || 130); });
+      }
+    }
   } catch { /* pane sizing is cosmetic */ }
   // Frame the REAL data (the future whitespace stays reachable by scrolling
   // right, so drawings and milestones can live ahead of today).

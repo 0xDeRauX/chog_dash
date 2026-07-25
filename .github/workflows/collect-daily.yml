@@ -84,7 +84,16 @@ jobs:
       - name: Solana holder PnL (Dune)
         env:
           DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
+          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
         run: npm run collect:solana-pnl
+
+      - name: EVM holder PnL (Dune)
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
+          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
+        run: npm run collect:evm-pnl
 
       - name: Ingest into SQLite
         run: npm run ingest

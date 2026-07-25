@@ -9,7 +9,7 @@ const COLORS = {
   CASHCAT: "#43c59e",
   MON: "#836ef9", BTC: "#f07530", ETH: "#3987e5", SOL: "#17b8a6",
   XRP: "#b0bec5", SUI: "#2ec8e6", HYPE: "#35e0a5", TAO: "#e0559a",
-  AKT: "#ef5350", STRK: "#a98bf0",
+  AKT: "#ef5350", STRK: "#a98bf0", GRAM: "#0098ea",
 };
 const colorOf = (sym) => COLORS[sym] || "#836ef9";
 

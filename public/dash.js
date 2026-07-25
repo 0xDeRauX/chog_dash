@@ -215,7 +215,7 @@ async function boot() {
 
       const chart = LightweightCharts.createChart(body, studioChartOptions());
       charts.push(chart);
-      const res = renderConfig(chart, cfg, ctx, { paneHeight: 80 });
+      const res = renderConfig(chart, cfg, ctx, { paneHeight: 80, fitPanes: true });
       // journal milestones: global ones + those scoped to this widget
       if (localStorage.getItem("chog-dash-showevents") !== "0" && res.anchorSeries && cfg.series[0]) {
         const evts = journalEvents(w.id);

@@ -152,6 +152,21 @@ export const ASSETS = [
   },
   {
     group: "majors",
+    symbol: "GRAM",
+    // GRAM = Toncoin (The Open Network) — the token Telegram originally launched
+    // as "Gram". Native L1 coin, so like the other majors it has no free holder
+    // API (a wrapped-TON contract on Ethereum would misrepresent the real base),
+    // hence holders / % en gain / tranches stay "—". Everything else is
+    // collected: price/volume/mcap + Telegram (7.7M, via CoinGecko) + mentions
+    // + TON chain TVL + on-chain buy/sell (GeckoTerminal, TON network).
+    flow: { net: "ton", addr: "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c" }, // native TON, GeckoTerminal pools
+    gtNetwork: "ton", // exact $ buy/sell split from aggregated 24h trades
+    chain: "ton",
+    coingeckoId: "the-open-network",
+    xQuery: '("Toncoin" OR "$TON" OR "$GRAM" OR "@ton_blockchain" OR "The Open Network") -is:retweet',
+  },
+  {
+    group: "majors",
     symbol: "XRP",
     binance: "XRPUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "xrp",
@@ -290,6 +305,7 @@ export const CHAINS = {
   zcash: "Zcash",
   monero: "Monero",
   near: "NEAR",
+  ton: "TON",
 };
 
 export const CONFIG = {
@@ -298,6 +314,9 @@ export const CONFIG = {
   THIRDWEB_SECRET_KEY: process.env.THIRDWEB_SECRET_KEY,
   HYPERSYNC_API_KEY: process.env.HYPERSYNC_API_KEY,
   DUNE_API_KEY: process.env.DUNE_API_KEY, // Dune Analytics (Solana PnL, full price history) // Envio HyperRPC (Monad logs)
+  // Extra Dune keys for credit rotation — the free tier has a daily datapoint
+  // budget per key, so heavy backfills spread across DUNE_API_KEY, _2, _3…
+  DUNE_API_KEYS: [process.env.DUNE_API_KEY, process.env.DUNE_API_KEY_2, process.env.DUNE_API_KEY_3].filter(Boolean),
   // Optional dedicated Solana RPC for the SPL holder counts. Note: Helius's free
   // tier rejects the large getProgramAccounts these need (e.g. BONK ~485MB), so
   // the public mainnet-beta endpoint is actually the reliable default here.

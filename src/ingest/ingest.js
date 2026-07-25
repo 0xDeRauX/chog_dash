@@ -227,6 +227,17 @@ export function ingestAll() {
     }
   }
 
+  // Backfilled holder history (per-symbol series: daily holder count + $-tiers),
+  // e.g. the EVM/Dune backfill. Same tables as the daily holders snapshots.
+  for (const hist of readRawFiles("holders-history")) {
+    const asset = getAssetId.get(hist.symbol);
+    if (!asset) continue;
+    for (const p of hist.series || []) {
+      if (p.holders != null) { upsertHolders.run({ assetId: asset.id, date: p.date, holders: p.holders }); holderRows++; }
+      if (p.tiers) { upsertTiers.run({ assetId: asset.id, date: p.date, ...p.tiers }); tierRows++; }
+    }
+  }
+
   // Buy/sell volume: Binance history files (per-symbol series), Binance daily
   // series and DexScreener daily snapshots share one upsert.
   const upsertFlow = db.prepare(`

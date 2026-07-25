@@ -76,7 +76,7 @@ const METRICS = [
       what: "Nombre de holders dont le solde vaut <b>au moins $50</b> au prix du jour — filtre la poussière (airdrops abandonnés, restes de swaps) pour ne compter que les porteurs réels.",
       read: "Sa <b>croissance</b> compte plus que son niveau : +5%/semaine = de vrais nouveaux porteurs, pas des wallets à 3 centimes.",
       example: "CHOG affiche 33K holders mais seulement ~15K valent ≥$50 : la base « engagée » est moitié moindre — et c'est elle qu'il faut suivre.",
-      quality: "Disponible uniquement où l'on voit chaque solde (CHOG + memes Solana). « — » ailleurs.",
+      quality: "Disponible où l'on voit chaque solde : CHOG (grand livre), memes Solana (scan) et tokens EVM PEPE/BRETT/ONDO (Dune, avec historique). « — » ailleurs.",
     },
   },
   {
@@ -89,7 +89,7 @@ const METRICS = [
       what: "Part des <b>acheteurs</b> (coût moyen d'entrée réel, reconstruit depuis chaque transfert au prix du jour) dont le coût est inférieur au prix actuel. La <b>cohorte airdrop (coût $0) est exclue</b> — en gain par construction, elle figeait le % vers 79% en permanence.",
       read: "<b>>85%</b> = presque tous les acheteurs gagnent — zone historique de distribution (les tops se forment quand il n'y a plus personne à mettre en gain) · <b><40%</b> = majorité sous l'eau, vendeurs épuisés potentiels.",
       example: "CHOG à 90% en gain après une montée : chaque holder est tenté de prendre profit — la table des tranches dit qui (petits ×1-2 ou gros ×10+).",
-      quality: "CHOG : grand livre complet (airdrops séparés). Memes Solana (WIF/BONK/PENGU/FARTCOIN/ANSEM) : via Dune, chiffre <b>conservateur</b> (airdrops valorisés au prix de réception → % un peu sous-estimé, mais la direction — capitulation vs euphorie — est fiable). « — » pour les majors.",
+      quality: "CHOG : grand livre complet (airdrops séparés), série quotidienne réelle. Memes Solana (WIF/BONK/PENGU/FARTCOIN) et tokens EVM (PEPE/BRETT/ONDO) : <b>historique complet via Dune</b> — l'histogramme du coût d'entrée des holders actuels, projeté sur tout l'historique de prix (méthode « supply in profit »). Sur EVM le coût est pris au prix exact du transfert (plus précis). La courbe passée reflète la cohorte d'<i>aujourd'hui</i> et converge vers la valeur exacte au présent ; direction et forme fiables. « — » pour les majors.",
     },
   },
   {

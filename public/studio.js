@@ -42,6 +42,7 @@ async function boot() {
   const DEFAULT = {
     w: 365,
     mode: "index",
+    tf: "D", // bar interval: D(aily) / W(eekly) / M(onthly)
     fs: 12, // chart font size
     magnet: false, // snap drawings to the anchor series values
     log: false, // logarithmic price scale on the main pane
@@ -101,6 +102,7 @@ async function boot() {
       if (!s?.series?.length) return null;
       if (s.w === "max") s.w = Infinity;
       s.mode = s.mode === "raw" ? "raw" : "index";
+      s.tf = ["D", "W", "M"].includes(s.tf) ? s.tf : "D";
       s.fs = [10, 12, 14].includes(s.fs) ? s.fs : 12;
       s.series = s.series.filter((e) => bySym[e.sym] && mById[e.metric || "price"]);
       migrateCfg(s); // older states carried metrics as series
@@ -174,12 +176,15 @@ async function boot() {
         mode: state.log ? LightweightCharts.PriceScaleMode.Logarithmic : LightweightCharts.PriceScaleMode.Normal,
       });
     } catch { /* scale mode is cosmetic */ }
-    // magnet snap map: displayed values of the first series, by date
+    // magnet snap map: displayed values of the first series, by date; plus a
+    // raw daily volume-by-date map used by the fixed-range volume profile tool.
     anchorPtsCache = new Map();
+    volByCache = new Map();
     if (state.series[0]) {
       for (const p of seriesPts(bySym[state.series[0].sym], mById.price, state.w, state.mode === "index")) {
         anchorPtsCache.set(p.time, p.value);
       }
+      for (const p of bySym[state.series[0].sym].prices || []) volByCache.set(p.date, p.volume || 0);
     }
     legendMap = [];
     const legend = document.getElementById("legend");
@@ -238,11 +243,12 @@ async function boot() {
     ["vline", "│", "Ligne verticale (1 clic)"],
     ["channel", "∥", "Canal parallèle (3 clics : ligne puis largeur)"],
     ["rect", "▭", "Rectangle (2 clics)"],
+    ["vpfix", "▤", "Volume Profile à gamme fixe (2 clics : début → fin de la plage)"],
     ["text", "T", "Texte (1 clic)"],
     ["measure", "📏", "Mesure (glisser : Δ prix, Δ %, Δ jours — non persistée, Échap pour effacer)"],
     ["erase", "⌫", "Gomme (clic sur un tracé)"],
   ];
-  const TWO_CLICK = ["trend", "ray", "eline", "rect"];
+  const TWO_CLICK = ["trend", "ray", "eline", "rect", "vpfix"];
   const TEXT_SIZES = { 1: 11, 2: 13, 3: 16 };
   const tStr = (t) => typeof t === "string" ? t
     : t && t.year ? `${t.year}-${String(t.month).padStart(2, "0")}-${String(t.day).padStart(2, "0")}` : null;
@@ -254,6 +260,7 @@ async function boot() {
   };
   // Magnet: snap a placed/dragged point's value onto the anchor series.
   let anchorPtsCache = new Map(); // dateStr -> displayed value
+  let volByCache = new Map(); // dateStr -> raw daily volume (fixed-range vol profile)
   const maybeSnap = (pt) => {
     if (!state.magnet || !pt || pt.t == null || (pt.pane ?? 0) !== 0) return pt;
     const v = anchorPtsCache.get(tStr(pt.t));
@@ -339,6 +346,13 @@ async function boot() {
       const a = toXY(d.p1, d.pane || 0);
       return a.x == null || a.y == null ? [] : [{ ...a, part: "p1" }];
     }
+    if (d.type === "vpfix") {
+      const x1 = chart.timeScale().timeToCoordinate(d.p1.t), x2 = chart.timeScale().timeToCoordinate(d.p2.t);
+      const out = [];
+      if (x1 != null) out.push({ x: x1, y: H / 2, part: "p1" });
+      if (x2 != null) out.push({ x: x2, y: H / 2, part: "p2" });
+      return out;
+    }
     const a = toXY(d.p1, d.pane || 0), b = toXY(d.p2, d.pane || 0);
     if (a.x == null || a.y == null || b.x == null || b.y == null) return [];
     const pts = [{ ...a, part: "p1" }, { ...b, part: "p2" }];
@@ -349,9 +363,59 @@ async function boot() {
     }
     return pts;
   }
+  // Fixed-range volume profile: histogram of volume per price level over the
+  // user-drawn time range [t1,t2] (displayed price levels from anchorPtsCache,
+  // raw daily volume from volByCache). Independent of the anchored Volume
+  // Profile indicator, which spans the whole window.
+  function vpfixRows(t1, t2) {
+    const ta = tStr(t1) < tStr(t2) ? tStr(t1) : tStr(t2);
+    const tb = tStr(t1) < tStr(t2) ? tStr(t2) : tStr(t1);
+    const pts = [];
+    for (const [date, level] of anchorPtsCache) if (date >= ta && date <= tb && level != null) pts.push({ date, level });
+    if (pts.length < 3) return null;
+    const vals = pts.map((p) => p.level);
+    const lo = Math.min(...vals), hi = Math.max(...vals);
+    const N = 24, step = (hi - lo) / N || 1;
+    const rows = Array.from({ length: N }, (_, i) => ({ v0: lo + i * step, v1: lo + (i + 1) * step, vol: 0 }));
+    for (const p of pts) rows[Math.min(N - 1, Math.floor((p.level - lo) / step))].vol += volByCache.get(p.date) || 0;
+    let max = 0, poc = -1;
+    rows.forEach((r, i) => { if (r.vol > max) { max = r.vol; poc = i; } });
+    return max > 0 ? { rows, max, poc, ta, tb } : null;
+  }
+  function paintVpfix(d, selected) {
+    const H = drawCanvas.clientHeight;
+    const color = d.color || "#9d8bff";
+    const x1 = chart.timeScale().timeToCoordinate(d.p1.t);
+    const x2 = chart.timeScale().timeToCoordinate(d.p2.t);
+    if (x1 == null || x2 == null) return;
+    const xa = Math.min(x1, x2), xb = Math.max(x1, x2);
+    // range box
+    dctx.setLineDash([4, 3]);
+    dctx.lineWidth = selected ? 1.6 : 1;
+    dctx.strokeStyle = color;
+    dctx.strokeRect(xa, 0, xb - xa, H);
+    dctx.fillStyle = color + "12";
+    dctx.fillRect(xa, 0, xb - xa, H);
+    dctx.setLineDash([]);
+    const prof = vpfixRows(d.p1.t, d.p2.t);
+    const a = anchorFor(0);
+    if (!prof || !a) return;
+    const off = paneOffsets()[0] || 0;
+    const maxBar = Math.min((xb - xa) * 0.92, 170);
+    for (let i = 0; i < prof.rows.length; i++) {
+      const r = prof.rows[i];
+      const y0 = a.priceToCoordinate(r.v1), y1 = a.priceToCoordinate(r.v0);
+      if (y0 == null || y1 == null) continue;
+      const top = Math.min(y0, y1) + off, hgt = Math.max(1, Math.abs(y1 - y0) - 1);
+      const w = (r.vol / prof.max) * maxBar;
+      dctx.fillStyle = i === prof.poc ? color + "cc" : color + "5a";
+      dctx.fillRect(xb - w, top, w, hgt); // bars anchored at the range's right edge
+    }
+  }
   function strokeShape(d, preview = false, selected = false) {
     const W = drawCanvas.clientWidth, H = drawCanvas.clientHeight;
     const color = d.color || "#9d8bff";
+    if (d.type === "vpfix") { paintVpfix(d, selected); if (selected) for (const h of endpointsPx(d)) { dctx.beginPath(); dctx.arc(h.x, h.y, 4.5, 0, Math.PI * 2); dctx.fillStyle = ink("--bg") || "#0b0912"; dctx.fill(); dctx.lineWidth = 1.8; dctx.strokeStyle = color; dctx.stroke(); } return; }
     dctx.strokeStyle = color;
     dctx.lineWidth = (d.width || 2) + (selected ? 0.8 : 0);
     dctx.setLineDash(preview ? [5, 4] : dashPattern(d.dash || 0));
@@ -551,6 +615,12 @@ async function boot() {
       } else if (d.type === "hray") {
         const a = toXY(d.p1, d.pane || 0);
         if (a.x != null && a.y != null && px >= a.x - 7 && Math.abs(py - a.y) < 7) return i;
+      } else if (d.type === "vpfix") {
+        const x1 = toXY({ t: d.p1.t }).x, x2 = toXY({ t: d.p2.t }).x;
+        if (x1 != null && x2 != null) {
+          const xa = Math.min(x1, x2), xb = Math.max(x1, x2);
+          if (Math.abs(px - xa) < 7 || Math.abs(px - xb) < 7 || (px >= xa && px <= xb && py < 22)) return i;
+        }
       } else {
         const a = toXY(d.p1, d.pane || 0), b = toXY(d.p2, d.pane || 0);
         if (a.x == null || b.x == null) continue;
@@ -771,11 +841,21 @@ async function boot() {
   drawCanvas.addEventListener("mousemove", (ev) => {
     const r = drawCanvas.getBoundingClientRect();
     mousePx = { x: ev.clientX - r.left, y: ev.clientY - r.top };
+    // While a drawing tool is active the overlay swallows the mouse, so the
+    // chart's own crosshair (guide lines + value/time labels on the axes) would
+    // freeze. Drive it manually from the cursor position so you always see where
+    // you're placing a point and at what price — TradingView-style.
+    if (drawMode !== "cursor") {
+      const p = fromPx(mousePx.x, mousePx.y);
+      const a = anchorFor(p.pane);
+      if (a && p.t != null && p.v != null) { try { chart.setCrosshairPosition(p.v, p.t, a); } catch { /* off-range */ } }
+    }
     if (measuring && measureBox) {
       measureBox.b = { ...mousePx, ...fromPxIn(mousePx.x, mousePx.y, measureBox.a.pane || 0) };
       redrawDraws();
     } else if (pending) redrawDraws();
   });
+  drawCanvas.addEventListener("mouseleave", () => { try { chart.clearCrosshairPosition(); } catch { /* noop */ } });
   drawCanvas.addEventListener("click", (ev) => {
     if (drawMode === "cursor") return;
     const r = drawCanvas.getBoundingClientRect();
@@ -1039,6 +1119,22 @@ async function boot() {
       seg.append(b);
     }
     toolbar.append(seg);
+
+    const tfLbl = document.createElement("span");
+    tfLbl.className = "control-label";
+    tfLbl.textContent = "Intervalle";
+    toolbar.append(tfLbl);
+    const tfSeg = document.createElement("div");
+    tfSeg.className = "segmented";
+    for (const [v, t] of [["D", "Jour"], ["W", "Sem."], ["M", "Mois"]]) {
+      const b = document.createElement("button");
+      b.textContent = t;
+      b.className = v === (state.tf || "D") ? "on" : "";
+      b.title = "Agrège les bougies (prix + indicateurs) en " + { D: "quotidien", W: "hebdomadaire", M: "mensuel" }[v];
+      b.addEventListener("click", () => { state.tf = v; persist(); renderToolbar(); renderChart(); });
+      tfSeg.append(b);
+    }
+    toolbar.append(tfSeg);
 
     const scaleLbl = document.createElement("span");
     scaleLbl.className = "control-label";

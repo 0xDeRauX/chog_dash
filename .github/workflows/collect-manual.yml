@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       collectors:
-        description: "Collecteurs à relancer (csv: radar,prices,tvl,discord,telegram,holders,tradeflow,mentions — ou all)"
+        description: "Collecteurs à relancer (csv: radar,prices,tvl,discord,telegram,holders,tradeflow,mentions,pnl — ou all ; backfills Dune ponctuels: prices-dune, pnl-hist)"
         default: "all"
         type: string
       mentions_days:
@@ -153,13 +153,41 @@ jobs:
         if: env.SEL == 'all' || contains(env.SEL, 'pnl')
         env:
           DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
+          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
         run: npm run collect:solana-pnl
+
+      - name: EVM holder PnL (Dune)
+        if: env.SEL == 'all' || contains(env.SEL, 'pnl')
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
+          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
+        run: npm run collect:evm-pnl
 
       - name: Backfill full price history (Dune)
         if: contains(env.SEL, 'prices-dune')
         env:
           DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
+          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
         run: npm run backfill:prices-dune
+
+      - name: Backfill Solana % en gain history (Dune)
+        if: contains(env.SEL, 'pnl-hist')
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
+          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
+        run: npm run backfill:solana-pnl-hist
+
+      - name: Backfill EVM % en gain + holders history (Dune)
+        if: contains(env.SEL, 'evm-pnl-hist')
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
+          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
+        run: npm run backfill:evm-pnl-hist
 
       - name: Ingest into SQLite
         run: npm run ingest

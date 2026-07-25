@@ -21,7 +21,10 @@
     "collect:radar": "node scripts/collect-chainradar.js",
     "collect:pnl": "node scripts/collect-pnl.js",
     "backfill:prices-dune": "node scripts/backfill-prices-dune.js",
-    "collect:solana-pnl": "node scripts/collect-solana-pnl.js"
+    "collect:solana-pnl": "node scripts/collect-solana-pnl.js",
+    "backfill:solana-pnl-hist": "node scripts/backfill-solana-pnl-history.js",
+    "collect:evm-pnl": "node scripts/collect-evm-pnl.js",
+    "backfill:evm-pnl-hist": "node scripts/backfill-evm-pnl-history.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",

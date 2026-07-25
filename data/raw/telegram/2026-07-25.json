@@ -7,15 +7,15 @@
     },
     {
       "symbol": "WIF",
-      "members": 29254
+      "members": 29152
     },
     {
       "symbol": "BRETT",
-      "members": 28454
+      "members": 28405
     },
     {
       "symbol": "PENGU",
-      "members": 45190
+      "members": 45124
     },
     {
       "symbol": "ANSEM",
@@ -23,11 +23,15 @@
     },
     {
       "symbol": "CASHCAT",
-      "members": 2557
+      "members": 2602
     },
     {
       "symbol": "SOL",
       "members": 3125
+    },
+    {
+      "symbol": "GRAM",
+      "members": 7713232
     },
     {
       "symbol": "MON",
@@ -35,27 +39,27 @@
     },
     {
       "symbol": "HYPE",
-      "members": 27037
+      "members": 27138
     },
     {
       "symbol": "TAO",
-      "members": 8222
+      "members": 8211
     },
     {
       "symbol": "AKT",
-      "members": 8424
+      "members": 8419
     },
     {
       "symbol": "ZEC",
-      "members": 5942
+      "members": 5935
     },
     {
       "symbol": "ONDO",
-      "members": 21821
+      "members": 21784
     },
     {
       "symbol": "NEAR",
-      "members": 48088
+      "members": 47986
     }
   ]
 }
