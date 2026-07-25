@@ -149,6 +149,18 @@ jobs:
           HYPERSYNC_API_KEY: ${{ secrets.HYPERSYNC_API_KEY }}
         run: npm run collect:pnl
 
+      - name: Solana holder PnL (Dune)
+        if: env.SEL == 'all' || contains(env.SEL, 'pnl')
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+        run: npm run collect:solana-pnl
+
+      - name: Backfill full price history (Dune)
+        if: contains(env.SEL, 'prices-dune')
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+        run: npm run backfill:prices-dune
+
       - name: Ingest into SQLite
         run: npm run ingest
 

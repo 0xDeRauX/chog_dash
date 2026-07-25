@@ -89,7 +89,7 @@ const METRICS = [
       what: "Part des <b>acheteurs</b> (coût moyen d'entrée réel, reconstruit depuis chaque transfert au prix du jour) dont le coût est inférieur au prix actuel. La <b>cohorte airdrop (coût $0) est exclue</b> — en gain par construction, elle figeait le % vers 79% en permanence.",
       read: "<b>>85%</b> = presque tous les acheteurs gagnent — zone historique de distribution (les tops se forment quand il n'y a plus personne à mettre en gain) · <b><40%</b> = majorité sous l'eau, vendeurs épuisés potentiels.",
       example: "CHOG à 90% en gain après une montée : chaque holder est tenté de prendre profit — la table des tranches dit qui (petits ×1-2 ou gros ×10+).",
-      quality: "Estimation : prix du jour (pas du swap exact), transferts P2P héritent du coût, airdrops = coût zéro. Grand livre CHOG uniquement — « — » ailleurs.",
+      quality: "CHOG : grand livre complet (airdrops séparés). Memes Solana (WIF/BONK/PENGU/FARTCOIN/ANSEM) : via Dune, chiffre <b>conservateur</b> (airdrops valorisés au prix de réception → % un peu sous-estimé, mais la direction — capitulation vs euphorie — est fiable). « — » pour les majors.",
     },
   },
   {

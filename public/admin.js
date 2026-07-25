@@ -36,7 +36,7 @@ function structuralReason(a, famId) {
   if (famId === "holders" && ["SOL", "MON"].includes(sym)) return "pas de source gratuite (SOL flou · MON trop récent)";
   if (famId === "tiers" && !TIER_OK.includes(sym)) return "nécessite le scan complet des soldes (CHOG + memes Solana uniquement)";
   if (famId === "flows" && sym !== "CHOG") return "grand livre CHOG uniquement";
-  if (famId === "pnl" && sym !== "CHOG") return "reconstruction du coût d'entrée — grand livre CHOG uniquement";
+  if (famId === "pnl" && !["CHOG","WIF","BONK","PENGU","FARTCOIN","ANSEM"].includes(sym)) return "reconstruction du coût d'entrée — CHOG (grand livre) + memes Solana (Dune) uniquement";
   if (famId === "discord") return "pas de serveur Discord officiel connu";
   if (famId === "telegram") return "pas de canal Telegram référencé (CoinGecko)";
   return null;

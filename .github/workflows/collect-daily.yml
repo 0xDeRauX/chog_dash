@@ -81,6 +81,11 @@ jobs:
           HYPERSYNC_API_KEY: ${{ secrets.HYPERSYNC_API_KEY }}
         run: npm run collect:pnl
 
+      - name: Solana holder PnL (Dune)
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+        run: npm run collect:solana-pnl
+
       - name: Ingest into SQLite
         run: npm run ingest
 
