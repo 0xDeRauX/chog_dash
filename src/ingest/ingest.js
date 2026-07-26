@@ -204,10 +204,18 @@ export function ingestAll() {
       t5k_50k = excluded.t5k_50k, gt50k = excluded.gt50k
   `);
   let holderRows = 0, flowRows = 0, tierRows = 0;
+  // Tokens with a Dune holder history (EVM PnL backfill) are single-sourced from
+  // it — the daily Blockscout snapshot uses a DIFFERENT holder definition (it
+  // counts dust/zero-ish addresses, e.g. BRETT 949K vs Dune's meaningful 174K),
+  // so mixing the two makes the holder line spike wherever Blockscout fills a
+  // date the Dune series doesn't. Ignore Blockscout entirely for those symbols.
+  const holdersHistFiles = readRawFiles("holders-history");
+  const duneHolderSyms = new Set(holdersHistFiles.map((h) => h.symbol));
   for (const file of readRawFiles("holders")) {
     for (const r of file.results) {
       const asset = getAssetId.get(r.symbol);
       if (!asset || r.holders == null) continue;
+      if (duneHolderSyms.has(r.symbol)) continue; // Dune-sourced → skip Blockscout
       upsertHolders.run({ assetId: asset.id, date: file.date, holders: r.holders });
       holderRows++;
       if (r.tiers) {
@@ -229,7 +237,7 @@ export function ingestAll() {
 
   // Backfilled holder history (per-symbol series: daily holder count + $-tiers),
   // e.g. the EVM/Dune backfill. Same tables as the daily holders snapshots.
-  for (const hist of readRawFiles("holders-history")) {
+  for (const hist of holdersHistFiles) {
     const asset = getAssetId.get(hist.symbol);
     if (!asset) continue;
     for (const p of hist.series || []) {
