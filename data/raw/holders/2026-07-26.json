@@ -1,0 +1,125 @@
+{
+  "date": "2026-07-26",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "holders": 33197,
+      "flows": {
+        "accumulating": 99,
+        "distributing": 44,
+        "newHolders": 31,
+        "churned": 27
+      },
+      "tiers": {
+        "lt50": 32283,
+        "t50_500": 643,
+        "t500_5k": 238,
+        "t5k_50k": 30,
+        "gt50k": 3
+      }
+    },
+    {
+      "symbol": "PEPE",
+      "holders": 570337
+    },
+    {
+      "symbol": "WIF",
+      "holders": 251453,
+      "tiers": {
+        "lt50": 232091,
+        "t50_500": 14844,
+        "t500_5k": 3640,
+        "t5k_50k": 670,
+        "gt50k": 208
+      }
+    },
+    {
+      "symbol": "BONK",
+      "holders": 1004304,
+      "tiers": {
+        "lt50": 965613,
+        "t50_500": 30024,
+        "t500_5k": 6260,
+        "t5k_50k": 2130,
+        "gt50k": 277
+      }
+    },
+    {
+      "symbol": "BRETT",
+      "holders": 949034
+    },
+    {
+      "symbol": "PENGU",
+      "holders": 537784,
+      "tiers": {
+        "lt50": 491877,
+        "t50_500": 34809,
+        "t500_5k": 8741,
+        "t5k_50k": 1936,
+        "gt50k": 421
+      }
+    },
+    {
+      "symbol": "FARTCOIN",
+      "holders": 160764,
+      "tiers": {
+        "lt50": 144476,
+        "t50_500": 11431,
+        "t500_5k": 3801,
+        "t5k_50k": 834,
+        "gt50k": 222
+      }
+    },
+    {
+      "symbol": "ANSEM",
+      "holders": 132950,
+      "tiers": {
+        "lt50": 113648,
+        "t50_500": 12253,
+        "t500_5k": 5260,
+        "t5k_50k": 1499,
+        "gt50k": 290
+      }
+    },
+    {
+      "symbol": "CASHCAT",
+      "holders": 33971
+    },
+    {
+      "symbol": "BTC",
+      "holders": 56915284
+    },
+    {
+      "symbol": "ETH",
+      "holders": 201031586
+    },
+    {
+      "symbol": "XRP",
+      "holders": 8027115
+    },
+    {
+      "symbol": "SUI",
+      "holders": 27370901
+    },
+    {
+      "symbol": "HYPE",
+      "holders": 249045
+    },
+    {
+      "symbol": "TAO",
+      "holders": 552646
+    },
+    {
+      "symbol": "AKT",
+      "holders": 1149351
+    },
+    {
+      "symbol": "ZEC",
+      "holders": 844731
+    },
+    {
+      "symbol": "ONDO",
+      "holders": 206437
+    }
+  ]
+}
