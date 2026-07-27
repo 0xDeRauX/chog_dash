@@ -16,12 +16,27 @@ function loadPrices() {
   if (!fs.existsSync(dir)) return {};
   const files = fs.readdirSync(dir).filter((f) => f.endsWith(".json")).sort();
   if (!files.length) return {};
+  const map = {};
   try {
     const j = JSON.parse(fs.readFileSync(path.join(dir, files.at(-1)), "utf8"));
-    const map = {};
     for (const r of j.results || []) if (r.priceUsd != null) map[r.symbol] = r.priceUsd;
-    return map;
-  } catch { return {}; }
+  } catch { /* fall through to history */ }
+  // Fallback for tokens priced from GeckoTerminal (no CoinGecko daily snapshot,
+  // e.g. TON jettons): use the latest price from prices-history so their $-tiers
+  // can still be computed.
+  const histDir = path.resolve("data/raw/prices-history");
+  if (fs.existsSync(histDir)) {
+    for (const f of fs.readdirSync(histDir).filter((x) => x.endsWith(".json"))) {
+      const sym = f.replace(/\.json$/, "");
+      if (map[sym] != null) continue;
+      try {
+        const s = JSON.parse(fs.readFileSync(path.join(histDir, f), "utf8")).series || [];
+        const last = s.filter((p) => p.price != null).at(-1);
+        if (last) map[sym] = last.price;
+      } catch { /* skip */ }
+    }
+  }
+  return map;
 }
 
 const date = todayUTC();

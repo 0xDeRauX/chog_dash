@@ -25,7 +25,8 @@ const ONCHAIN_FLOW = new Set(["CHOG","PEPE","WIF","BONK","BRETT","PENGU","FARTCO
 // Known structural absences — an empty series here is EXPECTED, not a bug.
 function structuralReason(a, famId) {
   const sym = a.symbol;
-  const TIER_OK = ["CHOG", "WIF", "BONK", "PENGU", "FARTCOIN", "ANSEM", "PEPE", "BRETT", "ONDO"];
+  const TIER_OK = ["CHOG", "WIF", "BONK", "PENGU", "FARTCOIN", "ANSEM", "PEPE", "BRETT", "ONDO",
+    "UTYA", "GROYP", "GRAMMING", "BUDDY", "TELECLAW", "CHERRY"];
   if (famId === "tvl" && a.chain === "akash") return "réseau DePIN — pas de TVL DeFi";
   if (famId === "tvl" && ["monero", "bitcoin", "xrp"].includes(a.chain)) return "pas de DeFi/TVL sur cette chaîne";
   if (famId === "holders" && sym === "STRK") return "compte de holders Starknet sans source gratuite (Voyager/Starkscan sur clé)";
@@ -36,7 +37,7 @@ function structuralReason(a, famId) {
   if (famId === "holders" && ["SOL", "MON"].includes(sym)) return "pas de source gratuite (SOL flou · MON trop récent)";
   if (famId === "tiers" && !TIER_OK.includes(sym)) return "nécessite le scan complet des soldes (CHOG + memes Solana + tokens EVM via Dune)";
   if (famId === "flows" && sym !== "CHOG") return "grand livre CHOG uniquement";
-  if (famId === "pnl" && !["CHOG","WIF","BONK","PENGU","FARTCOIN","ANSEM","PEPE","BRETT","ONDO"].includes(sym)) return "reconstruction du coût d'entrée — CHOG (grand livre) + memes Solana + tokens EVM (Dune)";
+  if (famId === "pnl" && !["CHOG","WIF","BONK","PENGU","FARTCOIN","ANSEM","PEPE","BRETT","ONDO","UTYA","GROYP","GRAMMING","BUDDY","TELECLAW","CHERRY"].includes(sym)) return "reconstruction du coût d'entrée — CHOG (grand livre) + memes Solana + EVM (Dune) + jettons TON (toncenter)";
   if (famId === "discord") return "pas de serveur Discord officiel connu";
   if (famId === "telegram") return "pas de canal Telegram référencé (CoinGecko)";
   return null;

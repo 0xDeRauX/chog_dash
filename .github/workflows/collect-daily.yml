@@ -40,6 +40,9 @@ jobs:
       - name: Collect prices
         run: npm run collect:prices
 
+      - name: Collect GeckoTerminal prices (TON jettons w/o CoinGecko)
+        run: npm run collect:gt-prices
+
       - name: Collect chain TVL
         run: npm run collect:tvl
 
@@ -94,6 +97,11 @@ jobs:
           DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
           DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
         run: npm run collect:evm-pnl
+
+      - name: TON jetton % en gain (toncenter)
+        env:
+          TONCENTER_API_KEY: ${{ secrets.TONCENTER_API_KEY }}
+        run: npm run collect:ton-pnl
 
       - name: Ingest into SQLite
         run: npm run ingest

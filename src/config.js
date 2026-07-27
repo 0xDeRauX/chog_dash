@@ -165,6 +165,46 @@ export const ASSETS = [
     coingeckoId: "the-open-network",
     xQuery: '("Toncoin" OR "$TON" OR "$GRAM" OR "@ton_blockchain" OR "The Open Network") -is:retweet',
   },
+  // ---- TON jetton memecoins ------------------------------------------------
+  // Holders + $-tiers via tonapi.io (free). Price/mcap/Telegram via CoinGecko
+  // where listed, else GeckoTerminal OHLCV (gtPrice). Buy/sell via GeckoTerminal
+  // TON pools. No Dune on TON → % en gain stays "—".
+  {
+    group: "memes", symbol: "UTYA", chain: "ton", coingeckoId: "utya",
+    flow: { net: "ton", addr: "EQBaCgUwOoc6gHCNln_oJzb0mVs79YG7wYoavh-o1ItaneLA" }, gtNetwork: "ton",
+    xQuery: '("$UTYA" OR "UtyaDuck" OR "@TonUtyacoin") -is:retweet',
+    holders: { source: "tonapi", address: "EQBaCgUwOoc6gHCNln_oJzb0mVs79YG7wYoavh-o1ItaneLA", decimals: 9 },
+  },
+  {
+    group: "memes", symbol: "GROYP", chain: "ton", coingeckoId: "groyper-3",
+    flow: { net: "ton", addr: "EQAtwo6qMNwtr0iTA9eKVZ32cuACFJ0VKd78GrBWOe83-X1P" }, gtNetwork: "ton",
+    xQuery: '("$GROYP" OR "@groyp_on_ton") -is:retweet',
+    holders: { source: "tonapi", address: "EQAtwo6qMNwtr0iTA9eKVZ32cuACFJ0VKd78GrBWOe83-X1P", decimals: 9 },
+  },
+  {
+    group: "memes", symbol: "GRAMMING", chain: "ton", coingeckoId: "gramming",
+    flow: { net: "ton", addr: "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW" }, gtNetwork: "ton",
+    xQuery: '("$GRAMMING" OR "@grammingx" OR "gramming_chat") -is:retweet',
+    holders: { source: "tonapi", address: "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW", decimals: 9 },
+  },
+  {
+    group: "memes", symbol: "BUDDY", chain: "ton", gtPrice: true,
+    flow: { net: "ton", addr: "EQDZvDW7Cf33YjMpeVr771PMrYgymGFyibTdcL4y-unuFtmA" }, gtNetwork: "ton",
+    xQuery: '("$BUDDY" OR "BuddyBearOnTon" OR "@BuddyBearOnTON") -is:retweet',
+    holders: { source: "tonapi", address: "EQDZvDW7Cf33YjMpeVr771PMrYgymGFyibTdcL4y-unuFtmA", decimals: 9 },
+  },
+  {
+    group: "memes", symbol: "TELECLAW", chain: "ton", gtPrice: true,
+    flow: { net: "ton", addr: "EQD01TwE1plYpYKvRwWOLwAzzAJaDKwpB2bR3nfg-wkJJwks" }, gtNetwork: "ton",
+    xQuery: '("$TELECLAW" OR "@Teleclawonton" OR "teleclawonton") -is:retweet',
+    holders: { source: "tonapi", address: "EQD01TwE1plYpYKvRwWOLwAzzAJaDKwpB2bR3nfg-wkJJwks", decimals: 9 },
+  },
+  {
+    group: "memes", symbol: "CHERRY", chain: "ton", gtPrice: true,
+    flow: { net: "ton", addr: "EQBKRSNRkeP1-2jcg5T_f__0s5Hj-vrbfNLMQy8dnZs7xd_p" }, gtNetwork: "ton",
+    xQuery: '("$CHERRY" OR "@HotCherryTG" OR "HotCherryTG") -is:retweet',
+    holders: { source: "tonapi", address: "EQBKRSNRkeP1-2jcg5T_f__0s5Hj-vrbfNLMQy8dnZs7xd_p", decimals: 9 },
+  },
   {
     group: "majors",
     symbol: "XRP",
@@ -317,6 +357,7 @@ export const CONFIG = {
   // Extra Dune keys for credit rotation — the free tier has a daily datapoint
   // budget per key, so heavy backfills spread across DUNE_API_KEY, _2, _3…
   DUNE_API_KEYS: [process.env.DUNE_API_KEY, process.env.DUNE_API_KEY_2, process.env.DUNE_API_KEY_3].filter(Boolean),
+  TONCENTER_API_KEY: process.env.TONCENTER_API_KEY, // TON jetton transfers for % en gain (10 req/s vs 1 keyless)
   // Optional dedicated Solana RPC for the SPL holder counts. Note: Helius's free
   // tier rejects the large getProgramAccounts these need (e.g. BONK ~485MB), so
   // the public mainnet-beta endpoint is actually the reliable default here.

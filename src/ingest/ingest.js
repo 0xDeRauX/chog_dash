@@ -101,7 +101,7 @@ export function ingestAll() {
         date: point.date,
         priceUsd: point.price,
         change24h: null,
-        marketCap: null,
+        marketCap: point.marketCap ?? null, // GeckoTerminal fdv on the latest point (gtPrice tokens)
         volume: point.volume ?? null,
         source: "coingecko",
         collectedAt: `${point.date}T00:00:00.000Z`,
@@ -115,7 +115,7 @@ export function ingestAll() {
   for (const file of readRawFiles("prices")) {
     for (const r of file.results) {
       const asset = getAssetId.get(r.symbol);
-      if (!asset) continue;
+      if (!asset || r.priceUsd == null) continue; // no CoinGecko price (e.g. GT-priced TON jettons) → skip snapshot row
       upsertPrice.run({
         assetId: asset.id,
         date: file.date,

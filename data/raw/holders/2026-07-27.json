@@ -3,87 +3,87 @@
   "results": [
     {
       "symbol": "CHOG",
-      "holders": 33193,
+      "holders": 33190,
       "flows": {
-        "accumulating": 53,
-        "distributing": 40,
-        "newHolders": 18,
-        "churned": 22
+        "accumulating": 162,
+        "distributing": 106,
+        "newHolders": 106,
+        "churned": 102
       },
       "tiers": {
-        "lt50": 32256,
-        "t50_500": 657,
-        "t500_5k": 247,
+        "lt50": 32264,
+        "t50_500": 649,
+        "t500_5k": 244,
         "t5k_50k": 30,
         "gt50k": 3
       }
     },
     {
       "symbol": "PEPE",
-      "holders": 570568
+      "holders": 570731
     },
     {
       "symbol": "WIF",
-      "holders": 251467,
+      "holders": 251454,
       "tiers": {
-        "lt50": 232484,
-        "t50_500": 14554,
-        "t500_5k": 3570,
-        "t5k_50k": 653,
+        "lt50": 232610,
+        "t50_500": 14463,
+        "t500_5k": 3529,
+        "t5k_50k": 646,
         "gt50k": 206
       }
     },
     {
       "symbol": "BONK",
-      "holders": 1004526,
+      "holders": 1004572,
       "tiers": {
-        "lt50": 966162,
-        "t50_500": 29814,
-        "t500_5k": 6153,
-        "t5k_50k": 2126,
-        "gt50k": 271
+        "lt50": 966606,
+        "t50_500": 29573,
+        "t500_5k": 6018,
+        "t5k_50k": 2105,
+        "gt50k": 270
       }
     },
     {
       "symbol": "BRETT",
-      "holders": 949018
+      "holders": 948969
     },
     {
       "symbol": "PENGU",
-      "holders": 537924,
+      "holders": 537977,
       "tiers": {
-        "lt50": 491711,
-        "t50_500": 35089,
-        "t500_5k": 8764,
-        "t5k_50k": 1938,
-        "gt50k": 422
+        "lt50": 493567,
+        "t50_500": 33533,
+        "t500_5k": 8553,
+        "t5k_50k": 1911,
+        "gt50k": 413
       }
     },
     {
       "symbol": "FARTCOIN",
-      "holders": 160765,
+      "holders": 160760,
       "tiers": {
-        "lt50": 144375,
-        "t50_500": 11492,
-        "t500_5k": 3828,
-        "t5k_50k": 846,
-        "gt50k": 224
+        "lt50": 144420,
+        "t50_500": 11469,
+        "t500_5k": 3809,
+        "t5k_50k": 837,
+        "gt50k": 225
       }
     },
     {
       "symbol": "ANSEM",
-      "holders": 132690,
+      "holders": 132888,
       "tiers": {
-        "lt50": 114234,
-        "t50_500": 11678,
-        "t500_5k": 5091,
-        "t5k_50k": 1421,
-        "gt50k": 266
+        "lt50": 114897,
+        "t50_500": 11399,
+        "t500_5k": 4957,
+        "t5k_50k": 1380,
+        "gt50k": 255
       }
     },
     {
       "symbol": "CASHCAT",
-      "holders": 33995
+      "holders": 33918
     },
     {
       "symbol": "BTC",
@@ -94,20 +94,53 @@
       "holders": 201119496
     },
     {
+      "symbol": "UTYA",
+      "holders": 9295,
+      "tiers": {
+        "lt50": 5287,
+        "t50_500": 1726,
+        "t500_5k": 1461,
+        "t5k_50k": 640,
+        "gt50k": 181
+      }
+    },
+    {
+      "symbol": "GROYP",
+      "holders": 1551,
+      "tiers": {
+        "lt50": 902,
+        "t50_500": 349,
+        "t500_5k": 186,
+        "t5k_50k": 102,
+        "gt50k": 12
+      }
+    },
+    {
+      "symbol": "GRAMMING",
+      "holders": 662,
+      "tiers": {
+        "lt50": 269,
+        "t50_500": 251,
+        "t500_5k": 134,
+        "t5k_50k": 8,
+        "gt50k": 0
+      }
+    },
+    {
       "symbol": "XRP",
       "holders": 8028817
     },
     {
       "symbol": "HYPE",
-      "holders": 249139
+      "holders": 249119
     },
     {
       "symbol": "TAO",
-      "holders": 553555
+      "holders": 553897
     },
     {
       "symbol": "AKT",
-      "holders": 1149412
+      "holders": 1149469
     },
     {
       "symbol": "ZEC",
@@ -115,7 +148,40 @@
     },
     {
       "symbol": "ONDO",
-      "holders": 206657
+      "holders": 206785
+    },
+    {
+      "symbol": "BUDDY",
+      "holders": 1022,
+      "tiers": {
+        "lt50": 546,
+        "t50_500": 273,
+        "t500_5k": 173,
+        "t5k_50k": 30,
+        "gt50k": 0
+      }
+    },
+    {
+      "symbol": "TELECLAW",
+      "holders": 628,
+      "tiers": {
+        "lt50": 369,
+        "t50_500": 164,
+        "t500_5k": 89,
+        "t5k_50k": 6,
+        "gt50k": 0
+      }
+    },
+    {
+      "symbol": "CHERRY",
+      "holders": 3404,
+      "tiers": {
+        "lt50": 2312,
+        "t50_500": 641,
+        "t500_5k": 343,
+        "t5k_50k": 100,
+        "gt50k": 7
+      }
     }
   ]
 }

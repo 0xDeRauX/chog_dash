@@ -327,9 +327,50 @@ async function thirdwebHolders(symbol, cfg, priceUsd) {
 }
 
 // ---- public -------------------------------------------------------------
+// TON jettons via tonapi.io (free, keyless): holder count from the jetton
+// metadata, and — because the holders endpoint returns every balance — a $-tier
+// breakdown by paginating balances and bucketing at the day's price. TON has no
+// free bulk transfer/cost-basis feed (Dune doesn't index it), so % en gain stays
+// "—" for these; holders and tiers are exact.
+async function tonapiFetch(url) {
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(url);
+    if (res.ok) return res.json();
+    if (res.status === 429 && attempt < 5) { await sleep(4000 * (attempt + 1)); continue; }
+    throw new Error(`tonapi HTTP ${res.status}`);
+  }
+}
+async function tonapiHolders(cfg, priceUsd) {
+  const base = "https://tonapi.io/v2";
+  const meta = await tonapiFetch(`${base}/jettons/${cfg.address}`);
+  const decimals = Number(meta.metadata?.decimals ?? cfg.decimals ?? 9);
+  const total = meta.holders_count ?? null;
+  const thrRaw = tierThresholdsRaw(priceUsd, decimals);
+  if (!thrRaw) return { holders: total, tiers: null }; // no price → count only
+
+  const counts = newTierCounts();
+  const LIMIT = 1000, CAP = 20000; // full breakdown for these small memecoins
+  let seen = 0, offset = 0;
+  for (; offset < CAP; offset += LIMIT) {
+    const page = await tonapiFetch(`${base}/jettons/${cfg.address}/holders?limit=${LIMIT}&offset=${offset}`);
+    const addrs = page.addresses || [];
+    for (const h of addrs) {
+      const v = BigInt(h.balance || "0");
+      if (v > 0n) { seen++; counts[tierBucket(v, thrRaw)]++; }
+    }
+    if (addrs.length < LIMIT) break;
+    await sleep(1100); // free tier ~1 req/s
+  }
+  return { holders: total ?? seen, tiers: tiersObj(counts) };
+}
+
 export async function collectHoldersForAsset(asset, priceUsd) {
   const cfg = asset.holders;
   if (!cfg) return null;
+  if (cfg.source === "tonapi") {
+    const { holders, tiers } = await tonapiHolders(cfg, priceUsd);
+    return { symbol: asset.symbol, holders, tiers };
+  }
   if (cfg.source === "blockscout") {
     return { symbol: asset.symbol, holders: await blockscoutHolders(cfg) };
   }
@@ -367,6 +408,7 @@ export async function collectAllHolders(assets, prices = {}) {
     // Pace consecutive heavy Solana getProgramAccounts so the public RPC doesn't
     // rate-limit us (a fresh run after BONK's ~500MB pull otherwise 429s).
     if (prevSolana && asset.holders.source === "solana") await sleep(12000);
+    if (asset.holders.source === "tonapi") await sleep(2000); // pace tonapi's free rate limit
     try {
       const r = await collectHoldersForAsset(asset, prices[asset.symbol]);
       if (r) results.push(r);

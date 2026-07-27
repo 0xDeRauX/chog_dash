@@ -24,7 +24,9 @@
     "collect:solana-pnl": "node scripts/collect-solana-pnl.js",
     "backfill:solana-pnl-hist": "node scripts/backfill-solana-pnl-history.js",
     "collect:evm-pnl": "node scripts/collect-evm-pnl.js",
-    "backfill:evm-pnl-hist": "node scripts/backfill-evm-pnl-history.js"
+    "backfill:evm-pnl-hist": "node scripts/backfill-evm-pnl-history.js",
+    "collect:gt-prices": "node scripts/collect-gt-prices.js",
+    "collect:ton-pnl": "node scripts/collect-ton-pnl.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",
