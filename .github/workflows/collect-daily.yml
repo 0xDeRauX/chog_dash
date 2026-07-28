@@ -40,8 +40,8 @@ jobs:
       - name: Collect prices
         run: npm run collect:prices
 
-      - name: Collect GeckoTerminal prices (TON jettons w/o CoinGecko)
-        run: npm run collect:gt-prices
+      - name: Collect on-chain TON prices (tonapi, full history)
+        run: npm run collect:ton-price
 
       - name: Collect chain TVL
         run: npm run collect:tvl

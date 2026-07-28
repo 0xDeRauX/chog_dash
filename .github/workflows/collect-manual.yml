@@ -105,9 +105,9 @@ jobs:
         if: env.SEL == 'all' || contains(env.SEL, 'prices')
         run: npm run collect:prices
 
-      - name: Collect GeckoTerminal prices (TON jettons w/o CoinGecko)
+      - name: Collect on-chain TON prices (tonapi, full history)
         if: env.SEL == 'all' || contains(env.SEL, 'prices')
-        run: npm run collect:gt-prices
+        run: npm run collect:ton-price
 
       - name: Collect chain TVL
         if: env.SEL == 'all' || contains(env.SEL, 'tvl')

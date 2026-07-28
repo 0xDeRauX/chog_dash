@@ -188,19 +188,19 @@ export const ASSETS = [
     holders: { source: "tonapi", address: "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW", decimals: 9 },
   },
   {
-    group: "memes", symbol: "BUDDY", chain: "ton", gtPrice: true,
+    group: "memes", symbol: "BUDDY", chain: "ton",
     flow: { net: "ton", addr: "EQDZvDW7Cf33YjMpeVr771PMrYgymGFyibTdcL4y-unuFtmA" }, gtNetwork: "ton",
     xQuery: '("$BUDDY" OR "BuddyBearOnTon" OR "@BuddyBearOnTON") -is:retweet',
     holders: { source: "tonapi", address: "EQDZvDW7Cf33YjMpeVr771PMrYgymGFyibTdcL4y-unuFtmA", decimals: 9 },
   },
   {
-    group: "memes", symbol: "TELECLAW", chain: "ton", gtPrice: true,
+    group: "memes", symbol: "TELECLAW", chain: "ton",
     flow: { net: "ton", addr: "EQD01TwE1plYpYKvRwWOLwAzzAJaDKwpB2bR3nfg-wkJJwks" }, gtNetwork: "ton",
     xQuery: '("$TELECLAW" OR "@Teleclawonton" OR "teleclawonton") -is:retweet',
     holders: { source: "tonapi", address: "EQD01TwE1plYpYKvRwWOLwAzzAJaDKwpB2bR3nfg-wkJJwks", decimals: 9 },
   },
   {
-    group: "memes", symbol: "CHERRY", chain: "ton", gtPrice: true,
+    group: "memes", symbol: "CHERRY", chain: "ton",
     flow: { net: "ton", addr: "EQBKRSNRkeP1-2jcg5T_f__0s5Hj-vrbfNLMQy8dnZs7xd_p" }, gtNetwork: "ton",
     xQuery: '("$CHERRY" OR "@HotCherryTG" OR "HotCherryTG") -is:retweet',
     holders: { source: "tonapi", address: "EQBKRSNRkeP1-2jcg5T_f__0s5Hj-vrbfNLMQy8dnZs7xd_p", decimals: 9 },

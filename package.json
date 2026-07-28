@@ -26,7 +26,8 @@
     "collect:evm-pnl": "node scripts/collect-evm-pnl.js",
     "backfill:evm-pnl-hist": "node scripts/backfill-evm-pnl-history.js",
     "collect:gt-prices": "node scripts/collect-gt-prices.js",
-    "collect:ton-pnl": "node scripts/collect-ton-pnl.js"
+    "collect:ton-pnl": "node scripts/collect-ton-pnl.js",
+    "collect:ton-price": "node scripts/collect-ton-price.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",
