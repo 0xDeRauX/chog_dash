@@ -42,6 +42,7 @@ async function boot() {
   const DEFAULT = {
     w: 365,
     mode: "index",
+    unit: "price", // price | mcap (raw mode: show market cap = price × supply)
     tf: "D", // bar interval: D(aily) / W(eekly) / M(onthly)
     fs: 12, // chart font size
     magnet: false, // snap drawings to the anchor series values
@@ -102,6 +103,7 @@ async function boot() {
       if (!s?.series?.length) return null;
       if (s.w === "max") s.w = Infinity;
       s.mode = s.mode === "raw" ? "raw" : "index";
+      s.unit = s.unit === "mcap" ? "mcap" : "price";
       s.tf = ["D", "W", "M"].includes(s.tf) ? s.tf : "D";
       s.fs = [10, 12, 14].includes(s.fs) ? s.fs : 12;
       s.series = s.series.filter((e) => bySym[e.sym] && mById[e.metric || "price"]);
@@ -745,6 +747,23 @@ async function boot() {
     chartZone.style.cursor = handleAt(x, y) ? "crosshair" : hitTest(x, y) >= 0 ? "grab" : "";
   });
   // Double-click a text drawing to edit it.
+  // Double-click a pane to ISOLATE it full-height (hide the others), like
+  // TradingView's maximize; double-click again to restore the proportional
+  // layout. Editing a text drawing takes priority.
+  let maximizedPane = null;
+  function togglePaneMax(paneIdx) {
+    let panes; try { panes = chart.panes(); } catch { return; }
+    if (!panes || panes.length < 2) return;
+    if (maximizedPane === paneIdx) {
+      const nSub = panes.length - 1;
+      panes.forEach((p, i) => p.setStretchFactor(i === 0 ? Math.max(1.4, nSub) : 1));
+      maximizedPane = null;
+    } else {
+      panes.forEach((p, i) => p.setStretchFactor(i === paneIdx ? 1000 : 0.001));
+      maximizedPane = paneIdx;
+    }
+    setTimeout(redrawDraws, 0);
+  }
   chartZone.addEventListener("dblclick", (ev) => {
     if (drawMode !== "cursor") return;
     const { x, y } = relPx(ev);
@@ -752,7 +771,9 @@ async function boot() {
     if (i >= 0 && state.draws[i].type === "text") {
       const t = prompt("Texte :", state.draws[i].text || "");
       if (t != null) { state.draws[i].text = t.trim() || "…"; persist(); redrawDraws(); }
+      return;
     }
+    togglePaneMax(paneAt(y).pane);
   });
 
   // ---- right-click context menu (TradingView-style options) ----
@@ -1158,6 +1179,17 @@ async function boot() {
       renderChart();
     }, "Échelle logarithmique sur le panneau principal");
     toolbar.append(logBtn);
+
+    // Price ↔ market cap toggle (raw mode only; base-100 is unit-agnostic).
+    const mcap = state.unit === "mcap";
+    const unitBtn = mkBtn(mcap ? "MC ✓" : "Prix/MC", "btn-ghost" + (mcap ? " on" : ""), () => {
+      state.unit = mcap ? "price" : "mcap";
+      persist();
+      renderToolbar();
+      renderChart();
+    }, "Afficher la série en market cap (prix × offre) ou en prix — panneau principal en mode Brut");
+    unitBtn.disabled = state.mode === "index";
+    if (state.mode !== "index") toolbar.append(unitBtn);
 
     const fsSeg = document.createElement("div");
     fsSeg.className = "segmented";

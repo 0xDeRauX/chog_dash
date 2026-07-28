@@ -66,12 +66,17 @@ async function currentHolders(address, decimals) {
   return bal;
 }
 
-// All jetton transfers → per-owner acquisition {usd, amt}, valuing each inflow
-// at the price of its day. LT-cursor descending (deep offset times out).
+// All jetton transfers → per-owner acquisition {usd, amt} (inflows valued at the
+// day's price, for cost basis) AND per-owner signed daily balance changes (in −
+// out, for the historical holder count). LT-cursor descending (deep offset
+// times out).
 async function acquisitionCost(master, decimals, priceAt) {
-  const cost = new Map(); // owner -> { usd, amt }
-  // Smaller pages keep each toncenter query light enough to avoid the deep-cursor
-  // 500 timeouts the biggest jettons (UTYA) trigger at limit=1000.
+  const cost = new Map();       // owner -> { usd, amt }
+  const balDelta = new Map();   // owner -> Map(date -> signed token delta)
+  const bump = (owner, date, d) => {
+    let m = balDelta.get(owner); if (!m) { m = new Map(); balDelta.set(owner, m); }
+    m.set(date, (m.get(date) || 0) + d);
+  };
   const PAGE = 256;
   let endLt = null, pages = 0, rows = 0;
   for (;;) {
@@ -82,15 +87,17 @@ async function acquisitionCost(master, decimals, priceAt) {
     const ts = j.jetton_transfers || [];
     if (!ts.length) break;
     for (const tr of ts) {
-      const owner = tr.destination?.toLowerCase();
+      const to = tr.destination?.toLowerCase();
+      const from = tr.source?.toLowerCase();
       const amt = Number(BigInt(tr.amount || "0")) / 10 ** decimals;
-      if (!owner || !(amt > 0)) continue;
+      if (!(amt > 0)) continue;
       const date = new Date(Number(tr.transaction_now) * 1000).toISOString().slice(0, 10);
-      const price = priceAt(date);
-      if (price == null) continue;
-      const c = cost.get(owner) || { usd: 0, amt: 0 };
-      c.usd += amt * price; c.amt += amt;
-      cost.set(owner, c);
+      if (to) {
+        const price = priceAt(date);
+        if (price != null) { const c = cost.get(to) || { usd: 0, amt: 0 }; c.usd += amt * price; c.amt += amt; cost.set(to, c); }
+        bump(to, date, amt);
+      }
+      if (from) bump(from, date, -amt);
     }
     rows += ts.length; pages++;
     const minLt = ts.reduce((m, x) => Math.min(m, Number(x.transaction_lt)), Infinity);
@@ -98,7 +105,51 @@ async function acquisitionCost(master, decimals, priceAt) {
     endLt = minLt - 1;
     await sleep(tcDelay());
   }
-  return { cost, pages, rows };
+  return { cost, balDelta, pages, rows };
+}
+
+// Historical holders + $-tiers from the transfer-reconstructed balances.
+// Holder COUNT is exact per day (balance-crossing events, calibrated so the last
+// point matches the live tonapi count). $-tiers use the current cohort's balance
+// distribution × each day's price (same "supply in profit" projection as the
+// EVM/Solana collectors), scaled to the exact holder count of the day.
+const TIER_KEYS = ["lt50", "t50_500", "t500_5k", "t5k_50k", "gt50k"];
+function holdersHistory(balDelta, currentBal, priceSeries) {
+  // exact daily holder count via +1/−1 balance crossings
+  const crossByDate = new Map();
+  for (const [, dm] of balDelta) {
+    const days = [...dm.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    let run = 0, prevPos = false;
+    for (const [date, delta] of days) {
+      run += delta;
+      const pos = run > 1e-9;
+      if (pos && !prevPos) crossByDate.set(date, (crossByDate.get(date) || 0) + 1);
+      else if (!pos && prevPos) crossByDate.set(date, (crossByDate.get(date) || 0) - 1);
+      prevPos = pos;
+    }
+  }
+  const cdates = [...crossByDate.keys()].sort();
+  let run = 0; const countByDate = new Map();
+  for (const d of cdates) { run += crossByDate.get(d); countByDate.set(d, run); }
+  const crossFinal = run || currentBal.size;
+  const calib = crossFinal ? currentBal.size / crossFinal : 1; // match live tonapi count
+  const countAsOf = (date) => {
+    let v = 0; for (const d of cdates) { if (d <= date) v = countByDate.get(d); else break; }
+    return Math.round(v * calib);
+  };
+  const balArr = [...currentBal.values()].filter((b) => b > 0);
+  const totCohort = balArr.length || 1;
+  return priceSeries.filter((p) => p.price > 0).map(({ date, price }) => {
+    const c = { lt50: 0, t50_500: 0, t500_5k: 0, t5k_50k: 0, gt50k: 0 };
+    for (const b of balArr) {
+      const usd = b * price;
+      const k = usd < 50 ? "lt50" : usd < 500 ? "t50_500" : usd < 5000 ? "t500_5k" : usd < 50000 ? "t5k_50k" : "gt50k";
+      c[k]++;
+    }
+    const hExact = countAsOf(date);
+    const tiers = Object.fromEntries(TIER_KEYS.map((k) => [k, Math.round((c[k] / totCohort) * hExact)]));
+    return { date, holders: hExact, tiers, source: "ton-hist" };
+  });
 }
 
 // Cost-basis histogram of current holders → daily % en gain + profit tranches.
@@ -154,7 +205,7 @@ export async function collectTonPnl(asset) {
 
   const t0 = Date.now();
   const bal = await currentHolders(address, decimals);
-  const { cost, pages, rows } = await acquisitionCost(address, decimals, priceAt);
+  const { cost, balDelta, pages, rows } = await acquisitionCost(address, decimals, priceAt);
 
   // current holders with a known acquisition cost
   const cohort = [];
@@ -166,17 +217,22 @@ export async function collectTonPnl(asset) {
   const { series, buckets, holders } = seriesFromCohort(cohort, priceSeries, curPrice);
   if (!series.length) throw new Error(`${asset.symbol}: no cohort cost (transfers=${rows})`);
 
-  // Merge: history as base; keep any existing live snapshot rows on top.
-  const rawFile = path.resolve(`data/raw/pnl/${asset.symbol}.json`);
-  let existing = [];
-  try { existing = JSON.parse(fs.readFileSync(rawFile, "utf8")).series || []; } catch { /* first run */ }
-  const byDate = new Map();
-  for (const r of series) byDate.set(r.date, r);
-  for (const r of existing) if (r.source !== "ton-hist") byDate.set(r.date, r);
-  const merged = [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
-
   const today = new Date().toISOString().slice(0, 10);
-  fs.mkdirSync(path.dirname(rawFile), { recursive: true });
-  fs.writeFileSync(rawFile, JSON.stringify({ symbol: asset.symbol, indexedToDate: today, source: "toncenter", series: merged }, null, 1));
-  return { days: series.length, holders, buckets, transfers: rows, pages, nowPct: series.at(-1)?.pctInProfit, ms: Date.now() - t0 };
+  const writeMerged = (file, rows2, histTag) => {
+    let existing = [];
+    try { existing = JSON.parse(fs.readFileSync(file, "utf8")).series || []; } catch { /* first run */ }
+    const byDate = new Map();
+    for (const r of rows2) byDate.set(r.date, r);
+    for (const r of existing) if (r.source !== histTag) byDate.set(r.date, r); // live snapshots win
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, JSON.stringify({ symbol: asset.symbol, indexedToDate: today, source: "toncenter", series: [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date)) }, null, 1));
+  };
+
+  // % en gain series
+  writeMerged(path.resolve(`data/raw/pnl/${asset.symbol}.json`), series, "ton-hist");
+  // holders + $-tiers series (both were snapshot-only before) — full history now
+  const hh = holdersHistory(balDelta, bal, priceSeries);
+  writeMerged(path.resolve(`data/raw/holders-history/${asset.symbol}.json`), hh, "ton-hist");
+
+  return { days: series.length, holders, buckets, transfers: rows, pages, nowPct: series.at(-1)?.pctInProfit, hhDays: hh.length, ms: Date.now() - t0 };
 }

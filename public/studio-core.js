@@ -376,6 +376,19 @@ const widgetFromPreset = (p) => ({
 });
 
 // ---- chart options + shared URL serialisation ---------------------------
+// Adaptive number format for the axis + crosshair labels. Default LWC rounding
+// collapses tiny memecoin prices to "0.00" — show the real significant digits
+// instead (CHOG 0.00118 → "0.001180", BONK → "0.000002910"), while keeping
+// large values (holders, market cap) readable.
+function smartAxisFmt(v) {
+  if (v == null || !isFinite(v)) return "";
+  const a = Math.abs(v);
+  if (a === 0) return "0";
+  if (a >= 1000) return v.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  if (a >= 1) return v.toFixed(2);
+  if (a >= 0.01) return v.toFixed(4);
+  return v.toPrecision(4); // tiny prices → 4 significant figures
+}
 function studioChartOptions(fontSize) {
   return {
     autoSize: true,
@@ -387,10 +400,13 @@ function studioChartOptions(fontSize) {
       panes: { separatorColor: ink("--border-strong"), separatorHoverColor: ink("--brand-ring"), enableResize: true },
     },
     grid: { vertLines: { color: ink("--grid") }, horzLines: { color: ink("--grid") } },
-    rightPriceScale: { borderColor: ink("--border") },
-    leftPriceScale: { borderColor: ink("--border") },
+    // autoScale (default on) rescales the price axis to the VISIBLE range as you
+    // zoom/scroll the time axis → precise price ticks when zoomed in.
+    rightPriceScale: { borderColor: ink("--border"), autoScale: true },
+    leftPriceScale: { borderColor: ink("--border"), autoScale: true },
     timeScale: { borderColor: ink("--border"), timeVisible: false },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    localization: { priceFormatter: smartAxisFmt },
   };
 }
 // Indicator token: type:periodOrMetric:target:place[:metric]
@@ -511,11 +527,19 @@ function renderConfig(chart, cfg, ctx, opts = {}) {
   // placed or stretched into the future, TradingView-style.
   const FUTURE_DAYS = opts.futureDays ?? 120;
   let whitespaceDone = false;
+  const mcapView = cfg.unit === "mcap" && cfg.mode === "raw";
   const ptsBySeries = cfg.series.map((e, idx) => {
     const m = mById.price;
-    const pts = seriesPts(bySym[e.sym], m, cfg.w, cfg.mode === "index");
+    let pts = seriesPts(bySym[e.sym], m, cfg.w, cfg.mode === "index");
+    // Market-cap view (raw mode): mcap(t) = price(t) × supply, supply ≈ current
+    // market cap / current price. Base-100 mode is already unit-agnostic.
+    if (mcapView) {
+      const a = bySym[e.sym], cur = a.prices?.at(-1)?.price;
+      const f = (a.marketCap && cur) ? a.marketCap / cur : null;
+      if (f) pts = pts.map((p) => ({ ...p, value: p.value == null ? null : p.value * f }));
+    }
     const scale = cfg.mode === "raw" ? (idx === 0 ? "right" : "s" + idx) : "right";
-    const fmt = cfg.mode === "index" ? (v) => v.toFixed(1) : (v) => fmtBy("price", v);
+    const fmt = cfg.mode === "index" ? (v) => v.toFixed(1) : mcapView ? (v) => fmtBy("usd", v) : (v) => fmtBy("price", v);
     let s = null;
     if (!e.hidden) {
       let data = pts;
@@ -528,7 +552,7 @@ function renderConfig(chart, cfg, ctx, opts = {}) {
       s = add(data, { color: serieColor(idx), lineWidth: 2, priceScaleId: scale });
       if (!anchorSeries && s && scale === "right") anchorSeries = s;
     }
-    items.push({ series: s, color: serieColor(idx), label: `${e.sym} · Prix`, value: pts.at(-1)?.value ?? null, struck: !!e.hidden, sub: false, fmt });
+    items.push({ series: s, color: serieColor(idx), label: `${e.sym} · ${mcapView ? "MC" : "Prix"}`, value: pts.at(-1)?.value ?? null, struck: !!e.hidden, sub: false, fmt });
     return pts;
   });
 

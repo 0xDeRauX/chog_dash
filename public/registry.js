@@ -76,7 +76,7 @@ const METRICS = [
       what: "Nombre de holders dont le solde vaut <b>au moins $50</b> au prix du jour — filtre la poussière (airdrops abandonnés, restes de swaps) pour ne compter que les porteurs réels.",
       read: "Sa <b>croissance</b> compte plus que son niveau : +5%/semaine = de vrais nouveaux porteurs, pas des wallets à 3 centimes.",
       example: "CHOG affiche 33K holders mais seulement ~15K valent ≥$50 : la base « engagée » est moitié moindre — et c'est elle qu'il faut suivre.",
-      quality: "Disponible où l'on voit chaque solde : CHOG (grand livre), memes Solana (scan) et tokens EVM PEPE/BRETT/ONDO (Dune, avec historique). « — » ailleurs.",
+      quality: "Disponible où l'on voit chaque solde : CHOG (grand livre), memes Solana (scan), tokens EVM PEPE/BRETT/ONDO (Dune) et jettons TON (transferts toncenter) — ces derniers avec <b>holders et ≥$50 reconstruits sur tout l'historique</b>. « — » ailleurs.",
     },
   },
   {

@@ -787,11 +787,12 @@ body.studio-app .topbar { flex: none; }
   z-index: 60;
 }
 .studio-rail {
-  width: 300px;
+  width: 312px;
   flex: none;
   background: var(--surface);
   border-right: 1px solid var(--border);
   overflow-y: auto;
+  overflow-x: hidden; /* controls wrap instead of scrolling horizontally */
   padding: 6px 10px 14px;
 }
 .rail-head {
@@ -821,9 +822,11 @@ body.studio-app .topbar { flex: none; }
 .studio-rail .rail-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  flex-wrap: wrap; /* keep every control visible: wrap rather than overflow */
+  gap: 6px 6px;
   padding: 4px 0;
 }
+.studio-rail .studio-select { min-width: 0; } /* allow selects to shrink to fit */
 .rail-sym { width: 86px; flex: none; }
 .rail-metric { flex: 1; min-width: 0; }
 .rail-ind {
