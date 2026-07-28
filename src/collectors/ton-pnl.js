@@ -19,12 +19,12 @@ const TA = "https://tonapi.io/v2";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const tcDelay = () => (CONFIG.TONCENTER_API_KEY ? 130 : 1100);
 
-async function tcJson(url) {
+async function tcJson(url, tries = 6) {
   const headers = CONFIG.TONCENTER_API_KEY ? { "X-API-Key": CONFIG.TONCENTER_API_KEY } : {};
   for (let a = 0; ; a++) {
     const res = await fetch(url, { headers });
     if (res.ok) return res.json();
-    if ([429, 500, 503, 504].includes(res.status) && a < 6) { await sleep(2500 * (a + 1)); continue; }
+    if ([429, 500, 503, 504].includes(res.status) && a < tries) { await sleep(2000 * (a + 1)); continue; }
     throw new Error(`toncenter HTTP ${res.status}`);
   }
 }
@@ -77,13 +77,22 @@ async function acquisitionCost(master, decimals, priceAt) {
     let m = balDelta.get(owner); if (!m) { m = new Map(); balDelta.set(owner, m); }
     m.set(date, (m.get(date) || 0) + d);
   };
-  const PAGE = 256;
-  let endLt = null, pages = 0, rows = 0;
+  // Adaptive page size: toncenter times out (500) on deep cursors at limit=1000;
+  // 256 helps but the biggest jettons (UTYA, ~466k transfers) still hit a wall.
+  // On a persistent 500 we HALVE the page and retry the SAME cursor — a lighter
+  // query gets through — instead of stopping. Only give up once even limit=16
+  // fails, so we recover ~everything.
+  let PAGE = 256;
+  let endLt = null, pages = 0, rows = 0, shrinks = 0, sinceShrink = 0;
   for (;;) {
-    const url = `${TC}/jetton/transfers?jetton_master=${master}&limit=${PAGE}&sort=desc` + (endLt != null ? `&end_lt=${endLt}` : "");
+    const usedPage = PAGE;
+    const url = `${TC}/jetton/transfers?jetton_master=${master}&limit=${usedPage}&sort=desc` + (endLt != null ? `&end_lt=${endLt}` : "");
     let j;
-    try { j = await tcJson(url); }
-    catch (e) { console.warn(`  toncenter page ${pages + 1} @ end_lt=${endLt}: ${e.message} — arrêt avec ${rows} transferts (partiel)`); break; }
+    try { j = await tcJson(url, 3); }
+    catch (e) {
+      if (PAGE > 16) { PAGE = Math.max(16, Math.floor(PAGE / 2)); shrinks++; sinceShrink = 0; await sleep(2500); continue; }
+      console.warn(`  toncenter bloqué @ end_lt=${endLt} même à page 16 — arrêt avec ${rows} transferts (partiel)`); break;
+    }
     const ts = j.jetton_transfers || [];
     if (!ts.length) break;
     for (const tr of ts) {
@@ -101,8 +110,9 @@ async function acquisitionCost(master, decimals, priceAt) {
     }
     rows += ts.length; pages++;
     const minLt = ts.reduce((m, x) => Math.min(m, Number(x.transaction_lt)), Infinity);
-    if (ts.length < PAGE || !isFinite(minLt)) break;
+    if (ts.length < usedPage || !isFinite(minLt)) break; // last page (compared to the size actually used)
     endLt = minLt - 1;
+    if (PAGE < 256 && ++sinceShrink >= 15) { PAGE = Math.min(256, PAGE * 2); sinceShrink = 0; } // recover speed once past the wall
     await sleep(tcDelay());
   }
   return { cost, balDelta, pages, rows };
