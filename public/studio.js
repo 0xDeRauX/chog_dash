@@ -172,7 +172,9 @@ async function boot() {
     drawn = res.created;
     anchorSeries = res.anchorSeries;
     paneAnchors = res.paneAnchors || [];
+    paneLabelsData = res.paneLabels || [];
     vprofiles = res.vprofiles || [];
+    setTimeout(renderPaneLabels, 30); // after panes lay out
     try {
       chart.priceScale("right").applyOptions({
         mode: state.log ? LightweightCharts.PriceScaleMode.Logarithmic : LightweightCharts.PriceScaleMode.Normal,
@@ -284,6 +286,25 @@ async function boot() {
   // pane, so each drawing stores its pane and is anchored to that pane's first
   // series. Offsets = cumulated pane heights (+1px separators).
   let paneAnchors = [];
+  let paneLabelsData = [];
+  // In-pane caption (like the price legend, but for each sub-pane): a coloured
+  // dot + the indicator name, pinned at the pane's top-left so you always know
+  // what a sub-pane shows.
+  function renderPaneLabels() {
+    let host = chartZone.querySelector(".pane-caps");
+    if (!host) { host = document.createElement("div"); host.className = "pane-caps"; chartZone.append(host); }
+    host.innerHTML = "";
+    const offs = paneOffsets();
+    for (let i = 1; i < offs.length; i++) {
+      const info = paneLabelsData[i];
+      if (!info) continue;
+      const el = document.createElement("div");
+      el.className = "pane-cap";
+      el.style.top = (offs[i] + 4) + "px";
+      el.innerHTML = `<span class="fl-dot" style="background:${info.color}"></span>${info.label}`;
+      host.append(el);
+    }
+  }
   const paneOffsets = () => {
     const offs = [0];
     try {
@@ -762,7 +783,7 @@ async function boot() {
       panes.forEach((p, i) => p.setStretchFactor(i === paneIdx ? 1000 : 0.001));
       maximizedPane = paneIdx;
     }
-    setTimeout(redrawDraws, 0);
+    setTimeout(() => { redrawDraws(); renderPaneLabels(); }, 0);
   }
   chartZone.addEventListener("dblclick", (ev) => {
     if (drawMode !== "cursor") return;

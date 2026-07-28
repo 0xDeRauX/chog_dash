@@ -961,6 +961,24 @@ body.drawing #draw-canvas { pointer-events: auto; cursor: crosshair; }
   flex: none;
   box-shadow: 0 0 6px currentColor;
 }
+/* caption pinned inside each sub-pane (which indicator it shows) */
+.pane-caps { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+.pane-cap {
+  position: absolute;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  background: rgba(11, 9, 18, 0.72);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
 .fl-val {
   color: var(--text-2);
   font-variant-numeric: tabular-nums;

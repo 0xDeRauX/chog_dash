@@ -11,6 +11,21 @@
    Classic script; depends on lib.js (windowed, fmtBy, indexBase) + registry.js. */
 
 const PALETTE = ["#836ef9", "#17b8a6", "#e0a000", "#e0559a", "#3987e5", "#35e0a5", "#ef5350", "#9ccc4a", "#2ec8e6", "#f07530"];
+// Default colour PER INDICATOR TYPE (and per metric for "met") so each indicator
+// is recognisable at a glance. Price series stay coloured per ASSET (PALETTE) so
+// multi-asset comparison reads by asset; indicators read by type. A user-set
+// colour always wins.
+const IND_COLOR = {
+  rsi: "#f5a623", macd: "#26c6da", macdap: "#26c6da", boll: "#90a4ae",
+  sma: "#ffd54f", ema: "#ff8a65", vwap: "#ba68c8", ichimoku: "#4dd0e1",
+  regime: "#8d6e63", flow: "#9ccc65", vprofile: "#7e57c2",
+  "met:mentions": "#ab47bc", "met:volume": "#42a5f5", "met:tvl": "#5c6bc0",
+  "met:discord": "#7986cb", "met:telegram": "#29b6f6", "met:holders": "#66bb6a",
+  "met:holders50": "#26a69a", "met:inprofit": "#ec407a", "met:flowratio": "#9ccc65",
+  "met:buzz": "#ffca28", "met:divergence": "#ef5350", "met:velocity": "#26c6da",
+  "met:composite": "#ffa726",
+};
+const indColor = (ind) => ind.type === "met" ? IND_COLOR[`met:${ind.metric}`] : IND_COLOR[ind.type];
 
 const INDS = {
   met: {
@@ -491,6 +506,7 @@ function renderConfig(chart, cfg, ctx, opts = {}) {
   const serieColor = (i) => cfg.series[i]?.color || PALETTE[i % PALETTE.length];
   const created = [], items = [], vprofiles = [];
   const paneAnchors = []; // first series of each pane — drawing-tool anchors
+  const paneLabels = []; // pane index → { label, color } for the in-pane caption
   let anchorSeries = null;
   let ovScaleN = 0;
   // Track the REAL data extent (whitespace excluded) to frame the view after
@@ -539,7 +555,10 @@ function renderConfig(chart, cfg, ctx, opts = {}) {
       if (f) pts = pts.map((p) => ({ ...p, value: p.value == null ? null : p.value * f }));
     }
     const scale = cfg.mode === "raw" ? (idx === 0 ? "right" : "s" + idx) : "right";
-    const fmt = cfg.mode === "index" ? (v) => v.toFixed(1) : mcapView ? (v) => fmtBy("usd", v) : (v) => fmtBy("price", v);
+    // In Base-100 mode the legend shows PERFORMANCE (% vs the window start) so
+    // several assets read as a live performance ranking — the pro comparison view.
+    const fmt = cfg.mode === "index" ? (v) => (v >= 100 ? "+" : "") + (v - 100).toFixed(1) + "%"
+      : mcapView ? (v) => fmtBy("usd", v) : (v) => fmtBy("price", v);
     let s = null;
     if (!e.hidden) {
       let data = pts;
@@ -588,12 +607,13 @@ function renderConfig(chart, cfg, ctx, opts = {}) {
       ? (ctx.mById[mid]?.label || mid)
       : def.label + (def.period ? ind.period : "") + (def.hasSource && mid !== "price" ? ` · ${ctx.mById[mid]?.label || mid}` : "");
     const label = `${srcLabel} → ${tgt.sym}${ind.overlay ? "" : " · panneau"}`;
-    const color = ind.color || serieColor(ind.target);
+    const color = ind.color || indColor(ind) || serieColor(ind.target);
     const fmtDefault = (raw, m) => raw ? (v) => fmtBy(m.format, v) : (v) => v.toFixed(1);
     if (ind.hidden) { items.push({ series: null, color, label, struck: true, sub: true, fmt: (v) => String(v) }); continue; }
 
     const style = { color, lineWidth: ind.width || 1, lineStyle: ind.dash || 0 };
     const pane = ind.overlay ? 0 : nextPane++;
+    if (pane > 0) paneLabels[pane] = { label: `${srcLabel} → ${tgt.sym}`, color }; // caption shown inside the sub-pane
     let main = null;
     let fmt;
 
@@ -741,5 +761,5 @@ function renderConfig(chart, cfg, ctx, opts = {}) {
       chart.timeScale().setVisibleRange({ from: minTime, to: addDaysStr(maxTime, 5) });
     } catch { /* keep fitContent framing */ }
   }
-  return { created, items, anchorSeries, vprofiles, paneAnchors };
+  return { created, items, anchorSeries, vprofiles, paneAnchors, paneLabels };
 }
