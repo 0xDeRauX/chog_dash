@@ -13,6 +13,13 @@ function mapFromSeries(series, key) {
   for (const p of series || []) if (p[key] != null) m.set(p.date, p[key]);
   return m;
 }
+// Share of holders in a PnL tranche = tranche count / total holders — a bounded
+// 0-1 oscillator, so it's tested raw (not z-scored like a trending count).
+function shareFromPnl(series, key) {
+  const m = new Map();
+  for (const p of series || []) if (p[key] != null && p.holders > 0) m.set(p.date, p[key] / p.holders);
+  return m;
+}
 function regimeSignal(a) {
   // Buzz signed by the price direction over the last 7 days (the Régime A/P idea).
   const buzz = mapFromSeries(a.buzz, "buzz");
@@ -45,9 +52,32 @@ function defineSignals() {
       },
       build: (a) => mapFromSeries(a.tradeflow, "ratio"),
     },
+    {
+      id: "inprofit", label: "% en gain", help: METRIC_BY_ID.inprofit?.help,
+      build: (a) => mapFromSeries(a.pnl, "pctInProfit"),
+    },
+    {
+      id: "x10share", label: "% ×10+ (euphorie)",
+      help: {
+        what: "Part des holders en gain de <b>plus de ×10</b> vs leur coût d'entrée — euphorie tardive, risque de distribution.",
+        read: "Un IC négatif est attendu : trop d'euphorie (beaucoup de gros gagnants) précède souvent une correction.",
+        quality: "Reconstruit du coût d'entrée (grand livre CHOG, transferts Solana/EVM/TON).",
+      },
+      build: (a) => shareFromPnl(a.pnl, "x10"),
+    },
+    {
+      id: "capitul", label: "% capitulation (−50%)",
+      help: {
+        what: "Part des holders sous <b>−50%</b> (fortement dans le rouge) — capitulation ; plancher potentiel (contrarian).",
+        read: "Un IC positif est attendu : quand presque tout le monde est sous l'eau, les vendeurs s'épuisent.",
+        quality: "Reconstruit du coût d'entrée (grand livre / transferts).",
+      },
+      build: (a) => shareFromPnl(a.pnl, "l50"),
+    },
   ];
   RAW_SIGNALS = [
     { id: "volume", label: "Volume (z)", build: (a) => zScoreByDate(a.prices, "volume") },
+    { id: "holders50", label: "Holders≥$50 (z)", build: (a) => zScoreByDate(a.holderTiers, "h50") },
     { id: "tvl", label: "TVL (z)", build: (a) => zScoreByDate(a.tvl, "tvl") },
     { id: "holders", label: "Holders (z)", build: (a) => zScoreByDate(a.holders, "holders") },
     { id: "discord", label: "Discord (z)", build: (a) => zScoreByDate(a.discord, "members") },
