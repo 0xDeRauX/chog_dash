@@ -209,10 +209,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main || true
-          git add data/raw public/data.json
+          git add data/raw
           git diff --cached --quiet || git commit -m "Manual collection (${{ inputs.collectors }}) $(date -u +%Y-%m-%d)"
-          git push
+          git fetch origin main
+          git merge -X ours --no-edit origin/main || true
+          npm run ingest && npm run build:dashboard
+          git add public/data.json
+          git diff --cached --quiet || git commit -m "Rebuild dashboard $(date -u +%Y-%m-%d)"
+          git push origin main
       - name: Upload dashboard artifact
         uses: actions/upload-pages-artifact@v3
         with:

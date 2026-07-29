@@ -113,9 +113,19 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/raw public/data.json
-          git diff --cached --quiet || git commit -m "Daily data collection $(date -u +%Y-%m-%d)"
-          git push
+          # Commit the raw sources first; data.json is GENERATED and rebuilt below
+          # so it's never a merge conflict.
+          git add data/raw
+          git diff --cached --quiet || git commit -m "Daily raw data $(date -u +%Y-%m-%d)"
+          # A long run can finish after other commits landed on main (e.g. a manual
+          # push). Merge them in (keeping our fresh raw data on any same-file clash),
+          # then rebuild the dashboard from the merged raw → push always fast-forwards.
+          git fetch origin main
+          git merge -X ours --no-edit origin/main || true
+          npm run ingest && npm run build:dashboard
+          git add public/data.json
+          git diff --cached --quiet || git commit -m "Rebuild dashboard $(date -u +%Y-%m-%d)"
+          git push origin main
 
       - name: Upload dashboard artifact
         uses: actions/upload-pages-artifact@v3
