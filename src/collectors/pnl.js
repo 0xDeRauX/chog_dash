@@ -125,10 +125,22 @@ export async function collectPnl(asset) {
     // counting them froze pctInProfit near 79% forever). % and tranches are
     // buyers-only; the airdrop count stays visible as its own line.
     let holders = 0, airdrop = 0, buyers = 0, inProfit = 0, x10 = 0, x2 = 0, x1 = 0, l50 = 0, l50p = 0;
+    // USD-value tranches over EVERY positive-balance wallet — dust included, so
+    // the five buckets sum to the on-chain holder count (matches the explorer's
+    // holders_count, ~33K for CHOG, not the dust-filtered 26.5K). This classifies
+    // by dollars held, not by gain; the profit stats below keep their dust filter
+    // so a swarm of sub-cent wallets can't move pctInProfit.
+    let tLt50 = 0, t50_500 = 0, t500_5k = 0, t5k_50k = 0, tGt50k = 0;
     for (const [addr, [bal, cost]] of st.wallets) {
       if (bal <= 0n || st.pools.has(addr) || st.distributors.has(addr)) continue;
       const tokens = Number(bal) / dec;
-      if (tokens * px < 0.01) continue; // dust
+      const usd = tokens * px;
+      if (usd < 50) tLt50++;
+      else if (usd < 500) t50_500++;
+      else if (usd < 5000) t500_5k++;
+      else if (usd < 50000) t5k_50k++;
+      else tGt50k++;
+      if (usd < 0.01) continue; // dust: out of the holder & profit classification
       holders++;
       const avg = cost > 0 && tokens > 0 ? cost / tokens : 0;
       if (avg <= 0) { airdrop++; continue; }
@@ -145,6 +157,10 @@ export async function collectPnl(asset) {
       date: d, holders, airdrop, buyers, inProfit,
       pctInProfit: buyers ? Number(((inProfit / buyers) * 100).toFixed(2)) : null,
       x10, x2_10: x2, x1_2: x1, l0_50: l50, l50: l50p,
+      // on-chain holder count (dust included) drives the holders LINE + tranches;
+      // `holders` above stays the dust-filtered count for the % en gain view.
+      holdersOnchain: tLt50 + t50_500 + t500_5k + t5k_50k + tGt50k,
+      tiers: { lt50: tLt50, t50_500, t500_5k, t5k_50k, gt50k: tGt50k },
       realizedUsd: Math.round(realizedToday),
       realizedBigUsd: Math.round(realizedBigToday),
     });
@@ -341,5 +357,22 @@ export async function collectPnl(asset) {
     indexedToDate: series.at(-1)?.date ?? null,
     series,
   }, null, 1));
+
+  // Also feed the holders LINE and the $-tranches from the ledger: the same
+  // per-day scan already knows the exact holder count and the USD-value tiers,
+  // so emit them through the holders-history path (→ holders_daily +
+  // holder_tiers_daily). CHOG thereby single-sources its holders from the
+  // ledger (ingest skips the daily snapshot for any holders-history symbol),
+  // avoiding a definition mismatch between the two counts. Old rows written
+  // before the tier field existed carry no `tiers` (ingest guards on it) — a
+  // one-off full reindex backfills the whole history.
+  if (series.length) {
+    const histFile = path.resolve(`data/raw/holders-history/${asset.symbol}.json`);
+    fs.mkdirSync(path.dirname(histFile), { recursive: true });
+    fs.writeFileSync(histFile, JSON.stringify({
+      symbol: asset.symbol,
+      series: series.map((r) => ({ date: r.date, holders: r.holdersOnchain ?? r.holders, tiers: r.tiers })),
+    }, null, 1));
+  }
   return { events, calls, days: series.length, pools: st.pools.size, last: series.at(-1) };
 }

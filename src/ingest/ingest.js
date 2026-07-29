@@ -215,12 +215,17 @@ export function ingestAll() {
     for (const r of file.results) {
       const asset = getAssetId.get(r.symbol);
       if (!asset || r.holders == null) continue;
-      if (duneHolderSyms.has(r.symbol)) continue; // Dune-sourced → skip Blockscout
-      upsertHolders.run({ assetId: asset.id, date: file.date, holders: r.holders });
-      holderRows++;
-      if (r.tiers) {
-        upsertTiers.run({ assetId: asset.id, date: file.date, ...r.tiers });
-        tierRows++;
+      // Tokens with a holders-history file are single-sourced from it for the
+      // COUNT and $-tiers (one consistent definition across the whole series).
+      // But FLOWS (accumulating/distributing) exist only in the daily snapshot —
+      // no history-file equivalent — so those keep flowing in regardless.
+      if (!duneHolderSyms.has(r.symbol)) {
+        upsertHolders.run({ assetId: asset.id, date: file.date, holders: r.holders });
+        holderRows++;
+        if (r.tiers) {
+          upsertTiers.run({ assetId: asset.id, date: file.date, ...r.tiers });
+          tierRows++;
+        }
       }
       if (r.flows) {
         upsertFlows.run({
