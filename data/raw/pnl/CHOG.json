@@ -5660,6 +5660,21 @@
    },
    "realizedUsd": -2323,
    "realizedBigUsd": 0
+  },
+  {
+   "date": "2026-07-28",
+   "holders": 26355,
+   "airdrop": 22172,
+   "buyers": 4183,
+   "inProfit": 510,
+   "pctInProfit": 12.19,
+   "x10": 56,
+   "x2_10": 15,
+   "x1_2": 439,
+   "l0_50": 1258,
+   "l50": 2415,
+   "realizedUsd": -1626,
+   "realizedBigUsd": 0
   }
  ]
 }
