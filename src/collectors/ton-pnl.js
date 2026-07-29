@@ -66,81 +66,98 @@ async function currentHolders(address, decimals) {
   return bal;
 }
 
-// All jetton transfers → per-owner acquisition {usd, amt} (inflows valued at the
-// day's price, for cost basis) AND per-owner signed daily balance changes (in −
-// out, for the historical holder count). LT-cursor descending (deep offset
-// times out).
-async function acquisitionCost(master, decimals, priceAt) {
-  const cost = new Map();       // owner -> { usd, amt }
-  const balDelta = new Map();   // owner -> Map(date -> signed token delta)
-  const bump = (owner, date, d) => {
-    let m = balDelta.get(owner); if (!m) { m = new Map(); balDelta.set(owner, m); }
-    m.set(date, (m.get(date) || 0) + d);
-  };
-  // Adaptive page size: toncenter times out (500) on deep cursors at limit=1000;
-  // 256 helps but the biggest jettons (UTYA, ~466k transfers) still hit a wall.
-  // On a persistent 500 we HALVE the page and retry the SAME cursor — a lighter
-  // query gets through — instead of stopping. Only give up once even limit=16
-  // fails, so we recover ~everything.
-  let PAGE = 256;
-  let endLt = null, pages = 0, rows = 0, shrinks = 0, sinceShrink = 0;
+// ---- incremental state (cached by CI between runs, like the CHOG ledger) ----
+// Fetching every jetton transfer daily is wasteful (UTYA ~467k, ~15 min). So we
+// persist the DERIVED state — per-owner cost basis, running balance, and the
+// daily holder-crossing tally — and each run only reads transfers NEWER than the
+// last LT seen, folding them in. First run (cache miss) does the full history;
+// every day after is seconds.
+const STATE_DIR = "data/pnl-state/ton";
+const EPS = 1e-9;
+const TIER_KEYS = ["lt50", "t50_500", "t500_5k", "t5k_50k", "gt50k"];
+
+function loadState(sym) {
+  try {
+    const s = JSON.parse(fs.readFileSync(path.resolve(`${STATE_DIR}/${sym}.json`), "utf8"));
+    return {
+      cost: new Map(Object.entries(s.cost || {}).map(([k, v]) => [k, { usd: v[0], amt: v[1] }])),
+      bal: new Map(Object.entries(s.bal || {})),
+      cross: new Map(Object.entries(s.cross || {})),
+      lastLt: Number(s.lastLt || 0), transfers: Number(s.transfers || 0),
+    };
+  } catch { return { cost: new Map(), bal: new Map(), cross: new Map(), lastLt: 0, transfers: 0 }; }
+}
+function saveState(sym, st) {
+  fs.mkdirSync(path.resolve(STATE_DIR), { recursive: true });
+  fs.writeFileSync(path.resolve(`${STATE_DIR}/${sym}.json`), JSON.stringify({
+    lastLt: st.lastLt, transfers: st.transfers,
+    cost: Object.fromEntries([...st.cost].map(([k, v]) => [k, [v.usd, v.amt]])),
+    bal: Object.fromEntries(st.bal),
+    cross: Object.fromEntries(st.cross),
+  }));
+}
+// Fold one balance change into the state: track the running balance and, on a
+// zero-crossing, the +1/−1 holder-count event for that day.
+function applyBal(st, owner, d, date) {
+  const prev = st.bal.get(owner) || 0;
+  const next = prev + d;
+  if (next > EPS && prev <= EPS) st.cross.set(date, (st.cross.get(date) || 0) + 1);
+  else if (next <= EPS && prev > EPS) st.cross.set(date, (st.cross.get(date) || 0) - 1);
+  if (Math.abs(next) < EPS) st.bal.delete(owner); else st.bal.set(owner, next);
+}
+
+// Read only transfers with LT > st.lastLt (ascending cursor), folding cost +
+// balances + crossings into the state. Adaptive page size to survive toncenter's
+// deep-cursor 500s. Returns the number of new transfers processed.
+async function scanNewTransfers(master, decimals, priceAt, st) {
+  let PAGE = 256, startLt = st.lastLt ? st.lastLt + 1 : 0, added = 0, maxLt = st.lastLt, sinceShrink = 0;
   for (;;) {
     const usedPage = PAGE;
-    const url = `${TC}/jetton/transfers?jetton_master=${master}&limit=${usedPage}&sort=desc` + (endLt != null ? `&end_lt=${endLt}` : "");
+    const url = `${TC}/jetton/transfers?jetton_master=${master}&limit=${usedPage}&sort=asc&start_lt=${startLt}`;
     let j;
     try { j = await tcJson(url, 3); }
     catch (e) {
-      if (PAGE > 16) { PAGE = Math.max(16, Math.floor(PAGE / 2)); shrinks++; sinceShrink = 0; await sleep(2500); continue; }
-      console.warn(`  toncenter bloqué @ end_lt=${endLt} même à page 16 — arrêt avec ${rows} transferts (partiel)`); break;
+      if (PAGE > 16) { PAGE = Math.max(16, Math.floor(PAGE / 2)); sinceShrink = 0; await sleep(2500); continue; }
+      console.warn(`  toncenter bloqué @ start_lt=${startLt} — arrêt (${added} nouveaux, partiel)`); break;
     }
     const ts = j.jetton_transfers || [];
     if (!ts.length) break;
     for (const tr of ts) {
-      const to = tr.destination?.toLowerCase();
-      const from = tr.source?.toLowerCase();
+      const lt = Number(tr.transaction_lt);
+      if (lt <= st.lastLt) continue; // overlap guard
+      maxLt = Math.max(maxLt, lt);
       const amt = Number(BigInt(tr.amount || "0")) / 10 ** decimals;
       if (!(amt > 0)) continue;
+      const to = tr.destination?.toLowerCase();
+      const from = tr.source?.toLowerCase();
       const date = new Date(Number(tr.transaction_now) * 1000).toISOString().slice(0, 10);
       if (to) {
         const price = priceAt(date);
-        if (price != null) { const c = cost.get(to) || { usd: 0, amt: 0 }; c.usd += amt * price; c.amt += amt; cost.set(to, c); }
-        bump(to, date, amt);
+        if (price != null) { const c = st.cost.get(to) || { usd: 0, amt: 0 }; c.usd += amt * price; c.amt += amt; st.cost.set(to, c); }
+        applyBal(st, to, amt, date);
       }
-      if (from) bump(from, date, -amt);
+      if (from) applyBal(st, from, -amt, date);
     }
-    rows += ts.length; pages++;
-    const minLt = ts.reduce((m, x) => Math.min(m, Number(x.transaction_lt)), Infinity);
-    if (ts.length < usedPage || !isFinite(minLt)) break; // last page (compared to the size actually used)
-    endLt = minLt - 1;
-    if (PAGE < 256 && ++sinceShrink >= 15) { PAGE = Math.min(256, PAGE * 2); sinceShrink = 0; } // recover speed once past the wall
+    added += ts.length;
+    if (ts.length < usedPage) break;
+    startLt = Math.max(...ts.map((x) => Number(x.transaction_lt))) + 1;
+    if (PAGE < 256 && ++sinceShrink >= 15) { PAGE = Math.min(256, PAGE * 2); sinceShrink = 0; }
     await sleep(tcDelay());
   }
-  return { cost, balDelta, pages, rows };
+  st.lastLt = maxLt;
+  st.transfers += added;
+  return added;
 }
 
-// Historical holders + $-tiers from the transfer-reconstructed balances.
+// Historical holders + $-tiers from the accumulated crossing tally + balances.
 // Holder COUNT is exact per day (balance-crossing events, calibrated so the last
 // point matches the live tonapi count). $-tiers use the current cohort's balance
 // distribution × each day's price (same "supply in profit" projection as the
 // EVM/Solana collectors), scaled to the exact holder count of the day.
-const TIER_KEYS = ["lt50", "t50_500", "t500_5k", "t5k_50k", "gt50k"];
-function holdersHistory(balDelta, currentBal, priceSeries) {
-  // exact daily holder count via +1/−1 balance crossings
-  const crossByDate = new Map();
-  for (const [, dm] of balDelta) {
-    const days = [...dm.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-    let run = 0, prevPos = false;
-    for (const [date, delta] of days) {
-      run += delta;
-      const pos = run > 1e-9;
-      if (pos && !prevPos) crossByDate.set(date, (crossByDate.get(date) || 0) + 1);
-      else if (!pos && prevPos) crossByDate.set(date, (crossByDate.get(date) || 0) - 1);
-      prevPos = pos;
-    }
-  }
-  const cdates = [...crossByDate.keys()].sort();
+function holdersHistory(cross, currentBal, priceSeries) {
+  const cdates = [...cross.keys()].sort();
   let run = 0; const countByDate = new Map();
-  for (const d of cdates) { run += crossByDate.get(d); countByDate.set(d, run); }
+  for (const d of cdates) { run += cross.get(d); countByDate.set(d, run); }
   const crossFinal = run || currentBal.size;
   const calib = crossFinal ? currentBal.size / crossFinal : 1; // match live tonapi count
   const countAsOf = (date) => {
@@ -215,17 +232,19 @@ export async function collectTonPnl(asset) {
 
   const t0 = Date.now();
   const bal = await currentHolders(address, decimals);
-  const { cost, balDelta, pages, rows } = await acquisitionCost(address, decimals, priceAt);
+  const st = loadState(asset.symbol);
+  const added = await scanNewTransfers(address, decimals, priceAt, st); // only new transfers folded in
+  saveState(asset.symbol, st);
 
   // current holders with a known acquisition cost
   const cohort = [];
   for (const [owner, b] of bal) {
-    const c = cost.get(owner);
+    const c = st.cost.get(owner);
     if (c && c.amt > 0) cohort.push({ cost: c.usd / c.amt, bal: b });
   }
 
   const { series, buckets, holders } = seriesFromCohort(cohort, priceSeries, curPrice);
-  if (!series.length) throw new Error(`${asset.symbol}: no cohort cost (transfers=${rows})`);
+  if (!series.length) throw new Error(`${asset.symbol}: no cohort cost (transfers=${st.transfers})`);
 
   const today = new Date().toISOString().slice(0, 10);
   const writeMerged = (file, rows2, histTag) => {
@@ -241,8 +260,8 @@ export async function collectTonPnl(asset) {
   // % en gain series
   writeMerged(path.resolve(`data/raw/pnl/${asset.symbol}.json`), series, "ton-hist");
   // holders + $-tiers series (both were snapshot-only before) — full history now
-  const hh = holdersHistory(balDelta, bal, priceSeries);
+  const hh = holdersHistory(st.cross, bal, priceSeries);
   writeMerged(path.resolve(`data/raw/holders-history/${asset.symbol}.json`), hh, "ton-hist");
 
-  return { days: series.length, holders, buckets, transfers: rows, pages, nowPct: series.at(-1)?.pctInProfit, hhDays: hh.length, ms: Date.now() - t0 };
+  return { days: series.length, holders, buckets, added, transfers: st.transfers, nowPct: series.at(-1)?.pctInProfit, hhDays: hh.length, ms: Date.now() - t0 };
 }
