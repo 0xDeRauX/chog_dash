@@ -1,7 +1,7 @@
 {
  "symbol": "CHOG",
- "indexedToBlock": 94147964,
- "indexedToDate": "2026-08-07",
+ "indexedToBlock": 94433745,
+ "indexedToDate": "2026-08-08",
  "series": [
   {
    "date": "2025-11-25",
@@ -5904,6 +5904,29 @@
     "gt50k": 2
    },
    "realizedUsd": -2032,
+   "realizedBigUsd": 0
+  },
+  {
+   "date": "2026-08-08",
+   "holders": 26029,
+   "airdrop": 21938,
+   "buyers": 4091,
+   "inProfit": 318,
+   "pctInProfit": 7.77,
+   "x10": 55,
+   "x2_10": 12,
+   "x1_2": 251,
+   "l0_50": 1027,
+   "l50": 2746,
+   "holdersOnchain": 33048,
+   "tiers": {
+    "lt50": 32233,
+    "t50_500": 593,
+    "t500_5k": 200,
+    "t5k_50k": 20,
+    "gt50k": 2
+   },
+   "realizedUsd": -1459,
    "realizedBigUsd": 0
   }
  ]
