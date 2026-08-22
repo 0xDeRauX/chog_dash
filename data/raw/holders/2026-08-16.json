@@ -1,0 +1,187 @@
+{
+  "date": "2026-08-16",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "holders": 35869,
+      "flows": {
+        "accumulating": 55,
+        "distributing": 59,
+        "newHolders": 131,
+        "churned": 47
+      },
+      "tiers": {
+        "lt50": 34750,
+        "t50_500": 747,
+        "t500_5k": 313,
+        "t5k_50k": 53,
+        "gt50k": 6
+      }
+    },
+    {
+      "symbol": "PEPE",
+      "holders": 573758
+    },
+    {
+      "symbol": "WIF",
+      "holders": 251717,
+      "tiers": {
+        "lt50": 233876,
+        "t50_500": 13731,
+        "t500_5k": 3305,
+        "t5k_50k": 620,
+        "gt50k": 185
+      }
+    },
+    {
+      "symbol": "BONK",
+      "holders": 1005840,
+      "tiers": {
+        "lt50": 972174,
+        "t50_500": 26664,
+        "t500_5k": 4803,
+        "t5k_50k": 1963,
+        "gt50k": 236
+      }
+    },
+    {
+      "symbol": "BRETT",
+      "holders": 948360
+    },
+    {
+      "symbol": "PENGU",
+      "holders": 539463,
+      "tiers": {
+        "lt50": 496162,
+        "t50_500": 32582,
+        "t500_5k": 8439,
+        "t5k_50k": 1874,
+        "gt50k": 406
+      }
+    },
+    {
+      "symbol": "FARTCOIN",
+      "holders": 162838,
+      "tiers": {
+        "lt50": 145839,
+        "t50_500": 11915,
+        "t500_5k": 3975,
+        "t5k_50k": 877,
+        "gt50k": 232
+      }
+    },
+    {
+      "symbol": "ANSEM",
+      "holders": 146791,
+      "tiers": {
+        "lt50": 127573,
+        "t50_500": 12037,
+        "t500_5k": 5109,
+        "t5k_50k": 1704,
+        "gt50k": 368
+      }
+    },
+    {
+      "symbol": "CASHCAT",
+      "holders": 60878
+    },
+    {
+      "symbol": "BTC",
+      "holders": 56788656
+    },
+    {
+      "symbol": "ETH",
+      "holders": 203473844
+    },
+    {
+      "symbol": "UTYA",
+      "holders": 9950,
+      "tiers": {
+        "lt50": 6011,
+        "t50_500": 1821,
+        "t500_5k": 1436,
+        "t5k_50k": 550,
+        "gt50k": 132
+      }
+    },
+    {
+      "symbol": "GROYP",
+      "holders": 1873,
+      "tiers": {
+        "lt50": 1170,
+        "t50_500": 388,
+        "t500_5k": 201,
+        "t5k_50k": 103,
+        "gt50k": 12
+      }
+    },
+    {
+      "symbol": "GRAMMING",
+      "holders": 696,
+      "tiers": {
+        "lt50": 373,
+        "t50_500": 261,
+        "t500_5k": 61,
+        "t5k_50k": 1,
+        "gt50k": 0
+      }
+    },
+    {
+      "symbol": "BUDDY",
+      "holders": 1031,
+      "tiers": {
+        "lt50": 571,
+        "t50_500": 276,
+        "t500_5k": 158,
+        "t5k_50k": 26,
+        "gt50k": 0
+      }
+    },
+    {
+      "symbol": "TELECLAW",
+      "holders": 619,
+      "tiers": {
+        "lt50": 427,
+        "t50_500": 147,
+        "t500_5k": 43,
+        "t5k_50k": 2,
+        "gt50k": 0
+      }
+    },
+    {
+      "symbol": "CHERRY",
+      "holders": 3582,
+      "tiers": {
+        "lt50": 2661,
+        "t50_500": 603,
+        "t500_5k": 262,
+        "t5k_50k": 54,
+        "gt50k": 2
+      }
+    },
+    {
+      "symbol": "XRP",
+      "holders": 8069906
+    },
+    {
+      "symbol": "HYPE",
+      "holders": 251201
+    },
+    {
+      "symbol": "TAO",
+      "holders": 566321
+    },
+    {
+      "symbol": "AKT",
+      "holders": 1150980
+    },
+    {
+      "symbol": "ZEC",
+      "holders": 843051
+    },
+    {
+      "symbol": "ONDO",
+      "holders": 207942
+    }
+  ]
+}

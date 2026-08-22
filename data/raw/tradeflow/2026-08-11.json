@@ -1,0 +1,137 @@
+{
+  "date": "2026-08-11",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "buyTx": 88,
+      "sellTx": 67,
+      "volUsd": 2012.59006401738,
+      "buyUsd": 1094.0222884010032,
+      "sellUsd": 644.7712947834887
+    },
+    {
+      "symbol": "PEPE",
+      "buyTx": 368,
+      "sellTx": 289,
+      "volUsd": 414075.2724359505,
+      "buyUsd": 168981.41550509518,
+      "sellUsd": 110828.18270050688
+    },
+    {
+      "symbol": "WIF",
+      "buyTx": 2944,
+      "sellTx": 2930,
+      "volUsd": 257417.29755111202
+    },
+    {
+      "symbol": "BONK",
+      "buyTx": 10026,
+      "sellTx": 8796,
+      "volUsd": 334832.21547871863
+    },
+    {
+      "symbol": "BRETT",
+      "buyTx": 627,
+      "sellTx": 797,
+      "volUsd": 107309.18851170839
+    },
+    {
+      "symbol": "PENGU",
+      "buyTx": 9793,
+      "sellTx": 10222,
+      "volUsd": 1209270.1370715012
+    },
+    {
+      "symbol": "FARTCOIN",
+      "buyTx": 11775,
+      "sellTx": 12549,
+      "volUsd": 1491464.7371877565
+    },
+    {
+      "symbol": "ANSEM",
+      "buyTx": 37577,
+      "sellTx": 37081,
+      "volUsd": 15381584.50360402
+    },
+    {
+      "symbol": "CASHCAT",
+      "buyTx": 37169,
+      "sellTx": 32893,
+      "volUsd": 15394863.92403156
+    },
+    {
+      "symbol": "ETH",
+      "buyTx": 21647,
+      "sellTx": 18246,
+      "volUsd": 134900568.1282072
+    },
+    {
+      "symbol": "SOL",
+      "buyTx": 444470,
+      "sellTx": 654456,
+      "volUsd": 626964669.2195241
+    },
+    {
+      "symbol": "GRAM",
+      "buyTx": 7291,
+      "sellTx": 10638,
+      "volUsd": 2329029.7516053147
+    },
+    {
+      "symbol": "UTYA",
+      "buyTx": 499,
+      "sellTx": 436,
+      "volUsd": 245469.58543104614,
+      "buyUsd": 72839.92760742547,
+      "sellUsd": 62125.53072513375
+    },
+    {
+      "symbol": "GROYP",
+      "buyTx": 135,
+      "sellTx": 87,
+      "volUsd": 21897.613966554145,
+      "buyUsd": 9709.264069192275,
+      "sellUsd": 11259.250046646408
+    },
+    {
+      "symbol": "GRAMMING",
+      "buyTx": 54,
+      "sellTx": 50,
+      "volUsd": 4032.953537413,
+      "buyUsd": 2051.253753621371,
+      "sellUsd": 1958.4343118069207
+    },
+    {
+      "symbol": "BUDDY",
+      "buyTx": 27,
+      "sellTx": 32,
+      "volUsd": 2794.9209544906003,
+      "buyUsd": 554.5863479680098,
+      "sellUsd": 1475.6455007408201
+    },
+    {
+      "symbol": "TELECLAW",
+      "buyTx": 25,
+      "sellTx": 6,
+      "volUsd": 1407.6765690142,
+      "buyUsd": 968.64553182847,
+      "sellUsd": 439.03103718573
+    },
+    {
+      "symbol": "CHERRY",
+      "buyTx": 81,
+      "sellTx": 64,
+      "volUsd": 15456.392438582117,
+      "buyUsd": 7221.625081794552,
+      "sellUsd": 7372.617291198499
+    },
+    {
+      "symbol": "ONDO",
+      "buyTx": 234,
+      "sellTx": 384,
+      "volUsd": 339727.54175213294,
+      "buyUsd": 96029.0809301724,
+      "sellUsd": 109931.19540756242
+    }
+  ]
+}
