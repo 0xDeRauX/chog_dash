@@ -295,7 +295,144 @@ async function boot() {
     heatEl.append(table);
   }
 
-  function renderAll() { renderVerdict(); renderICTable(); renderCorr(); }
+  // ---- ④ Divergence confirmée (A statut · B harnais · D heatmap) ----
+  state.divconf = { ...DIVCONF_DEFAULT };
+  const pct = (v) => (v == null ? "—" : (v >= 0 ? "+" : "") + (v * 100).toFixed(1) + "%");
+  const pctW = (v) => (v == null ? "—" : (v * 100).toFixed(0) + "%");
+  function retCellColor(med) {
+    if (med == null) return "rgba(255,255,255,0.03)";
+    const a = Math.min(Math.abs(med) / 0.3, 1) * 0.55;
+    return med >= 0 ? `rgba(53,208,127,${a})` : `rgba(255,107,107,${a})`;
+  }
+
+  // A · per-asset current status
+  const statusEl = document.getElementById("divconf-status");
+  function renderStatus() {
+    const assets = groupAssets();
+    const table = document.createElement("table");
+    table.className = "heatmap-table";
+    table.innerHTML = "<thead><tr><th>Actif</th><th>SMA7(div)</th><th>RSI 14</th><th>Statut</th><th>Dernier signal</th></tr></thead>";
+    const tb = document.createElement("tbody");
+    for (const a of assets) {
+      const { status } = divConfSignal(a, state.divconf);
+      const tr = document.createElement("tr");
+      let badge = '<span class="dc-badge dc-off">—</span>';
+      if (status.firingToday) badge = '<span class="dc-badge dc-fire">🎯 signal actif</span>';
+      else if (status.inSetup) badge = '<span class="dc-badge dc-setup">👀 en zone</span>';
+      const smaTxt = status.curSma == null ? "—" : (status.curSma >= 0 ? "+" : "") + status.curSma.toFixed(2);
+      const rsiTxt = status.curRsi == null ? "—" : status.curRsi.toFixed(0);
+      tr.innerHTML =
+        `<td><span class="asset-cell"><span class="dot" style="background:${colorOf(a.symbol)}"></span><span class="asset-sym">${a.symbol}</span></span></td>` +
+        `<td class="heat-cell" style="background:${status.curSma != null && status.curSma >= state.divconf.thr ? "rgba(53,208,127,0.18)" : "transparent"}">${smaTxt}</td>` +
+        `<td class="heat-cell" style="background:${status.curRsi != null && status.curRsi > state.divconf.rsiFloor ? "rgba(53,208,127,0.12)" : "transparent"}">${rsiTxt}</td>` +
+        `<td>${badge}</td><td class="dc-last">${status.lastFire || "—"}</td>`;
+      tb.append(tr);
+    }
+    table.append(tb);
+    statusEl.innerHTML = "";
+    statusEl.append(table);
+  }
+
+  // B · backtest harness
+  const controlsEl = document.getElementById("divconf-controls");
+  const backtestEl = document.getElementById("divconf-backtest");
+  function ctrl(label, options, key, cast = Number, toOpt = (x) => x) {
+    const g = document.createElement("div");
+    g.className = "control-group";
+    const l = document.createElement("span");
+    l.className = "control-label";
+    l.textContent = label;
+    g.append(l, segmentedControl(options, () => toOpt(state.divconf[key]), (v) => { state.divconf[key] = cast(v); renderStatus(); renderBacktest(); renderHeatmap(); renderByAsset(); }));
+    return g;
+  }
+  controlsEl.append(
+    ctrl("Déclencheur", [["cross", "Franchissement"], ["level", "Niveau"]], "cross", (v) => v === "cross", (b) => (b ? "cross" : "level")),
+    ctrl("Seuil divergence", [[1, "+1"], [1.5, "+1.5"], [2, "+2"], [2.5, "+2.5"], [3, "+3"]], "thr"),
+    ctrl("Plancher RSI", [[0, "aucun"], [45, "45"], [50, "50"], [55, "55"]], "rsiFloor"),
+    ctrl("Plafond RSI", [[65, "65 (anti-surchauffe)"], [100, "aucun"]], "rsiCeil"),
+    ctrl("Lissage", [[5, "5j"], [7, "7j"], [10, "10j"], [14, "14j"]], "sma"),
+  );
+  // segmentedControl compares val to current() with ===; cross uses booleans, so
+  // seed the "on" class right after building (the option values are strings).
+  function renderBacktest() {
+    const bt = backtestEntry(groupAssets(), state.divconf);
+    const H = [7, 14, 30];
+    const table = document.createElement("table");
+    table.className = "heatmap-table";
+    table.innerHTML = "<thead><tr><th></th><th>n</th>" + H.map((h) => `<th>${h}j · médiane / win</th>`).join("") + "</tr></thead>";
+    const tb = document.createElement("tbody");
+    const rowFor = (label, src, hl) => {
+      const tr = document.createElement("tr");
+      let cells = `<td class="verdict-name">${label}</td><td>${src[H[0]].n}</td>`;
+      for (const h of H) {
+        const s = src[h];
+        cells += `<td class="heat-cell" style="background:${hl ? retCellColor(s.med) : "transparent"}">${pct(s.med)} <span class="dc-win">/ ${pctW(s.win)}</span></td>`;
+      }
+      tr.innerHTML = cells;
+      return tr;
+    };
+    tb.append(rowFor("Règle", bt.rule, true), rowFor("Base (tous les jours)", bt.base, false));
+    table.append(tb);
+    const note = document.createElement("p");
+    note.className = "card-sub dc-btnote";
+    const conc = bt.byAsset.slice(0, 6).map((x) => `${x.symbol}×${x.n}`).join(", ");
+    note.innerHTML = bt.rule[7].n
+      ? `<b>${bt.rule[7].n} événements</b> sur <b>${bt.assets} actifs</b> ${conc ? "(" + conc + (bt.byAsset.length > 6 ? "…" : "") + ")" : ""}. Une règle qui bat la base sur peu d'événements reste fragile — vise la <b>cohérence sur les 3 horizons</b> plutôt qu'un seul chiffre flatteur.`
+      : "Aucun événement sur ce groupe/ces réglages — élargis le seuil ou change de groupe.";
+    backtestEl.innerHTML = "";
+    backtestEl.append(table, note);
+  }
+
+  // D · div × RSI heatmap
+  const heatmapEl = document.getElementById("divconf-heatmap");
+  function renderHeatmap() {
+    const { dbins, rbins, grid } = divRsiGrid(groupAssets(), { sma: state.divconf.sma, horizon: 30 });
+    const rlab = ["RSI<40", "40-50", "50-65", "≥65"];
+    const dlab = ["div<−1", "−1..0", "0..+1", "+1..+2", "≥+2"];
+    const table = document.createElement("table");
+    table.className = "heatmap-table";
+    table.innerHTML = "<thead><tr><th>SMA" + state.divconf.sma + "(div) ＼ RSI</th>" + rlab.map((s) => `<th>${s}</th>`).join("") + "</tr></thead>";
+    const tb = document.createElement("tbody");
+    grid.forEach((row, di) => {
+      const tr = document.createElement("tr");
+      let cells = `<td class="verdict-name">${dlab[di]}</td>`;
+      row.forEach((c) => {
+        cells += `<td class="heat-cell" style="background:${retCellColor(c.med)}" title="n=${c.n}">${c.med == null ? (c.n ? "·" : "") : (c.med >= 0 ? "+" : "") + (c.med * 100).toFixed(0) + "%"}<span class="dc-n">${c.n >= 8 ? " n=" + c.n : ""}</span></td>`;
+      });
+      tr.innerHTML = cells;
+      tb.append(tr);
+    });
+    table.append(tb);
+    heatmapEl.innerHTML = "";
+    heatmapEl.append(table);
+  }
+  // E · per-asset backtest (where the rule actually works)
+  const byAssetEl = document.getElementById("divconf-byasset");
+  function renderByAsset() {
+    const params = { sma: state.divconf.sma, thr: state.divconf.thr, cross: state.divconf.cross, buyLo: state.divconf.rsiFloor, buyHi: state.divconf.rsiCeil };
+    const rows = backtestByAsset(groupAssets(), params);
+    const H = [7, 14, 30];
+    const table = document.createElement("table");
+    table.className = "heatmap-table";
+    table.innerHTML = "<thead><tr><th>Actif</th><th>Signaux</th>" + H.map((h) => `<th>${h}j · médiane / win</th>`).join("") + "</tr></thead>";
+    const tb = document.createElement("tbody");
+    for (const r of rows) {
+      const tr = document.createElement("tr");
+      let cells = `<td><span class="asset-cell"><span class="dot" style="background:${colorOf(r.symbol)}"></span><span class="asset-sym">${r.symbol}</span></span></td><td>${r.buys || "—"}</td>`;
+      for (const h of H) {
+        const s = r.h[h];
+        cells += `<td class="heat-cell" style="background:${s.n ? retCellColor(s.med) : "transparent"}">${s.n ? pct(s.med) + ' <span class="dc-win">/ ' + pctW(s.win) + "</span>" : "—"}</td>`;
+      }
+      tr.innerHTML = cells;
+      tb.append(tr);
+    }
+    table.append(tb);
+    byAssetEl.innerHTML = "";
+    byAssetEl.append(table);
+  }
+  function renderDivconf() { renderStatus(); renderBacktest(); renderHeatmap(); renderByAsset(); }
+
+  function renderAll() { renderVerdict(); renderICTable(); renderCorr(); renderDivconf(); }
   renderAll();
 }
 

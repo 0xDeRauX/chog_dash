@@ -419,7 +419,10 @@ function studioChartOptions(fontSize) {
     // zoom/scroll the time axis → precise price ticks when zoomed in.
     rightPriceScale: { borderColor: ink("--border"), autoScale: true },
     leftPriceScale: { borderColor: ink("--border"), autoScale: true },
-    timeScale: { borderColor: ink("--border"), timeVisible: false },
+    // minBarSpacing defaults to 0.5px, which silently CAPS how far you can zoom
+    // out: BTC's 5 858 daily bars would need 2 900px and got clipped to the last
+    // ~6 years. 0.03 lets a 16-year daily history frame fully in a 1 200px pane.
+    timeScale: { borderColor: ink("--border"), timeVisible: false, minBarSpacing: 0.03 },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
     localization: { priceFormatter: smartAxisFmt },
   };

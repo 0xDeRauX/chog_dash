@@ -200,5 +200,18 @@ const data = {
 db.close();
 
 fs.mkdirSync(path.resolve("public"), { recursive: true });
-fs.writeFileSync(path.resolve("public/data.json"), JSON.stringify(data));
+// data.json is downloaded on every page load, so drop null-valued keys from the
+// series points: SQL returns every column of a table even when an asset only
+// fills one of them (BTC's pnl row = pctInProfit + 12 nulls). Readers already
+// test `x != null`, which treats a missing key exactly like a null one.
+const compact = (v) => {
+  if (Array.isArray(v)) return v.map(compact);
+  if (v && typeof v === "object") {
+    const o = {};
+    for (const [k, val] of Object.entries(v)) if (val != null) o[k] = compact(val);
+    return o;
+  }
+  return v;
+};
+fs.writeFileSync(path.resolve("public/data.json"), JSON.stringify(compact(data)));
 console.log(`Wrote public/data.json with ${assets.length} assets.`);

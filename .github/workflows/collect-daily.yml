@@ -43,6 +43,11 @@ jobs:
       - name: Collect on-chain TON prices (tonapi, full history)
         run: npm run collect:ton-price
 
+      # Free Coin Metrics community API (no key): full life-of-asset price,
+      # volume, market cap, holders and the % en gain proxy for BTC/ETH/XRP/ZEC.
+      - name: Collect Coin Metrics full history (BTC, ETH…)
+        run: npm run collect:cm-history
+
       - name: Collect chain TVL
         run: npm run collect:tvl
 

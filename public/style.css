@@ -1726,3 +1726,89 @@ body.studio-dragging .drop-zones { display: flex; }
 .top-fill.hot { background: #ff5c6c; }
 .top-val { font-variant-numeric: tabular-nums; font-weight: 600; }
 .top-val.up { color: #2fbf71; } .top-val.down { color: #ff5c6c; }
+
+/* ---- ④ Divergence confirmée (Signaux) ---- */
+.sub-h {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 1.5rem 0 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.sub-h .sub-note { font-weight: 400; color: var(--text-3); font-size: 0.82rem; }
+.divconf-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.1rem;
+  margin-bottom: 0.9rem;
+}
+.dc-badge {
+  display: inline-block;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.dc-badge.dc-fire { background: rgba(53, 208, 127, 0.18); color: var(--up); }
+.dc-badge.dc-setup { background: rgba(224, 160, 0, 0.16); color: #e0a000; }
+.dc-badge.dc-off { background: transparent; color: var(--text-3); }
+.dc-last { color: var(--text-2); font-variant-numeric: tabular-nums; }
+.dc-win { color: var(--text-3); font-size: 0.82em; }
+.dc-n { color: var(--text-3); font-size: 0.72em; }
+.dc-btnote { margin-top: 0.55rem; }
+
+/* ---- Studio : panneau Stratégie ---- */
+.strat-row { align-items: center; }
+.strat-lbl { font-size: 0.78rem; color: var(--text-2); flex: 1; min-width: 0; }
+.strat-num { width: 64px; }
+.strat-sub {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.55rem 0 0.15rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.strat-cond .strat-ind { flex: 1; min-width: 0; }
+.strat-cond .strat-op { width: 46px; flex: none; }
+.strat-results {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  margin: 0.6rem 0 0.35rem;
+  font-size: 0.78rem;
+}
+.strat-res-title { font-weight: 600; margin-bottom: 0.4rem; color: var(--text); }
+.strat-res-grid { display: grid; grid-template-columns: 1fr auto; gap: 0.16rem 0.6rem; color: var(--text-2); }
+.strat-res-grid b { color: var(--text); font-variant-numeric: tabular-nums; text-align: right; font-weight: 600; }
+.strat-res-grid b.up { color: var(--up); }
+.strat-res-grid b.down { color: var(--down); }
+.strat-open { margin-top: 0.45rem; color: var(--text-2); }
+.strat-warn { margin-top: 0.45rem; color: #e0a000; }
+.strat-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin: 0.25rem 0 0.45rem; }
+.strat-table th { text-align: left; color: var(--text-3); font-weight: 500; padding: 0.14rem 0.3rem; }
+.strat-table td { padding: 0.14rem 0.3rem; border-top: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+.strat-table td.up { color: var(--up); }
+.strat-table td.down { color: var(--down); }
+.strat-allbtn { width: 100%; text-align: left; margin-top: 0.15rem; }
+.strat-save { margin-top: 0.3rem; }
+.strat-name {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 0.32rem 0.45rem;
+  font-size: 0.78rem;
+}
+.strat-per { width: 46px; }
+.strat-check { accent-color: var(--brand); width: 15px; height: 15px; cursor: pointer; margin-right: 2px; }
+.strat-join { width: 52px; flex: none; color: var(--brand-bright); }
+.strat-cond-asset { margin-top: -2px; padding-left: 10px; opacity: 0.85; }
+.strat-cond-asset .strat-lbl { flex: 0 0 auto; color: var(--text-3); }
+.strat-tf { width: 62px; flex: none; }

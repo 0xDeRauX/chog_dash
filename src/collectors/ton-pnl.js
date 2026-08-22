@@ -106,17 +106,70 @@ function applyBal(st, owner, d, date) {
   if (Math.abs(next) < EPS) st.bal.delete(owner); else st.bal.set(owner, next);
 }
 
+// Fold ONE transfer (chronological order assumed) into cost basis + balances.
+function foldOne(tr, decimals, priceAt, st) {
+  const amt = Number(BigInt(tr.amount || "0")) / 10 ** decimals;
+  if (!(amt > 0)) return;
+  const to = tr.destination?.toLowerCase();
+  const from = tr.source?.toLowerCase();
+  const date = new Date(Number(tr.transaction_now) * 1000).toISOString().slice(0, 10);
+  if (to) {
+    const price = priceAt(date);
+    if (price != null) { const c = st.cost.get(to) || { usd: 0, amt: 0 }; c.usd += amt * price; c.amt += amt; st.cost.set(to, c); }
+    applyBal(st, to, amt, date);
+  }
+  if (from) applyBal(st, from, -amt, date);
+}
+
+// Full bootstrap (no cursor yet). toncenter 500s on sort=asc&start_lt=0 for
+// high-volume jettons (an unindexed scan from genesis — verified: UTYA returns
+// 500 even at limit=1), while sort=desc from the tip is indexed and instant.
+// So page DESCENDING from the tip collecting light tuples, then fold them in
+// ascending time order (balance-crossing detection needs chronology).
+async function bootstrapDescending(master, decimals, priceAt, st) {
+  const buf = [];
+  let endLt = null, PAGE = 256, pages = 0;
+  for (;;) {
+    const cursor = endLt != null ? `&end_lt=${endLt - 1}` : "";
+    const url = `${TC}/jetton/transfers?jetton_master=${master}&limit=${PAGE}&sort=desc${cursor}`;
+    let j;
+    try { j = await tcJson(url, 4); }
+    catch {
+      if (PAGE > 16) { PAGE = Math.max(16, PAGE >> 1); await sleep(2500); continue; }
+      console.warn(`  bootstrap toncenter bloqué @ end_lt=${endLt} (${buf.length} collectés, partiel)`); break;
+    }
+    const ts = j.jetton_transfers || [];
+    if (!ts.length) break;
+    for (const tr of ts) buf.push({ transaction_lt: tr.transaction_lt, transaction_now: tr.transaction_now, amount: tr.amount, source: tr.source, destination: tr.destination });
+    endLt = Math.min(...ts.map((x) => Number(x.transaction_lt)));
+    pages++;
+    if (ts.length < PAGE) break;
+    await sleep(tcDelay());
+  }
+  if (!buf.length) return 0;
+  buf.sort((a, b) => Number(a.transaction_lt) - Number(b.transaction_lt)); // chronological
+  let maxLt = 0;
+  for (const tr of buf) { const lt = Number(tr.transaction_lt); if (lt > maxLt) maxLt = lt; foldOne(tr, decimals, priceAt, st); }
+  st.lastLt = maxLt;
+  st.transfers += buf.length;
+  console.log(`  bootstrap descendant: ${buf.length} transferts en ${pages} pages`);
+  return buf.length;
+}
+
 // Read only transfers with LT > st.lastLt (ascending cursor), folding cost +
 // balances + crossings into the state. Adaptive page size to survive toncenter's
 // deep-cursor 500s. Returns the number of new transfers processed.
 async function scanNewTransfers(master, decimals, priceAt, st) {
-  let PAGE = 256, startLt = st.lastLt ? st.lastLt + 1 : 0, added = 0, maxLt = st.lastLt, sinceShrink = 0;
+  // No cursor yet → full bootstrap (descending; asc-from-genesis 500s on big jettons).
+  if (!st.lastLt) return bootstrapDescending(master, decimals, priceAt, st);
+  // Incremental: ascending from the cursor near the tip — toncenter serves this fine.
+  let PAGE = 256, startLt = st.lastLt + 1, added = 0, maxLt = st.lastLt, sinceShrink = 0;
   for (;;) {
     const usedPage = PAGE;
     const url = `${TC}/jetton/transfers?jetton_master=${master}&limit=${usedPage}&sort=asc&start_lt=${startLt}`;
     let j;
     try { j = await tcJson(url, 3); }
-    catch (e) {
+    catch {
       if (PAGE > 16) { PAGE = Math.max(16, Math.floor(PAGE / 2)); sinceShrink = 0; await sleep(2500); continue; }
       console.warn(`  toncenter bloqué @ start_lt=${startLt} — arrêt (${added} nouveaux, partiel)`); break;
     }
@@ -126,17 +179,7 @@ async function scanNewTransfers(master, decimals, priceAt, st) {
       const lt = Number(tr.transaction_lt);
       if (lt <= st.lastLt) continue; // overlap guard
       maxLt = Math.max(maxLt, lt);
-      const amt = Number(BigInt(tr.amount || "0")) / 10 ** decimals;
-      if (!(amt > 0)) continue;
-      const to = tr.destination?.toLowerCase();
-      const from = tr.source?.toLowerCase();
-      const date = new Date(Number(tr.transaction_now) * 1000).toISOString().slice(0, 10);
-      if (to) {
-        const price = priceAt(date);
-        if (price != null) { const c = st.cost.get(to) || { usd: 0, amt: 0 }; c.usd += amt * price; c.amt += amt; st.cost.set(to, c); }
-        applyBal(st, to, amt, date);
-      }
-      if (from) applyBal(st, from, -amt, date);
+      foldOne(tr, decimals, priceAt, st);
     }
     added += ts.length;
     if (ts.length < usedPage) break;

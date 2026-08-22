@@ -283,6 +283,454 @@ function rsiLast(prices, period = 14) {
   return 100 - 100 / (1 + ag / al);
 }
 
+// ---- Divergence confirmée (signal d'entrée backtesté) -------------------
+// Backtest finding (memes, 2023→2026, 8 assets): the *level* of SMA7(divergence)
+// has ~0 IC and staying ≥+2 actually mean-reverts DOWN. What pays is the MOMENT
+// SMA7(div) CROSSES UP through +2 WHILE momentum confirms (RSI>50): fwd returns
+// +9%/7j, +13%/14j, +8%/30j at 55-59% win vs a −3%/−8% baseline. The RSI gate is
+// essential — the same cross without it is worthless. n=22 events → a live
+// hypothesis to track, not a certainty (that's why the harness recomputes it).
+const DIVCONF_DEFAULT = { sma: 7, thr: 2, rsiFloor: 50, rsiCeil: 100, cross: true };
+const medianOf = (arr) => { if (!arr.length) return null; const s = [...arr].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+
+// Full Wilder RSI(14) series → Map(date -> rsi). Companion to rsiLast.
+function rsiSeriesMap(prices, period = 14) {
+  const p = (prices || []).filter((x) => x.price > 0);
+  const out = new Map();
+  if (p.length < period + 1) return out;
+  let g = 0, l = 0;
+  for (let i = 1; i <= period; i++) { const ch = p[i].price - p[i - 1].price; if (ch >= 0) g += ch; else l -= ch; }
+  let ag = g / period, al = l / period;
+  const rv = () => (al === 0 ? 100 : 100 - 100 / (1 + ag / al));
+  out.set(p[period].date, rv());
+  for (let i = period + 1; i < p.length; i++) {
+    const ch = p[i].price - p[i - 1].price, up = ch > 0 ? ch : 0, dn = ch < 0 ? -ch : 0;
+    ag = (ag * (period - 1) + up) / period; al = (al * (period - 1) + dn) / period;
+    out.set(p[i].date, rv());
+  }
+  return out;
+}
+// Trailing SMA over a [{date,[key]}] series → Map(date -> mean of last n).
+function smaMap(series, key, n) {
+  const s = (series || []).filter((p) => p[key] != null);
+  const out = new Map();
+  for (let i = n - 1; i < s.length; i++) {
+    let sum = 0; for (let j = i - n + 1; j <= i; j++) sum += s[j][key];
+    out.set(s[i].date, sum / n);
+  }
+  return out;
+}
+// The confirmed-divergence entry signal for one asset (params tunable by the
+// harness). Returns { fires:Map(date->1), rows:[{date,sma,rsi}], status }.
+function divConfSignal(a, params) {
+  const { sma, thr, rsiFloor, rsiCeil, cross } = { ...DIVCONF_DEFAULT, ...(params || {}) };
+  const smaM = smaMap(a.divergence, "div", sma);
+  const rsiM = rsiSeriesMap(a.prices);
+  const dates = [...smaM.keys()].sort();
+  const fires = new Map(), rows = [];
+  let prev = null, lastFire = null;
+  for (const d of dates) {
+    const s = smaM.get(d), r = rsiM.get(d) ?? null;
+    rows.push({ date: d, sma: s, rsi: r });
+    const trig = cross ? (prev != null && prev < thr && s >= thr) : s >= thr;
+    const rsiOk = r != null && r > rsiFloor && r <= rsiCeil;
+    if (trig && rsiOk) { fires.set(d, 1); lastFire = d; }
+    prev = s;
+  }
+  const last = rows.at(-1) || null;
+  const inSetup = !!(last && last.sma >= thr && last.rsi != null && last.rsi > rsiFloor && last.rsi <= rsiCeil);
+  return { fires, rows, status: { firingToday: last ? fires.has(last.date) : false, inSetup, lastFire, curSma: last?.sma ?? null, curRsi: last?.rsi ?? null } };
+}
+// Aggregate the fire events across assets vs the all-days baseline, per horizon.
+// Returns { rule:{h:{n,win,med}}, base:{h:{...}}, events, assets, byAsset:[...] }.
+function backtestEntry(assets, params, horizons = [7, 14, 30]) {
+  const per = {}, baseArr = {};
+  for (const h of horizons) { per[h] = []; baseArr[h] = []; }
+  const evAssets = new Set(); const byAsset = [];
+  for (const a of assets) {
+    const { fires } = divConfSignal(a, params);
+    const fr = {}; for (const h of horizons) fr[h] = forwardReturns(a.prices, h);
+    let n = 0;
+    for (const [d] of fires) {
+      const h0 = fr[horizons[0]].get(d);
+      if (h0 != null) { n++; evAssets.add(a.symbol); }
+      for (const h of horizons) { const f = fr[h].get(d); if (f != null) per[h].push(f); }
+    }
+    if (n) byAsset.push({ symbol: a.symbol, n });
+    for (const h of horizons) for (const [, v] of fr[h]) baseArr[h].push(v);
+  }
+  const stat = (arr) => arr.length ? { n: arr.length, win: arr.filter((x) => x > 0).length / arr.length, med: medianOf(arr) } : { n: 0, win: null, med: null };
+  const rule = {}, base = {};
+  for (const h of horizons) { rule[h] = stat(per[h]); base[h] = stat(baseArr[h]); }
+  return { rule, base, events: [...evAssets].length ? per[horizons[0]].length : 0, assets: evAssets.size, byAsset: byAsset.sort((a, b) => b.n - a.n) };
+}
+// Median forward-return grid over (SMA7-div bin × RSI bin) — the div×RSI heatmap.
+function divRsiGrid(assets, { sma = 7, horizon = 30, minCell = 8 } = {}) {
+  const dbins = [[-1e9, -1], [-1, 0], [0, 1], [1, 2], [2, 1e9]];
+  const rbins = [[0, 40], [40, 50], [50, 65], [65, 101]];
+  const cells = dbins.map(() => rbins.map(() => []));
+  for (const a of assets) {
+    const smaM = smaMap(a.divergence, "div", sma);
+    const rsiM = rsiSeriesMap(a.prices);
+    const fr = forwardReturns(a.prices, horizon);
+    for (const [d, s] of smaM) {
+      const r = rsiM.get(d), f = fr.get(d);
+      if (r == null || f == null) continue;
+      const di = dbins.findIndex(([lo, hi]) => s >= lo && s < hi);
+      const ri = rbins.findIndex(([lo, hi]) => r >= lo && r < hi);
+      if (di >= 0 && ri >= 0) cells[di][ri].push(f);
+    }
+  }
+  return { dbins, rbins, grid: cells.map((row) => row.map((arr) => (arr.length >= minCell ? { med: medianOf(arr), n: arr.length } : { med: null, n: arr.length }))) };
+}
+
+// Buy/sell signal EVENTS (dated, with the price of the day) — for drawing on a
+// chart AND for the per-asset backtest (same rule, so the eye can verify the
+// numbers). BUY = SMA(div) triggers up through +thr with RSI in [buyLo,buyHi];
+// SELL = down through −thr with RSI in [sellLo,sellHi]. Defaults from the pooled
+// backtest (an up-cross confirmed by momentum, RSI>50); mirror for sells. All
+// tunable so the per-asset backtest — or the user's eyes — pick what works.
+// BREAKOUT preset — the rare high-conviction entry (up-cross of +thr confirmed
+// by momentum, RSI>50). SWING preset — the oscillator round-trip validated with
+// the user: buy each up-cross of 0 while price is still weak (RSI≤50, dip-buy),
+// exit on the next down-cross of 0. The RSI direction flips between them ON
+// PURPOSE (confirm a breakout vs. fade a dip) — that's the whole reconciliation.
+const DIVSIG_DEFAULT = { mode: "breakout", sma: 7, thr: 2, cross: true, buyLo: 50, buyHi: 100, sellLo: 0, sellHi: 50 };
+const DIVSIG_SWING = { mode: "swing", sma: 7, swLo: 0, swHi: 0, swRsiMax: 50 };
+function divSignals(a, params) {
+  const p = { ...DIVSIG_DEFAULT, ...(params || {}) };
+  const smaM = smaMap(a.divergence, "div", p.sma);
+  const rsiM = rsiSeriesMap(a.prices);
+  const priceBy = new Map((a.prices || []).map((x) => [x.date, x.price]));
+  const dates = [...smaM.keys()].sort();
+  const buys = [], sells = [];
+  let prev = null;
+  if (p.mode === "swing") {
+    // Alternating dip-buy / exit oscillator (matches a real swing trader).
+    let long = false;
+    for (const d of dates) {
+      const s = smaM.get(d), r = rsiM.get(d), px = priceBy.get(d) ?? null;
+      if (!long && prev != null && prev < p.swLo && s >= p.swLo) {
+        if (p.swRsiMax >= 100 || (r != null && r <= p.swRsiMax)) { buys.push({ date: d, price: px, rsi: r, sma: s }); long = true; }
+      } else if (long && prev != null && prev > p.swHi && s <= p.swHi) {
+        sells.push({ date: d, price: px, rsi: r, sma: s }); long = false;
+      }
+      prev = s;
+    }
+  } else {
+    for (const d of dates) {
+      const s = smaM.get(d), r = rsiM.get(d), px = priceBy.get(d) ?? null;
+      const up = p.cross ? (prev != null && prev < p.thr && s >= p.thr) : s >= p.thr;
+      const dn = p.cross ? (prev != null && prev > -p.thr && s <= -p.thr) : s <= -p.thr;
+      if (up && r != null && r >= p.buyLo && r <= p.buyHi) buys.push({ date: d, price: px, rsi: r, sma: s });
+      if (dn && r != null && r >= p.sellLo && r <= p.sellHi) sells.push({ date: d, price: px, rsi: r, sma: s });
+      prev = s;
+    }
+  }
+  return { buys, sells };
+}
+// ---- Configurable strategy engine (Studio « Stratégie ») -----------------
+// User-tunable rule: BUY when SMA(divergence) crosses UP through `buyLevel`
+// (la borne haute) with every buy condition true; SELL the open position when
+// it crosses DOWN through `sellLevel` (la borne basse) with the sell
+// conditions true. Conditions pick any indicator below with </> and a value —
+// the lab for "does RSI<50 or % en gain<20 make the call better?".
+const STRAT_DEFAULT = {
+  divType: "ema", divPeriod: 9, // smoothing of the divergence line (EMA 9 by default)
+  buyLevel: 0, sellLevel: 0,    // borne haute (achat) / borne basse (vente)
+  buyConds: [{ ind: "rsi", op: "<", val: 50 }], sellConds: [],
+  capital: 1000,
+  buyPct: 100, sellPct: 100,    // money management: share of CASH per buy, of POSITION per sell
+  scaleIn: false, scaleOut: false, scaleEvery: 1, maxTranches: 3, // « lisser » while conditions hold
+  noAvgDown: false,             // refuse to add below the position's average cost
+  buyCooldown: 0,               // minimum days between two buys (0 = off)
+};
+const STRAT_PRESETS = [
+  { id: "swing", label: "Swing (défaut)", strat: () => structuredClone(STRAT_DEFAULT) },
+  { id: "swing3", label: "Swing fractionné ⅓", strat: () => ({ ...structuredClone(STRAT_DEFAULT), buyPct: 33, sellPct: 50, scaleIn: true, scaleEvery: 3, maxTranches: 3 }) },
+  { id: "breakout", label: "Breakout (SMA7 ±2)", strat: () => ({ ...structuredClone(STRAT_DEFAULT), divType: "sma", divPeriod: 7, buyLevel: 2, sellLevel: -2, buyConds: [{ ind: "rsi", op: ">", val: 50 }] }) },
+];
+// Exponential moving average over a [{date,[key]}] series → Map(date -> ema),
+// seeded on the first `n` values (same convention as the Studio's EMA study).
+function emaMap(series, key, n) {
+  const s = (series || []).filter((p) => p[key] != null);
+  const out = new Map();
+  if (s.length < n) return out;
+  const k = 2 / (n + 1);
+  let e = 0;
+  for (let i = 0; i < n; i++) e += s[i][key];
+  e /= n;
+  out.set(s[n - 1].date, e);
+  for (let i = n; i < s.length; i++) { e = s[i][key] * k + e * (1 - k); out.set(s[i].date, e); }
+  return out;
+}
+// Price distance to its own SMA/EMA, in % — the comparable way to use a moving
+// average as a CONDITION (an absolute MA level means nothing across assets).
+function maDistMap(prices, n, type) {
+  const p = (prices || []).filter((x) => x.price > 0);
+  const src = p.map((x) => ({ date: x.date, v: x.price }));
+  const m = type === "ema" ? emaMap(src, "v", n) : smaMap(src, "v", n);
+  const out = new Map();
+  for (const x of p) { const mv = m.get(x.date); if (mv > 0) out.set(x.date, (x.price / mv - 1) * 100); }
+  return out;
+}
+// Rate of change over n days, in % — the direct "don't catch a falling knife"
+// gauge: negative means the price is still below where it was n days ago.
+function rocMap(prices, n) {
+  const p = (prices || []).filter((x) => x.price > 0);
+  const out = new Map();
+  for (let i = n; i < p.length; i++) if (p[i - n].price > 0) out.set(p[i].date, (p[i].price / p[i - n].price - 1) * 100);
+  return out;
+}
+// Distance to the lowest low / highest high of the last n days, in %.
+function extremeDistMap(prices, n, which) {
+  const p = (prices || []).filter((x) => x.price > 0);
+  const out = new Map();
+  for (let i = n; i < p.length; i++) {
+    let ext = which === "low" ? Infinity : -Infinity;
+    for (let j = i - n; j < i; j++) {
+      if (which === "low") { if (p[j].price < ext) ext = p[j].price; }
+      else if (p[j].price > ext) ext = p[j].price;
+    }
+    if (Number.isFinite(ext) && ext > 0) out.set(p[i].date, (p[i].price / ext - 1) * 100);
+  }
+  return out;
+}
+// The smoothed divergence line the triggers read.
+function divLineMap(a, st) {
+  const n = Math.max(2, Number(st.divPeriod) || 9);
+  return st.divType === "sma" ? smaMap(a.divergence, "div", n) : emaMap(a.divergence, "div", n);
+}
+// ---- higher-timeframe conditions (« RSI14 weekly de BTC > 50 ») ----------
+// Self-contained here on purpose: lib.js ships on pages that never load the
+// Studio core, so it must not depend on that file's resampling helpers.
+const HTF_LABEL = { D: "J", W: "S", M: "M" };
+function htfKey(dateStr, tf) {
+  if (tf === "M") return dateStr.slice(0, 7) + "-01";
+  if (tf === "W") {
+    const d = new Date(dateStr + "T00:00:00Z");
+    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); // back to Monday
+    return d.toISOString().slice(0, 10);
+  }
+  return dateStr;
+}
+// Rows → one row per bucket carrying the bucket's CLOSE (last row). Volume is
+// summed instead, the OHLCV convention (a week's volume is its total, not its
+// last day's).
+function resampleLast(rows, tf) {
+  if (!rows?.length || tf === "D") return rows || [];
+  const by = new Map();
+  for (const r of rows) {
+    const k = htfKey(r.date, tf);
+    const prev = by.get(k);
+    const row = { ...r, date: k };
+    if (prev && r.volume != null) row.volume = (prev.volume || 0) + r.volume;
+    by.set(k, row);
+  }
+  return [...by.values()];
+}
+// A shadow asset whose series are resampled — the indicator is then computed ON
+// the weekly/monthly bars (a weekly RSI14 spans 14 weeks, not 14 days).
+function resampleAsset(asset, tf) {
+  if (tf === "D") return asset;
+  const out = { symbol: asset.symbol };
+  for (const k of ["prices", "pnl", "tradeflow", "buzz", "holderTiers", "holders", "divergence"]) {
+    out[k] = resampleLast(asset[k], tf);
+  }
+  return out;
+}
+// Project a bucket-keyed map onto daily dates using the LAST CLOSED bucket:
+// a date inside week W reads week W−1. Buckets are keyed by their first day, so
+// reading the current bucket would leak that week's close backwards — exactly
+// the look-ahead that makes a backtest lie.
+function expandHtf(m, tf, dailyDates) {
+  if (tf === "D") return m;
+  const keys = [...m.keys()].sort();
+  const out = new Map();
+  let i = -1;
+  for (const d of dailyDates) {
+    const bk = htfKey(d, tf);
+    while (i + 1 < keys.length && keys[i + 1] < bk) i++;
+    if (i >= 0) out.set(d, m.get(keys[i]));
+  }
+  return out;
+}
+
+// Indicator sources a condition can read. `period` (when present) makes the
+// source parameterised — the condition row then shows a period input.
+const COND_SOURCES = {
+  rsi: { label: "RSI 14", get: (a) => rsiSeriesMap(a.prices) },
+  smaDist: { label: "Prix vs SMA (%)", period: 20, get: (a, n) => maDistMap(a.prices, n, "sma") },
+  emaDist: { label: "Prix vs EMA (%)", period: 9, get: (a, n) => maDistMap(a.prices, n, "ema") },
+  roc: { label: "Momentum N j (%)", period: 20, get: (a, n) => rocMap(a.prices, n) },
+  fromLow: { label: "Écart au + bas N j (%)", period: 20, get: (a, n) => extremeDistMap(a.prices, n, "low") },
+  fromHigh: { label: "Écart au + haut N j (%)", period: 20, get: (a, n) => extremeDistMap(a.prices, n, "high") },
+  inprofit: { label: "% en gain", get: (a) => new Map((a.pnl || []).filter((p) => p.pctInProfit != null).map((p) => [p.date, p.pctInProfit])) },
+  flow: { label: "Pression achat %", get: (a) => new Map((a.tradeflow || []).filter((p) => p.ratio != null).map((p) => [p.date, p.ratio])) },
+  buzz: { label: "Buzz (z)", get: (a) => new Map((a.buzz || []).filter((p) => p.buzz != null).map((p) => [p.date, p.buzz])) },
+  volz: { label: "Volume (z)", get: (a) => zScoreByDate(a.prices, "volume") },
+  mm50: { label: "Prix vs MM50 (%)", get: (a) => maDistMap(a.prices, 50, "sma") },
+  h50z: { label: "Holders≥$50 (z)", get: (a) => zScoreByDate(a.holderTiers, "h50") },
+};
+// Portfolio simulation: walk every day holding CASH + UNITS. A buy deploys
+// `buyPct`% of the cash still available, a sell liquidates `sellPct`% of the
+// position — so partial signals leave ammunition for the next ones. With
+// scaleIn/scaleOut the position keeps being built (or trimmed) every
+// `scaleEvery` days while the line stays past the level AND the conditions
+// still hold, up to `maxTranches` per episode. Realised P&L per sell uses the
+// running average cost (same convention as the on-chain PnL ledger).
+// `all` (symbol -> asset) enables CROSS-ASSET conditions: a condition may read
+// its indicator from another asset — « acheter PENGU seulement si le RSI de BTC
+// > 50 ». That's the classic market-regime filter: alts follow the majors, so
+// gating on BTC's trend is often a stronger filter than anything local.
+function stratRun(a, strat, all) {
+  const st = { ...STRAT_DEFAULT, ...(strat || {}) };
+  const line = divLineMap(a, st);
+  const px = (a.prices || []).filter((p) => p.price > 0).sort((x, y) => x.date.localeCompare(y.date));
+  const dailyDates = px.map((p) => p.date);
+  const condMaps = {}, missing = new Set();
+  const ckey = (c) => (c.sym || "") + "|" + c.ind + ":" + (c.period ?? "") + ":" + (c.tf || "D");
+  const assetOf = (c) => {
+    if (!c.sym) return a;
+    if (!all) return null;
+    return typeof all.get === "function" ? all.get(c.sym) : all[c.sym];
+  };
+  for (const c of [...(st.buyConds || []), ...(st.sellConds || [])]) {
+    if (condMaps[ckey(c)]) continue;
+    const src = COND_SOURCES[c.ind];
+    const target = assetOf(c);
+    const tf = ["W", "M"].includes(c.tf) ? c.tf : "D";
+    let m = new Map();
+    if (src && target) {
+      m = src.get(resampleAsset(target, tf), c.period ?? src.period);
+      m = expandHtf(m, tf, dailyDates);
+    }
+    condMaps[ckey(c)] = m;
+    if (!m.size) missing.add((src?.label ?? c.ind) + (c.sym ? ` ${c.sym}` : "") + (tf !== "D" ? ` ${HTF_LABEL[tf]}` : ""));
+  }
+  // Each condition carries the connector that binds it to the previous one.
+  // AND binds tighter than OR (standard precedence): « A ET B OU C » reads
+  // « (A ET B) OU C » — so the list is a chain of AND-groups, any group true
+  // makes the whole rule fire.
+  const test = (c, d) => {
+    const v = condMaps[ckey(c)]?.get(d);
+    return v == null ? false : (c.op === "<" ? v < c.val : v > c.val);
+  };
+  const pass = (conds, d) => {
+    const list = conds || [];
+    if (!list.length) return true;
+    let group = true, anyGroup = false;
+    for (let i = 0; i < list.length; i++) {
+      const ok = test(list[i], d);
+      if (i === 0) { group = ok; continue; }
+      if (list[i].join === "or") { anyGroup = anyGroup || group; group = ok; }
+      else group = group && ok;
+    }
+    return anyGroup || group;
+  };
+
+  const capital = Number(st.capital) > 0 ? Number(st.capital) : 1000;
+  const buyFrac = Math.min(1, Math.max(0.01, (Number(st.buyPct) || 100) / 100));
+  const sellFrac = Math.min(1, Math.max(0.01, (Number(st.sellPct) || 100) / 100));
+  const every = Math.max(1, Number(st.scaleEvery) || 1);
+  const maxTr = Math.max(1, Number(st.maxTranches) || 3);
+
+  let cash = capital, units = 0, cost = 0;
+  const buys = [], sells = [], equity = [];
+  let prev = null, buyEp = false, sellEp = false, buyN = 0, sellN = 0, lastBuyI = -1e9, lastSellI = -1e9;
+  let firstBuyI = -1, investedDays = 0;
+
+  for (let i = 0; i < px.length; i++) {
+    const d = px[i].date, p = px[i].price;
+    const s = line.get(d);
+    if (s != null) {
+      const upX = prev != null && prev < st.buyLevel && s >= st.buyLevel;
+      const dnX = prev != null && prev > st.sellLevel && s <= st.sellLevel;
+      const doBuy = () => {
+        // Risk guards. « Ne pas moyenner à la baisse » keeps the FIRST entry of
+        // a decline (which is often the jackpot) but refuses the following ones
+        // that drag the average cost down — measured as the single best lever
+        // on both return and drawdown. The cooldown spaces entries out.
+        if (st.noAvgDown && units > 0 && p < cost / units) return;
+        if (st.buyCooldown > 0 && i - lastBuyI < st.buyCooldown) return;
+        const spend = cash * buyFrac;
+        if (spend > 0.005) {
+          units += spend / p; cost += spend; cash -= spend; buyN++; lastBuyI = i;
+          if (firstBuyI < 0) firstBuyI = i;
+          buys.push({ date: d, price: p, amount: spend, frac: buyFrac });
+        }
+      };
+      const doSell = () => {
+        const qty = units * sellFrac;
+        if (qty > 0 && units > 0) {
+          const avg = cost / units, proceeds = qty * p;
+          cash += proceeds; cost -= avg * qty; units -= qty; sellN++; lastSellI = i;
+          if (units < 1e-12) { units = 0; cost = 0; }
+          sells.push({ date: d, price: p, amount: proceeds, pnl: proceeds - avg * qty, ret: avg > 0 ? p / avg - 1 : null, frac: sellFrac });
+        }
+      };
+      if (upX && pass(st.buyConds, d)) { buyEp = true; buyN = 0; doBuy(); }
+      else if (st.scaleIn && buyEp && s >= st.buyLevel && buyN < maxTr && i - lastBuyI >= every && pass(st.buyConds, d)) doBuy();
+      if (s < st.buyLevel) buyEp = false;
+
+      if (dnX && pass(st.sellConds, d)) { sellEp = true; sellN = 0; doSell(); }
+      else if (st.scaleOut && sellEp && s <= st.sellLevel && sellN < maxTr && i - lastSellI >= every && pass(st.sellConds, d)) doSell();
+      if (s > st.sellLevel) sellEp = false;
+
+      prev = s;
+    }
+    if (firstBuyI >= 0 && units > 0) investedDays++;
+    equity.push({ date: d, value: cash + units * p });
+  }
+
+  const last = px.at(-1) || null;
+  const open = units > 0 && last ? { units, avg: cost / units, value: units * last.price, date: buys.at(-1)?.date ?? null, ret: cost > 0 ? (units * last.price) / cost - 1 : null } : null;
+  return { buys, sells, equity, open, missing: [...missing], capital, cash, units, px, firstBuyI, investedDays };
+}
+// Report over the simulation: equity-curve based (drawdown measured daily, not
+// on a chain of trade returns) + realised stats per sell tranche.
+function stratBacktest(a, strat, all) {
+  const r = stratRun(a, strat, all);
+  const rets = r.sells.map((s) => s.ret).filter((x) => x != null);
+  let peak = -Infinity, maxDD = 0;
+  for (const e of r.equity) {
+    if (e.value > peak) peak = e.value;
+    if (peak > 0) { const dd = e.value / peak - 1; if (dd < maxDD) maxDD = dd; }
+  }
+  const equityFinal = r.equity.at(-1)?.value ?? r.capital;
+  const bh = r.firstBuyI >= 0 && r.px.length ? r.px.at(-1).price / r.px[r.firstBuyI].price - 1 : null;
+  const liveDays = r.firstBuyI >= 0 ? r.px.length - r.firstBuyI : 0;
+  return {
+    ...r,
+    n: rets.length,
+    nBuys: r.buys.length,
+    win: rets.length ? rets.filter((x) => x > 0).length / rets.length : null,
+    med: medianOf(rets),
+    cum: equityFinal / r.capital - 1,
+    equityFinal,
+    maxDD,
+    bh: Number.isFinite(bh) ? bh : null,
+    exposure: liveDays > 0 ? r.investedDays / liveDays : null,
+  };
+}
+// Back-compat alias for the chart overlay (it only reads buys/sells).
+const stratSignals = (a, strat, all) => stratRun(a, strat, all);
+
+// Per-asset backtest of the BUY signal → which assets actually have an edge.
+function backtestByAsset(assets, params, horizons = [7, 14, 30]) {
+  return assets.map((a) => {
+    const { buys } = divSignals(a, params);
+    const h = {};
+    for (const k of horizons) {
+      const fr = forwardReturns(a.prices, k);
+      const arr = [];
+      for (const b of buys) { const f = fr.get(b.date); if (f != null) arr.push(f); }
+      h[k] = arr.length ? { n: arr.length, win: arr.filter((x) => x > 0).length / arr.length, med: medianOf(arr) } : { n: 0, win: null, med: null };
+    }
+    return { symbol: a.symbol, group: a.group, buys: buys.length, h };
+  }).sort((x, y) => y.buys - x.buys);
+}
+
 // Which zone a value falls in for a signal: "bull" | "bear" | "neutral".
 // Directionality is inferred from the bands (a value beyond a bull band =
 // bull; beyond a bear band = bear). Handles both "high is good" (flowratio)
@@ -315,9 +763,14 @@ function assetVerdict(a) {
   let bull = 0, bear = 0;
   for (const [key, v] of Object.entries(vals)) {
     if (v == null) continue;
-    const zone = zoneOf(key, v);
+    let zone = zoneOf(key, v);
+    // Confidence filter (backtest): a divergence-bull with no momentum behind it
+    // (RSI ≤ 50) is the worst-performing setup measured — neutralise it so the
+    // verdict doesn't chase attention the price hasn't confirmed.
+    let note = "";
+    if (key === "divergence" && zone === "bull" && vals.rsi != null && vals.rsi <= 50) { zone = "neutral"; note = " (RSI faible)"; }
     if (zone === "bull") bull++; else if (zone === "bear") bear++;
-    signals.push({ key, label: SIGNAL_ZONES[key].label, value: v, zone, fmt: SIGNAL_ZONES[key].fmt });
+    signals.push({ key, label: SIGNAL_ZONES[key].label + note, value: v, zone, fmt: SIGNAL_ZONES[key].fmt });
   }
   // post-pump veto: chasing a fresh >15%/3d pump measured −9%/7j
   const d3 = (a.prices || []).slice(-4);

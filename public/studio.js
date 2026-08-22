@@ -47,6 +47,10 @@ async function boot() {
     fs: 12, // chart font size
     magnet: false, // snap drawings to the anchor series values
     log: false, // logarithmic price scale on the main pane
+    showSignals: true, // strategy buy/sell markers on the chart
+    strat: structuredClone(STRAT_DEFAULT), // configurable signal engine (see lib.js)
+    stratPreset: "swing", // "swing" | "breakout" | "saved:<name>" | "custom"
+    stratAll: false, // show the every-asset results table in the rail
     series: [{ sym: "CHOG", metric: "price" }],
     inds: [
       { type: "met", metric: "mentions", target: 0, overlay: true, width: 2, dash: 0 },
@@ -115,6 +119,62 @@ async function boot() {
     } catch { return null; }
   }
   let state = { ...structuredClone(DEFAULT), ...(fromUrl() || fromStorage() || {}) };
+  // A share URL describes the VIEW (series/indicators), not the strategy lab —
+  // arriving via a link must not reset the locally tuned strategy.
+  if (new URLSearchParams(location.search).get("s")) {
+    try {
+      const s = JSON.parse(localStorage.getItem(LS_KEY));
+      if (s?.strat) {
+        state.strat = s.strat;
+        state.stratPreset = s.stratPreset || "custom";
+        state.stratAll = !!s.stratAll;
+      }
+    } catch { /* keep defaults */ }
+  }
+  // Strategy shape: migrate the short-lived sigMode field, then normalise —
+  // stored numbers may be strings, conditions may reference removed sources.
+  // Strategy shape normaliser. Runs at boot AND every time a preset or a saved
+  // strategy is loaded — strategies saved before the EMA / money-management
+  // fields existed carry `sma` and no sizing, and must not land half-filled.
+  function normStrat(raw) {
+    const st = raw && typeof raw === "object" ? raw : structuredClone(STRAT_DEFAULT);
+    if (st.sma != null && st.divPeriod == null) { st.divType = "sma"; st.divPeriod = st.sma; }
+    delete st.sma;
+    st.divType = st.divType === "sma" ? "sma" : "ema";
+    st.divPeriod = Math.max(2, Number(st.divPeriod) || 9);
+    st.buyLevel = Number.isFinite(Number(st.buyLevel)) ? Number(st.buyLevel) : 0;
+    st.sellLevel = Number.isFinite(Number(st.sellLevel)) ? Number(st.sellLevel) : 0;
+    const normConds = (l) => (Array.isArray(l) ? l : [])
+      .filter((c) => COND_SOURCES[c.ind])
+      .map((c) => {
+        const o = { ind: c.ind, op: c.op === ">" ? ">" : "<", val: Number(c.val) || 0, join: c.join === "or" ? "or" : "and" };
+        const def = COND_SOURCES[c.ind].period;
+        if (def) o.period = Math.max(2, Number(c.period) || def);
+        if (c.sym && bySym[c.sym]) o.sym = c.sym; // cross-asset source (else: the charted asset)
+        if (["W", "M"].includes(c.tf)) o.tf = c.tf; // higher-timeframe source (else: daily)
+        return o;
+      });
+    st.buyConds = normConds(st.buyConds);
+    st.sellConds = normConds(st.sellConds);
+    st.capital = Number(st.capital) > 0 ? Number(st.capital) : 1000;
+    const pct = (v, d) => Math.min(100, Math.max(1, Number(v) || d));
+    st.buyPct = pct(st.buyPct, 100);
+    st.sellPct = pct(st.sellPct, 100);
+    st.scaleIn = !!st.scaleIn;
+    st.scaleOut = !!st.scaleOut;
+    st.scaleEvery = Math.max(1, Number(st.scaleEvery) || 1);
+    st.maxTranches = Math.max(1, Number(st.maxTranches) || 3);
+    st.noAvgDown = !!st.noAvgDown;
+    st.buyCooldown = Math.max(0, Number(st.buyCooldown) || 0);
+    return st;
+  }
+  if (!state.strat || typeof state.strat !== "object") {
+    const bo = state.sigMode === "breakout";
+    state.strat = bo ? STRAT_PRESETS.find((p) => p.id === "breakout").strat() : structuredClone(STRAT_DEFAULT);
+    state.stratPreset = bo ? "breakout" : "swing";
+  }
+  delete state.sigMode;
+  state.strat = normStrat(state.strat);
 
   const persist = () =>
     localStorage.setItem(LS_KEY, JSON.stringify({ ...state, w: state.w === Infinity ? "max" : state.w }));
@@ -166,6 +226,7 @@ async function boot() {
   let drawn = [];
   let legendMap = [];
   let anchorSeries = null;
+  let signalCache = { buys: [], sells: [] }; // Divergence+RSI events for the anchor asset
   function renderChart() {
     for (const s of drawn) chart.removeSeries(s);
     const res = renderConfig(chart, state, ctx);
@@ -176,9 +237,18 @@ async function boot() {
     vprofiles = res.vprofiles || [];
     setTimeout(renderPaneLabels, 30); // after panes lay out
     try {
-      chart.priceScale("right").applyOptions({
-        mode: state.log ? LightweightCharts.PriceScaleMode.Logarithmic : LightweightCharts.PriceScaleMode.Normal,
-      });
+      const MODE = LightweightCharts.PriceScaleMode;
+      chart.priceScale("right", 0).applyOptions({ mode: state.log ? MODE.Logarithmic : MODE.Normal });
+      // Sub-panes must stay LINEAR: they host oscillators that go negative
+      // (divergence, MACD, flows) and a log scale cannot plot ≤ 0 — it renders a
+      // clipped, non-linear mess. A pane created by a later render inherits the
+      // chart-level right-scale options, so the log mode set just above leaks
+      // into it (that was the "switch Prix/MC and the sub-pane breaks until you
+      // re-click Log" bug). Force every sub-pane back to Normal after each render.
+      const panes = chart.panes();
+      for (let i = 1; i < panes.length; i++) {
+        try { chart.priceScale("right", i).applyOptions({ mode: MODE.Normal }); } catch { /* pane has no right scale */ }
+      }
     } catch { /* scale mode is cosmetic */ }
     // magnet snap map: displayed values of the first series, by date; plus a
     // raw daily volume-by-date map used by the fixed-range volume profile tool.
@@ -190,6 +260,11 @@ async function boot() {
       }
       for (const p of bySym[state.series[0].sym].prices || []) volByCache.set(p.date, p.volume || 0);
     }
+    // Divergence+RSI buy/sell events for the charted asset (recomputed per render,
+    // drawn on the overlay in redrawDraws — same rule as the Signaux backtest).
+    signalCache = (state.showSignals !== false && state.series[0] && bySym[state.series[0].sym]?.divergence?.length)
+      ? stratSignals(bySym[state.series[0].sym], state.strat, bySym)
+      : { buys: [], sells: [] };
     legendMap = [];
     const legend = document.getElementById("legend");
     legend.innerHTML = "";
@@ -535,6 +610,40 @@ async function boot() {
         dctx.stroke();
         dctx.setLineDash([]);
       }
+    }
+    // Divergence+RSI buy/sell signals — vertical line at the event date
+    // (achat vert / vente rouge) + a triangle at the entry price on the main
+    // pane. Same rule as the Signaux backtest, so it's verifiable by eye.
+    if (state.showSignals !== false && (signalCache.buys.length || signalCache.sells.length)) {
+      const H = drawCanvas.clientHeight;
+      const paint = (evs, color, dir) => {
+        for (const e of evs) {
+          const x = chart.timeScale().timeToCoordinate(e.date);
+          if (x == null) continue;
+          dctx.setLineDash([]);
+          dctx.strokeStyle = color + "9a";
+          dctx.lineWidth = 1.5;
+          dctx.beginPath(); dctx.moveTo(x, 0); dctx.lineTo(x, H); dctx.stroke();
+          const dv = anchorPtsCache.get(e.date);
+          const y = dv != null && anchorSeries ? anchorSeries.priceToCoordinate(dv) : null;
+          const ty = y != null ? y : (dir > 0 ? H - 16 : 16); // fallback to pane edge
+          // marker size tracks the tranche fraction — a 25% entry reads smaller
+          const s = 4 + 3.5 * Math.min(1, e.frac ?? 1), off = dir > 0 ? 13 : -13;
+          dctx.fillStyle = color;
+          dctx.beginPath();
+          if (dir > 0) { dctx.moveTo(x, ty + off - s); dctx.lineTo(x - s, ty + off + s); dctx.lineTo(x + s, ty + off + s); }
+          else { dctx.moveTo(x, ty + off + s); dctx.lineTo(x - s, ty + off - s); dctx.lineTo(x + s, ty + off - s); }
+          dctx.closePath(); dctx.fill();
+        }
+      };
+      paint(signalCache.buys, "#2fbf71", 1);
+      paint(signalCache.sells, "#ff5c6c", -1);
+      // legend count (top-left)
+      dctx.font = "11px system-ui, sans-serif";
+      dctx.fillStyle = "#2fbf71";
+      dctx.fillText(`▲ ${signalCache.buys.length} achat${signalCache.buys.length > 1 ? "s" : ""}`, 8, 14);
+      dctx.fillStyle = "#ff5c6c";
+      dctx.fillText(`▼ ${signalCache.sells.length} vente${signalCache.sells.length > 1 ? "s" : ""}`, 8, 28);
     }
     // volume profiles (computed by renderConfig, painted on the overlay)
     if (vprofiles.length && anchorSeries) {
@@ -1136,6 +1245,28 @@ async function boot() {
   };
   const mkEye = (hidden, onToggle) =>
     mkBtn(hidden ? "🚫" : "👁", "btn-eye" + (hidden ? " off" : ""), onToggle, hidden ? "Afficher" : "Masquer");
+  const mkNum = (value, onChange, opts = {}) => {
+    const inp = document.createElement("input");
+    inp.type = "number";
+    inp.className = "studio-num strat-num";
+    if (opts.step != null) inp.step = opts.step;
+    inp.value = value;
+    inp.addEventListener("change", () => onChange(Number(inp.value)));
+    return inp;
+  };
+  const mkCheck = (checked, onChange, title) => {
+    const inp = document.createElement("input");
+    inp.type = "checkbox";
+    inp.className = "strat-check";
+    inp.checked = !!checked;
+    if (title) inp.title = title;
+    inp.addEventListener("change", () => onChange(inp.checked));
+    return inp;
+  };
+  // Named strategies (saved from the Stratégie panel, reusable on any asset).
+  const LS_STRATS = "chog-strategies-v1";
+  const loadStrats = () => { try { return JSON.parse(localStorage.getItem(LS_STRATS)) || []; } catch { return []; } };
+  const saveStrats = (l) => localStorage.setItem(LS_STRATS, JSON.stringify(l));
   const update = () => { persist(); renderRail(); renderChart(); };
 
   // ---- toolbar ----
@@ -1238,6 +1369,12 @@ async function boot() {
       renderToolbar();
       renderChart();
     }, "Afficher/masquer les jalons du Journal sur ce graphe"));
+    right.append(mkBtn(state.showSignals !== false ? "📍 Signaux ✓" : "📍 Signaux", "btn-ghost" + (state.showSignals !== false ? " on" : ""), () => {
+      state.showSignals = state.showSignals === false;
+      persist();
+      renderToolbar();
+      renderChart();
+    }, "Afficher/masquer les signaux de la stratégie — achat (vert) / vente (rouge) — configurée dans le rail à gauche"));
     right.append(mkBtn("🚩+", "btn-ghost", () => {
       const date = prompt("Date du jalon (YYYY-MM-DD) :", new Date().toISOString().slice(0, 10));
       if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
@@ -1390,6 +1527,241 @@ async function boot() {
 
       rail.append(wrap);
     });
+
+    // ---- Stratégie : moteur de signaux configurable + simulation ----
+    // Buy on SMA(div) crossing UP the borne haute, sell on crossing DOWN the
+    // borne basse, gated by user-picked indicator conditions; capital
+    // compounded through the round-trips. Saved strategies apply to whatever
+    // asset the chart's first series shows.
+    {
+      const strat = state.strat;
+      const touch = () => { state.stratPreset = "custom"; update(); };
+      const labRow = (label, ...els) => {
+        const r = document.createElement("div");
+        r.className = "rail-row strat-row";
+        const l = document.createElement("span");
+        l.className = "strat-lbl";
+        l.textContent = label;
+        r.append(l, ...els);
+        return r;
+      };
+
+      const stHead = document.createElement("div");
+      stHead.className = "rail-head";
+      stHead.innerHTML = "<span>Stratégie 📍</span>";
+      rail.append(stHead);
+
+      // preset / saved-strategy selector
+      const presetOpts = [
+        ...STRAT_PRESETS.map((p) => [p.id, p.label]),
+        ...loadStrats().map((s) => ["saved:" + s.name, "💾 " + s.name]),
+        ["custom", "Personnalisé"],
+      ];
+      const presetRow = document.createElement("div");
+      presetRow.className = "rail-row";
+      presetRow.append(mkSelect(presetOpts, state.stratPreset || "custom", (v) => {
+        if (v === "custom") { state.stratPreset = "custom"; update(); return; }
+        if (v.startsWith("saved:")) {
+          const s = loadStrats().find((x) => x.name === v.slice(6));
+          if (s) state.strat = normStrat(structuredClone(s.strat));
+        } else {
+          const p = STRAT_PRESETS.find((x) => x.id === v);
+          if (p) state.strat = normStrat(p.strat());
+        }
+        state.stratPreset = v;
+        update();
+      }, "studio-select rail-metric"));
+      if ((state.stratPreset || "").startsWith("saved:")) {
+        presetRow.append(mkBtn("🗑", "btn-x", () => {
+          saveStrats(loadStrats().filter((x) => x.name !== state.stratPreset.slice(6)));
+          state.stratPreset = "custom";
+          update();
+        }, "Supprimer cette stratégie sauvegardée"));
+      }
+      rail.append(presetRow);
+
+      // trigger: divergence smoothing (EMA/SMA + period) then the two bounds
+      rail.append(labRow(
+        "Divergence lissée",
+        mkSelect([["ema", "EMA"], ["sma", "SMA"]], strat.divType, (v) => { strat.divType = v; touch(); }, "studio-select studio-mini strat-op"),
+        mkNum(strat.divPeriod, (v) => { strat.divPeriod = Math.max(2, v || 9); touch(); })
+      ));
+      rail.append(labRow("Achat : franchit ↑", mkNum(strat.buyLevel, (v) => { strat.buyLevel = Number.isFinite(v) ? v : 0; touch(); }, { step: 0.5 })));
+      rail.append(labRow("Vente : franchit ↓", mkNum(strat.sellLevel, (v) => { strat.sellLevel = Number.isFinite(v) ? v : 0; touch(); }, { step: 0.5 })));
+
+      // gating conditions (buy side, sell side)
+      const condList = (title, key) => {
+        const head = document.createElement("div");
+        head.className = "strat-sub";
+        head.innerHTML = `<span>${title}</span>`;
+        head.append(mkBtn("+ condition", "rail-add", () => { strat[key].push({ ind: "rsi", op: "<", val: 50, join: "and" }); touch(); }));
+        rail.append(head);
+        strat[key].forEach((c, i) => {
+          const r = document.createElement("div");
+          r.className = "rail-row strat-cond";
+          // connector to the previous condition (the first one has none)
+          if (i > 0) {
+            r.append(mkSelect([["and", "ET"], ["or", "OU"]], c.join === "or" ? "or" : "and", (v) => { c.join = v; touch(); }, "studio-select studio-mini strat-join"));
+          }
+          r.append(mkSelect(Object.entries(COND_SOURCES).map(([k, s]) => [k, s.label]), c.ind, (v) => {
+            c.ind = v;
+            const def = COND_SOURCES[v].period;
+            if (def) c.period = c.period || def; else delete c.period;
+            touch();
+          }, "studio-select strat-ind"));
+          // parameterised sources (SMA/EMA) carry their own period
+          if (COND_SOURCES[c.ind].period) {
+            const per = mkNum(c.period ?? COND_SOURCES[c.ind].period, (v) => { c.period = Math.max(2, v || COND_SOURCES[c.ind].period); touch(); });
+            per.classList.add("strat-per");
+            per.title = "Période de la moyenne";
+            r.append(per);
+          }
+          r.append(mkSelect([["<", "<"], [">", ">"]], c.op, (v) => { c.op = v; touch(); }, "studio-select studio-mini strat-op"));
+          r.append(mkNum(c.val, (v) => { c.val = Number.isFinite(v) ? v : 0; touch(); }, { step: "any" }));
+          r.append(mkBtn("✕", "btn-x", () => { strat[key].splice(i, 1); touch(); }));
+          rail.append(r);
+          // Second line: WHICH asset the indicator is read from. Empty = the
+          // charted asset; another symbol = cross-asset filter (e.g. buy PENGU
+          // only while BTC's RSI > 50 — the market-regime gate).
+          const ar = document.createElement("div");
+          ar.className = "rail-row strat-cond-asset";
+          const al = document.createElement("span");
+          al.className = "strat-lbl";
+          al.textContent = "↳ sur";
+          ar.append(al, mkSelect(
+            [["", "cet actif"], ...assets.map((x) => [x.symbol, x.symbol])],
+            c.sym || "", (v) => { if (v) c.sym = v; else delete c.sym; touch(); }, "studio-select strat-ind"
+          ));
+          // Timeframe the indicator is computed on: daily, weekly or monthly
+          // bars (a weekly RSI14 spans 14 weeks). Reads the last CLOSED bar.
+          ar.append(mkSelect(
+            [["D", "Jour"], ["W", "Sem."], ["M", "Mois"]],
+            c.tf || "D", (v) => { if (v === "D") delete c.tf; else c.tf = v; touch(); },
+            "studio-select studio-mini strat-tf"
+          ));
+          rail.append(ar);
+        });
+        if (!strat[key].length) {
+          const e = document.createElement("div");
+          e.className = "rail-hint";
+          e.textContent = "aucune — le franchissement suffit";
+          rail.append(e);
+        } else if (strat[key].some((c, i) => i > 0 && c.join === "or")) {
+          const e = document.createElement("div");
+          e.className = "rail-hint";
+          e.textContent = "ET prioritaire sur OU : « A ET B OU C » = « (A ET B) OU C ».";
+          rail.append(e);
+        }
+      };
+      condList("Conditions d'achat", "buyConds");
+      condList("Conditions de vente", "sellConds");
+
+      // ---- money management : fractionner les entrées/sorties ----
+      const mmHead = document.createElement("div");
+      mmHead.className = "strat-sub";
+      mmHead.innerHTML = "<span>Money management</span>";
+      rail.append(mmHead);
+      rail.append(labRow("Achat : % du cash dispo", mkNum(strat.buyPct, (v) => { strat.buyPct = Math.min(100, Math.max(1, v || 100)); touch(); })));
+      rail.append(labRow("Vente : % de la position", mkNum(strat.sellPct, (v) => { strat.sellPct = Math.min(100, Math.max(1, v || 100)); touch(); })));
+      rail.append(labRow("Lisser l'achat (tant que valide)", mkCheck(strat.scaleIn, (v) => { strat.scaleIn = v; touch(); }, "Continue d'acheter les jours suivants tant que la ligne reste au-dessus de la borne et que les conditions d'achat tiennent")));
+      rail.append(labRow("Lisser la vente (tant que valide)", mkCheck(strat.scaleOut, (v) => { strat.scaleOut = v; touch(); }, "Continue d'alléger tant que la ligne reste sous la borne et que les conditions de vente tiennent")));
+      if (strat.scaleIn || strat.scaleOut) {
+        rail.append(labRow("Cadence (jours)", mkNum(strat.scaleEvery, (v) => { strat.scaleEvery = Math.max(1, v || 1); touch(); })));
+        rail.append(labRow("Max tranches / épisode", mkNum(strat.maxTranches, (v) => { strat.maxTranches = Math.max(1, v || 3); touch(); })));
+      }
+      rail.append(labRow("Ne pas moyenner à la baisse", mkCheck(strat.noAvgDown, (v) => { strat.noAvgDown = v; touch(); }, "Refuse tout achat sous le prix de revient de la position en cours — garde la 1re entrée d'une baisse, bloque les rachats de plus en plus bas")));
+      rail.append(labRow("Délai min entre 2 achats (j)", mkNum(strat.buyCooldown, (v) => { strat.buyCooldown = Math.max(0, v || 0); touch(); })));
+
+      rail.append(labRow("Investissement ($)", mkNum(strat.capital, (v) => { strat.capital = v > 0 ? v : 1000; update(); })));
+
+      // simulation results on the charted asset
+      const asset = bySym[state.series[0]?.sym];
+      const res = document.createElement("div");
+      res.className = "strat-results";
+      const pctS = (v, dec = 1) => (v == null ? "—" : (v >= 0 ? "+" : "") + (v * 100).toFixed(dec) + "%");
+      const money = (v) => (v == null ? "—" : Math.round(v).toLocaleString("fr-FR") + " $");
+      if (asset?.divergence?.length) {
+        const bt = stratBacktest(asset, strat, bySym);
+        let html = `<div class="strat-res-title">Résultats · ${asset.symbol} (historique complet)</div>`;
+        if (!bt.nBuys) {
+          html += `<div class="rail-hint">Aucun achat déclenché — élargis les bornes ou retire une condition.</div>`;
+        } else {
+          html += `<div class="strat-res-grid">
+            <span>Tranches achat / vente</span><b>${bt.nBuys} / ${bt.sells.length}</b>
+            <span>Ventes gagnantes</span><b>${bt.win != null ? Math.round(bt.win * 100) + "%" : "—"}</b>
+            <span>Médiane / vente</span><b>${pctS(bt.med)}</b>
+            <span>Perf. cumulée</span><b class="${bt.cum >= 0 ? "up" : "down"}">${pctS(bt.cum, 0)}</b>
+            <span>Capital ${money(bt.capital)}</span><b class="${bt.equityFinal >= bt.capital ? "up" : "down"}">→ ${money(bt.equityFinal)}</b>
+            <span>Achat-conservation</span><b>${pctS(bt.bh, 0)}</b>
+            <span>Max drawdown</span><b>${pctS(bt.maxDD, 0)}</b>
+            <span>Exposition</span><b>${bt.exposure != null ? Math.round(bt.exposure * 100) + "%" : "—"}</b>
+          </div>`;
+          if (bt.open) html += `<div class="strat-open">Position ouverte : ${money(bt.open.value)} (${pctS(bt.open.ret)} latent) + ${money(bt.cash)} en cash</div>`;
+        }
+        if (bt.missing.length) html += `<div class="strat-warn">⚠ Sans données : ${bt.missing.join(", ")} — cette condition bloque tout signal.</div>`;
+        res.innerHTML = html;
+      } else {
+        res.innerHTML = `<div class="rail-hint">Pas de divergence calculable sur cet actif (mentions insuffisantes).</div>`;
+      }
+      rail.append(res);
+
+      // same strategy on every asset (where does this config actually work?)
+      rail.append(mkBtn((state.stratAll ? "▼" : "▶") + " Tester sur tous les actifs", "rail-add strat-allbtn", () => {
+        state.stratAll = !state.stratAll;
+        update();
+      }));
+      if (state.stratAll) {
+        const tbl = document.createElement("table");
+        tbl.className = "strat-table";
+        tbl.innerHTML = "<thead><tr><th>Actif</th><th>A/V</th><th>Win</th><th>Cumul</th></tr></thead>";
+        const tb = document.createElement("tbody");
+        const rows = assets
+          .filter((a) => a.divergence?.length)
+          .map((a) => ({ sym: a.symbol, bt: stratBacktest(a, strat, bySym) }))
+          .filter((r) => r.bt.nBuys)
+          .sort((x, y) => y.bt.cum - x.bt.cum);
+        for (const r of rows) {
+          const tr = document.createElement("tr");
+          if (r.bt.open) tr.title = "◦ position encore ouverte — le cumul inclut du latent, pas un résultat validé";
+          tr.innerHTML = `<td>${r.sym}</td><td>${r.bt.nBuys}/${r.bt.sells.length}</td><td>${r.bt.win != null ? Math.round(r.bt.win * 100) + "%" : "—"}</td>`
+            + `<td class="${r.bt.cum >= 0 ? "up" : "down"}">${pctS(r.bt.cum, 0)}${r.bt.open ? "◦" : ""}</td>`;
+          tb.append(tr);
+        }
+        tbl.append(tb);
+        rail.append(tbl);
+        if (!rows.length) {
+          const e = document.createElement("div");
+          e.className = "rail-hint";
+          e.textContent = "Aucun actif ne déclenche cette configuration.";
+          rail.append(e);
+        }
+      }
+
+      // save as a named strategy
+      const saveRow = document.createElement("div");
+      saveRow.className = "rail-row strat-save";
+      const nameInp = document.createElement("input");
+      nameInp.type = "text";
+      nameInp.placeholder = "nom de la stratégie…";
+      nameInp.className = "strat-name";
+      nameInp.value = (state.stratPreset || "").startsWith("saved:") ? state.stratPreset.slice(6) : "";
+      saveRow.append(nameInp);
+      saveRow.append(mkBtn("💾 Sauvegarder", "rail-add", () => {
+        const name = nameInp.value.trim();
+        if (!name) { nameInp.focus(); return; }
+        const list = loadStrats().filter((x) => x.name !== name);
+        list.push({ name, strat: structuredClone(strat) });
+        saveStrats(list);
+        state.stratPreset = "saved:" + name;
+        update();
+      }, "Sauvegarde cette configuration — réapplicable sur n'importe quel actif via le sélecteur"));
+      rail.append(saveRow);
+
+      const stHint = document.createElement("div");
+      stHint.className = "rail-hint";
+      stHint.textContent = "La stratégie s'applique à la 1ʳᵉ série du graphe — change d'actif pour tester la même config ailleurs.";
+      rail.append(stHint);
+    }
 
     const note = document.createElement("div");
     note.className = "rail-note";

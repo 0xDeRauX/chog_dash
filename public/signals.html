@@ -36,6 +36,26 @@
     </section>
 
     <section class="card">
+      <div class="card-head"><h2>④ Divergence confirmée — signal d'entrée</h2></div>
+      <p class="card-sub"><b>Divergence lissée (SMA 7j) + confirmation RSI.</b> Le backtest montre que le <b>niveau</b> de divergence ne prédit rien (IC ≈ 0), mais le <b>franchissement</b> de +2 par le bas <b>quand le RSI confirme (&gt;50)</b> a payé (+9%/7j, 55-59% de réussite vs −3% de base). Sans le gate RSI, le franchissement ne vaut rien → le RSI filtre les faux positifs. <b>n=22 événements</b> : à suivre en live, pas une certitude.</p>
+
+      <h3 class="sub-h">A · Statut par actif <span class="sub-note">— où en est le setup aujourd'hui</span></h3>
+      <div class="table-scroll" id="divconf-status"></div>
+
+      <h3 class="sub-h">B · Harnais de backtest <span class="sub-note">— ajuste les bornes, la performance se recalcule</span></h3>
+      <div id="divconf-controls" class="divconf-controls"></div>
+      <div class="table-scroll" id="divconf-backtest"></div>
+
+      <h3 class="sub-h">D · Carte de chaleur (divergence 7j × RSI) <span class="sub-note">— rendement médian 30j par zone</span></h3>
+      <p class="card-sub" style="margin-top:0">Chaque case = médiane du rendement 30j des jours tombés dans cette zone (n affiché). <span style="color:var(--up)">Vert</span> = zone d'achat historique, <span style="color:var(--down)">rouge</span> = piège. Cases pâles/vides = trop peu de données.</p>
+      <div class="table-scroll" id="divconf-heatmap"></div>
+
+      <h3 class="sub-h">E · Sur quels actifs ça marche <span class="sub-note">— backtest du signal d'achat, actif par actif</span></h3>
+      <p class="card-sub" style="margin-top:0">Le même signal (réglages du harnais ci-dessus), backtesté <b>séparément par actif</b>. Colonne « Signaux » = combien de fois il s'est déclenché ; puis médiane/win du rendement à 7/14/30j. <b>Un actif est « bon » si vert sur les 3 horizons avec assez de signaux</b> — c'est là que tu peux vraiment trader la règle.</p>
+      <div class="table-scroll" id="divconf-byasset"></div>
+    </section>
+
+    <section class="card">
       <div class="card-head"><h2>Score composite CHOG</h2></div>
       <p class="card-sub">À venir (M8) — un score 0-100 pondéré des indicateurs propriétaires, <b>chacun par la qualité mesurée ci-dessus (IC)</b> plutôt que par des poids arbitraires. Se branchera ici via le registre.</p>
     </section>

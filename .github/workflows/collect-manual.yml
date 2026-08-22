@@ -109,6 +109,10 @@ jobs:
         if: env.SEL == 'all' || contains(env.SEL, 'prices')
         run: npm run collect:ton-price
 
+      - name: Collect Coin Metrics full history (BTC, ETH…)
+        if: env.SEL == 'all' || contains(env.SEL, 'prices') || contains(env.SEL, 'cm-history')
+        run: npm run collect:cm-history
+
       - name: Collect chain TVL
         if: env.SEL == 'all' || contains(env.SEL, 'tvl')
         run: npm run collect:tvl
