@@ -1,184 +1,184 @@
 {
-  "date": "2026-09-11",
+  "date": "2026-09-16",
   "results": [
     {
       "symbol": "CHOG",
-      "date": "2026-09-11",
-      "mentionCount": 969,
+      "date": "2026-09-16",
+      "mentionCount": 775,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "PEPE",
-      "date": "2026-09-11",
-      "mentionCount": 19036,
+      "date": "2026-09-16",
+      "mentionCount": 17832,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "WIF",
-      "date": "2026-09-11",
-      "mentionCount": 1306,
+      "date": "2026-09-16",
+      "mentionCount": 1240,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "BONK",
-      "date": "2026-09-11",
-      "mentionCount": 3369,
+      "date": "2026-09-16",
+      "mentionCount": 2289,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "BRETT",
-      "date": "2026-09-11",
-      "mentionCount": 30580,
+      "date": "2026-09-16",
+      "mentionCount": 26433,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "PENGU",
-      "date": "2026-09-11",
-      "mentionCount": 5011,
+      "date": "2026-09-16",
+      "mentionCount": 5376,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "FARTCOIN",
-      "date": "2026-09-11",
-      "mentionCount": 1654,
+      "date": "2026-09-16",
+      "mentionCount": 668,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "ANSEM",
-      "date": "2026-09-11",
-      "mentionCount": 17090,
+      "date": "2026-09-16",
+      "mentionCount": 10975,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "CASHCAT",
-      "date": "2026-09-11",
-      "mentionCount": 3348,
+      "date": "2026-09-16",
+      "mentionCount": 1687,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "BTC",
-      "date": "2026-09-11",
-      "mentionCount": 105635,
+      "date": "2026-09-16",
+      "mentionCount": 118480,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "ETH",
-      "date": "2026-09-11",
-      "mentionCount": 52075,
+      "date": "2026-09-16",
+      "mentionCount": 45983,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "SOL",
-      "date": "2026-09-11",
-      "mentionCount": 177528,
+      "date": "2026-09-16",
+      "mentionCount": 173847,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "GRAM",
-      "date": "2026-09-11",
-      "mentionCount": 55219,
+      "date": "2026-09-16",
+      "mentionCount": 57455,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "UTYA",
-      "date": "2026-09-11",
-      "mentionCount": 126,
+      "date": "2026-09-16",
+      "mentionCount": 106,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "GROYP",
-      "date": "2026-09-11",
-      "mentionCount": 238,
+      "date": "2026-09-16",
+      "mentionCount": 288,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "GRAMMING",
-      "date": "2026-09-11",
+      "date": "2026-09-16",
       "mentionCount": 10,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "BUDDY",
-      "date": "2026-09-11",
-      "mentionCount": 41561,
+      "date": "2026-09-16",
+      "mentionCount": 42332,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "TELECLAW",
-      "date": "2026-09-11",
-      "mentionCount": 27,
+      "date": "2026-09-16",
+      "mentionCount": 1,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "CHERRY",
-      "date": "2026-09-11",
-      "mentionCount": 24975,
+      "date": "2026-09-16",
+      "mentionCount": 25753,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "XRP",
-      "date": "2026-09-11",
-      "mentionCount": 24221,
+      "date": "2026-09-16",
+      "mentionCount": 38485,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "SUI",
-      "date": "2026-09-11",
-      "mentionCount": 11796,
+      "date": "2026-09-16",
+      "mentionCount": 12407,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "MON",
-      "date": "2026-09-11",
-      "mentionCount": 64855,
+      "date": "2026-09-16",
+      "mentionCount": 68967,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "HYPE",
-      "date": "2026-09-11",
-      "mentionCount": 43087,
+      "date": "2026-09-16",
+      "mentionCount": 42932,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "TAO",
-      "date": "2026-09-11",
-      "mentionCount": 84903,
+      "date": "2026-09-16",
+      "mentionCount": 87245,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "AKT",
-      "date": "2026-09-11",
-      "mentionCount": 808,
+      "date": "2026-09-16",
+      "mentionCount": 845,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "STRK",
-      "date": "2026-09-11",
-      "mentionCount": 1340,
+      "date": "2026-09-16",
+      "mentionCount": 3656,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "ZEC",
-      "date": "2026-09-11",
-      "mentionCount": 12410,
+      "date": "2026-09-16",
+      "mentionCount": 13458,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "ONDO",
-      "date": "2026-09-11",
-      "mentionCount": 2231,
+      "date": "2026-09-16",
+      "mentionCount": 2227,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "XMR",
-      "date": "2026-09-11",
-      "mentionCount": 1636,
+      "date": "2026-09-16",
+      "mentionCount": 1843,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     },
     {
       "symbol": "NEAR",
-      "date": "2026-09-11",
-      "mentionCount": 61958,
+      "date": "2026-09-16",
+      "mentionCount": 65918,
       "collectedAt": "2026-09-17T11:57:41.927Z"
     }
   ]
