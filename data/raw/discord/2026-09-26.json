@@ -1,0 +1,96 @@
+{
+  "date": "2026-09-26",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "invite": "chog",
+      "memberCount": 42527,
+      "onlineCount": 1529,
+      "guildName": "Chog"
+    },
+    {
+      "symbol": "BONK",
+      "invite": "qaQa6M6mN2",
+      "memberCount": 32897,
+      "onlineCount": 1842,
+      "guildName": "Bonk"
+    },
+    {
+      "symbol": "PENGU",
+      "invite": "pudgypenguins",
+      "memberCount": 160121,
+      "onlineCount": 8952,
+      "guildName": "Pudgy Penguins"
+    },
+    {
+      "symbol": "ETH",
+      "invite": "ethereum-org",
+      "memberCount": 45409,
+      "onlineCount": 1942,
+      "guildName": "ethereum.org"
+    },
+    {
+      "symbol": "SOL",
+      "invite": "solana",
+      "memberCount": 149044,
+      "onlineCount": 6000,
+      "guildName": "Solana Tech"
+    },
+    {
+      "symbol": "XRP",
+      "invite": "xrpl",
+      "memberCount": 16704,
+      "onlineCount": 887,
+      "guildName": "XRP Ledger"
+    },
+    {
+      "symbol": "SUI",
+      "invite": "sui",
+      "memberCount": 887972,
+      "onlineCount": 12230,
+      "guildName": "Sui"
+    },
+    {
+      "symbol": "MON",
+      "invite": "monad",
+      "memberCount": 624439,
+      "onlineCount": 12118,
+      "guildName": "Monad"
+    },
+    {
+      "symbol": "HYPE",
+      "invite": "hyperliquid",
+      "memberCount": 91353,
+      "onlineCount": 10399,
+      "guildName": "Hyperliquid"
+    },
+    {
+      "symbol": "AKT",
+      "invite": "akash",
+      "memberCount": 24737,
+      "onlineCount": 1116,
+      "guildName": "Akash Network Devs"
+    },
+    {
+      "symbol": "ZEC",
+      "invite": "zcash",
+      "memberCount": 9095,
+      "onlineCount": 688,
+      "guildName": "Zcash"
+    },
+    {
+      "symbol": "ONDO",
+      "invite": "ondofinance",
+      "memberCount": 16155,
+      "onlineCount": 1394,
+      "guildName": "Ondo Finance"
+    },
+    {
+      "symbol": "NEAR",
+      "invite": "nearprotocol",
+      "memberCount": 75072,
+      "onlineCount": 2270,
+      "guildName": "NEAR"
+    }
+  ]
+}
