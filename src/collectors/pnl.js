@@ -62,6 +62,7 @@ function loadState(sym) {
       lastBlock: s.lastBlock || 0,
       lastDate: s.lastDate || null,
       realized: s.realized || [0, 0],
+      caughtUp: s.caughtUp ?? true,
       series: s.series || null,
       pools: new Set(s.pools || []),
       distributors: new Set(s.distributors || []),
@@ -69,7 +70,7 @@ function loadState(sym) {
       wallets: new Map(Object.entries(s.wallets || {}).map(([a, [b, c]]) => [a, [BigInt(b), c]])),
     };
   } catch {
-    return { lastBlock: 0, lastDate: null, realized: [0, 0], series: null, pools: new Set(), distributors: new Set(), wallets: new Map() };
+    return { lastBlock: 0, lastDate: null, realized: [0, 0], caughtUp: false, series: null, pools: new Set(), distributors: new Set(), wallets: new Map() };
   }
 }
 function saveState(sym, st) {
@@ -80,6 +81,7 @@ function saveState(sym, st) {
     lastBlock: st.lastBlock,
     lastDate: st.lastDate,
     realized: st.realized,
+    caughtUp: st.caughtUp,
     series: st.series,
     pools: [...st.pools],
     distributors: [...st.distributors],
@@ -363,6 +365,7 @@ export async function collectPnl(asset, { deadline = null } = {}) {
   if (caughtUp && curDate && curDate < today) { flushDay(curDate); curDate = null; }
   st.lastDate = curDate;
   st.realized = [realizedToday, realizedBigToday];
+  st.caughtUp = caughtUp;
   series.sort((a, b) => a.date.localeCompare(b.date));
   saveState(asset.symbol, st);
 

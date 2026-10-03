@@ -12,7 +12,13 @@ const budgetMin = Number(process.env.LEDGER_BUDGET_MIN) || 45;
 const deadline = Date.now() + budgetMin * 60_000;
 let failed = 0;
 
-for (const asset of ASSETS.filter((a) => ledgerCfg(a) && (!only || only.has(a.symbol)))) {
+// Smallest ledgers first so a shared budget finishes them before the long
+// first indexes (PEPE ~1h, BRETT ~2h) take the rest.
+const ORDER = ["CHOG", "ONDO", "CASHCAT", "PEPE", "BRETT"];
+const rank = (a) => (ORDER.includes(a.symbol) ? ORDER.indexOf(a.symbol) : ORDER.length);
+const targets = ASSETS.filter((a) => ledgerCfg(a) && (!only || only.has(a.symbol))).sort((a, b) => rank(a) - rank(b));
+
+for (const asset of targets) {
   if (Date.now() > deadline) { console.log(`${asset.symbol}: budget épuisé — reprise au prochain run`); continue; }
   try {
     const t0 = Date.now();

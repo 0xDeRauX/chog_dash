@@ -39,7 +39,11 @@ for (const src of ["discord", "tradeflow"]) if (!read(`${src}/${today}.json`)) p
 for (const a of ASSETS) {
   const pnl = read(`pnl/${a.symbol}.json`);
   if (ledgerCfg(a)) {
-    if (pnl?.source !== "ledger" && a.symbol !== "CHOG") { notes.push(`${a.symbol}: grand livre en cours d'indexation (série publiée = ancienne)`); continue; }
+    // first index spread over several runs: not a failure while it catches up
+    let st = null;
+    try { st = JSON.parse(fs.readFileSync(path.resolve(`data/pnl-state/${a.symbol}.json`), "utf8")); } catch { /* no cache */ }
+    if (st && st.caughtUp === false) { notes.push(`${a.symbol}: grand livre en cours d'indexation (bloc ${st.lastBlock})`); continue; }
+    if (pnl?.source !== "ledger" && a.symbol !== "CHOG") { notes.push(`${a.symbol}: grand livre pas encore démarré (série publiée = ancienne)`); continue; }
     if (!pnl?.indexedToDate || pnl.indexedToDate < dayShift(-2)) problems.push(`${a.symbol}: grand livre au ${pnl?.indexedToDate ?? "—"}`);
   } else if (a.chain === "solana" && a.holders?.source === "solana") {
     if (pnl?.indexedToDate !== today) problems.push(`${a.symbol}: grand livre Solana au ${pnl?.indexedToDate ?? "—"}`);
