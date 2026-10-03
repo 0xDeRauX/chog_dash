@@ -1,15 +1,32 @@
-// Daily holder-PnL replay for assets with a full transfer ledger (CHOG).
-// Incremental: only new blocks are folded; the first run indexes everything.
-// Usage: npm run collect:pnl
+// Daily holder-PnL replay for every asset with a full transfer ledger: CHOG
+// (Monad) + PEPE/ONDO (Ethereum) + BRETT (Base). Incremental: only new blocks
+// are folded. A first index can take hours (5 req/min), so the run has a time
+// budget (LEDGER_BUDGET_MIN, default 45) shared by all ledgers — whatever is
+// left resumes on the next run from the cached state.
+// Usage: npm run collect:pnl [SYM1,SYM2]
 import { ASSETS } from "../src/config.js";
-import { collectPnl } from "../src/collectors/pnl.js";
+import { collectPnl, ledgerCfg } from "../src/collectors/pnl.js";
 
-for (const asset of ASSETS.filter((a) => a.holders?.source === "thirdweb")) {
+const only = process.argv[2] ? new Set(process.argv[2].split(",")) : null;
+const budgetMin = Number(process.env.LEDGER_BUDGET_MIN) || 45;
+const deadline = Date.now() + budgetMin * 60_000;
+let failed = 0;
+
+for (const asset of ASSETS.filter((a) => ledgerCfg(a) && (!only || only.has(a.symbol)))) {
+  if (Date.now() > deadline) { console.log(`${asset.symbol}: budget épuisé — reprise au prochain run`); continue; }
   try {
-    const r = await collectPnl(asset);
-    console.log(`${asset.symbol}: ${r.events} nouveaux transferts (${r.calls} appels) → ${r.days} jours agrégés, ${r.pools} pools exclus`);
-    if (r.last) console.log(`  dernier jour ${r.last.date}: ${r.last.holders} holders, ${r.last.pctInProfit}% en gain, réalisé $${r.last.realizedUsd}`);
+    const t0 = Date.now();
+    const r = await collectPnl(asset, { deadline });
+    const dt = ((Date.now() - t0) / 60000).toFixed(1);
+    if (!r.caughtUp) {
+      console.log(`${asset.symbol}: indexation en cours — bloc ${r.progressBlock}/${r.head} (${((r.progressBlock / r.head) * 100).toFixed(1)}%), ${r.events} transferts, ${r.calls} appels, ${dt} min · jour courant ${r.last?.date ?? "—"}`);
+      continue;
+    }
+    console.log(`${asset.symbol}: ${r.events} nouveaux transferts (${r.calls} appels, ${dt} min) → ${r.days} jours agrégés, ${r.pools} pools exclus`);
+    if (r.last) console.log(`  dernier jour ${r.last.date}: ${r.last.holdersOnchain ?? r.last.holders} holders, ${r.last.pctInProfit}% en gain, réalisé $${r.last.realizedUsd}`);
   } catch (err) {
+    failed++;
     console.error(`${asset.symbol}: ${err.message}`);
   }
 }
+if (failed) process.exit(1);

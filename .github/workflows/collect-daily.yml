@@ -30,31 +30,47 @@ jobs:
       - run: npm ci
 
       - name: Discover chain radar (Monad + Robinhood + Base)
+        id: radar
+        continue-on-error: true
         run: npm run collect:radar
 
       - name: Collect X mentions
+        id: mentions
+        continue-on-error: true
         env:
           X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
         run: npm run collect:mentions
 
       - name: Collect prices
+        id: prices
+        continue-on-error: true
         run: npm run collect:prices
 
       - name: Collect on-chain TON prices (tonapi, full history)
+        id: ton_price
+        continue-on-error: true
         run: npm run collect:ton-price
 
       # Free Coin Metrics community API (no key): full life-of-asset price,
       # volume, market cap, holders and the % en gain proxy for BTC/ETH/XRP/ZEC.
       - name: Collect Coin Metrics full history (BTC, ETH…)
+        id: cm_history
+        continue-on-error: true
         run: npm run collect:cm-history
 
       - name: Collect chain TVL
+        id: tvl
+        continue-on-error: true
         run: npm run collect:tvl
 
       - name: Collect Discord members
+        id: discord
+        continue-on-error: true
         run: npm run collect:discord
 
       - name: Collect Telegram members
+        id: telegram
+        continue-on-error: true
         run: npm run collect:telegram
 
       # Persist the on-chain holder balance ledger between runs (outside the
@@ -70,6 +86,8 @@ jobs:
             chog-ledger-v2-
 
       - name: Collect holders
+        id: holders
+        continue-on-error: true
         env:
           THIRDWEB_SECRET_KEY: ${{ secrets.THIRDWEB_SECRET_KEY }}
           HYPERSYNC_API_KEY: ${{ secrets.HYPERSYNC_API_KEY }}
@@ -79,31 +97,28 @@ jobs:
         run: npm run collect:holders
 
       - name: Collect trade flow (buy/sell volume)
+        id: tradeflow
+        continue-on-error: true
         run: npm run collect:tradeflow
 
       # After prices (cost basis needs the day's price) and holders (shares the
       # cached state directory). Incremental: only new blocks are folded.
-      - name: Replay holder PnL ledger (CHOG)
+      # (Dune PnL steps removed Oct 2026 — accounts suspended; EVM memes now
+      # run through this ledger, Solana memes through the holders scan.)
+      - name: Holder ledgers — CHOG, PEPE, ONDO, BRETT (HyperRPC)
+        id: ledger
+        continue-on-error: true
         env:
           THIRDWEB_SECRET_KEY: ${{ secrets.THIRDWEB_SECRET_KEY }}
           HYPERSYNC_API_KEY: ${{ secrets.HYPERSYNC_API_KEY }}
+          # first index of the EVM ledgers takes hours at 5 req/min: spread it
+          # over several daily runs (state cached), then ~1 min/day
+          LEDGER_BUDGET_MIN: "45"
         run: npm run collect:pnl
 
-      - name: Solana holder PnL (Dune)
-        env:
-          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
-          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
-          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
-        run: npm run collect:solana-pnl
-
-      - name: EVM holder PnL (Dune)
-        env:
-          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
-          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
-          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
-        run: npm run collect:evm-pnl
-
       - name: TON jetton % en gain (toncenter)
+        id: ton_pnl
+        continue-on-error: true
         env:
           TONCENTER_API_KEY: ${{ secrets.TONCENTER_API_KEY }}
         run: npm run collect:ton-pnl
@@ -140,3 +155,15 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # Collectors run with continue-on-error so one dead source no longer
+      # skips every later step (2026-09-29 / 10-01: a CoinGecko hiccup lost the
+      # whole day). This step turns the run RED afterwards when a collector
+      # failed or a source stopped producing fresh data — the data that did
+      # arrive is already committed and deployed.
+      - name: Health check (failed collectors + stale sources)
+        if: always()
+        env:
+          STEPS_JSON: ${{ toJSON(steps) }}
+        run: node scripts/check-health.js
+

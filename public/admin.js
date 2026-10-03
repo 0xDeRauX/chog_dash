@@ -25,21 +25,23 @@ const ONCHAIN_FLOW = new Set(["CHOG","PEPE","WIF","BONK","BRETT","PENGU","FARTCO
 // Known structural absences — an empty series here is EXPECTED, not a bug.
 function structuralReason(a, famId) {
   const sym = a.symbol;
-  const TIER_OK = ["CHOG", "WIF", "BONK", "PENGU", "FARTCOIN", "ANSEM", "PEPE", "BRETT", "ONDO",
+  const TIER_OK = ["CHOG", "WIF", "BONK", "PENGU", "FARTCOIN", "ANSEM", "PEPE", "BRETT", "ONDO", "CASHCAT",
     "UTYA", "GROYP", "GRAMMING", "BUDDY", "TELECLAW", "CHERRY"];
   if (famId === "tvl" && a.chain === "akash") return "réseau DePIN — pas de TVL DeFi";
   if (famId === "tvl" && ["monero", "bitcoin", "xrp"].includes(a.chain)) return "pas de DeFi/TVL sur cette chaîne";
   if (famId === "holders" && sym === "STRK") return "compte de holders Starknet sans source gratuite (Voyager/Starkscan sur clé)";
   if (famId === "holders" && sym === "NEAR") return "~300M comptes app/spam (SWEAT…) à solde nul — non comparable aux holders à solde, volontairement omis";
   if (famId === "holders" && sym === "XMR") return "coin privée — soldes masqués, pas de compte de holders";
+  if (famId === "holders" && sym === "GRAM") return "TON natif — pas de compte de holders gratuit (un TON wrappé sur Ethereum fausserait la base)";
 
   if (famId === "tradeflow" && !ONCHAIN_FLOW.has(sym)) return "pas de trading on-chain DEX représentatif (dominé par les CEX) — omis pour rester 100% on-chain";
   if (famId === "holders" && ["SOL", "MON"].includes(sym)) return "pas de source gratuite (SOL flou · MON trop récent)";
-  if (famId === "tiers" && !TIER_OK.includes(sym)) return "nécessite le scan complet des soldes (CHOG + memes Solana + tokens EVM via Dune)";
+  if (famId === "holders" && sym === "SUI") return "Blockvision est passé en offre Pro (oct. 2026) — plus de source gratuite";
+  if (famId === "tiers" && !TIER_OK.includes(sym)) return "nécessite le scan complet des soldes (grands livres EVM, scan Solana, jettons TON)";
   if (famId === "flows" && sym !== "CHOG") return "grand livre CHOG uniquement";
-  if (famId === "pnl" && !["CHOG","WIF","BONK","PENGU","FARTCOIN","ANSEM","PEPE","BRETT","ONDO","UTYA","GROYP","GRAMMING","BUDDY","TELECLAW","CHERRY"].includes(sym)) return "reconstruction du coût d'entrée — CHOG (grand livre) + memes Solana + EVM (Dune) + jettons TON (toncenter)";
+  if (famId === "pnl" && !["CHOG","WIF","BONK","PENGU","FARTCOIN","ANSEM","PEPE","BRETT","ONDO","CASHCAT","UTYA","GROYP","GRAMMING","BUDDY","TELECLAW","CHERRY"].includes(sym)) return "reconstruction du coût d'entrée — grands livres on-chain (CHOG/PEPE/ONDO/BRETT/CASHCAT via HyperRPC, memes Solana en avant, jettons TON via toncenter)";
   if (famId === "discord") return "pas de serveur Discord officiel connu";
-  if (famId === "telegram") return "pas de canal Telegram référencé (CoinGecko)";
+  if (famId === "telegram") return "pas de canal Telegram officiel vérifié (CoinGecko a retiré ses données Telegram en août 2026)";
   return null;
 }
 

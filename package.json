@@ -20,15 +20,11 @@
     "collect:tradeflow": "node scripts/collect-tradeflow.js",
     "collect:radar": "node scripts/collect-chainradar.js",
     "collect:pnl": "node scripts/collect-pnl.js",
-    "backfill:prices-dune": "node scripts/backfill-prices-dune.js",
-    "collect:solana-pnl": "node scripts/collect-solana-pnl.js",
-    "backfill:solana-pnl-hist": "node scripts/backfill-solana-pnl-history.js",
-    "collect:evm-pnl": "node scripts/collect-evm-pnl.js",
-    "backfill:evm-pnl-hist": "node scripts/backfill-evm-pnl-history.js",
     "collect:gt-prices": "node scripts/collect-gt-prices.js",
     "collect:ton-pnl": "node scripts/collect-ton-pnl.js",
     "collect:ton-price": "node scripts/collect-ton-price.js",
-    "collect:cm-history": "node scripts/collect-coinmetrics-history.js"
+    "collect:cm-history": "node scripts/collect-coinmetrics-history.js",
+    "check:health": "node scripts/check-health.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",

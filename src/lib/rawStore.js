@@ -9,6 +9,11 @@ export function writeRaw(source, date, payload) {
   return file;
 }
 
+export function readRaw(source, date) {
+  const file = path.resolve("data/raw", source, `${date}.json`);
+  try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return null; }
+}
+
 export function todayUTC() {
   return new Date().toISOString().slice(0, 10);
 }

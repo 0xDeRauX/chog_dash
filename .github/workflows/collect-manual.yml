@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       collectors:
-        description: "Collecteurs à relancer (csv: radar,prices,tvl,discord,telegram,holders,tradeflow,mentions,pnl — ou all ; backfills Dune ponctuels: prices-dune, pnl-hist)"
+        description: "Collecteurs à relancer (csv: radar,prices,tvl,discord,telegram,holders,tradeflow,mentions,pnl — ou all)"
         default: "all"
         type: string
       mentions_days:
@@ -26,6 +26,10 @@ on:
       untrack:
         description: "Désactiver le suivi mentions X (csv chain:address)"
         default: ""
+        type: string
+      ledger_budget_min:
+        description: "Budget (minutes) des grands livres on-chain pour ce run — 45 par défaut ; jusqu'à 300 pour accélérer une première indexation"
+        default: "45"
         type: string
       price_history:
         description: "Backfill GRATUIT du prix (GeckoTerminal OHLCV) pour ces tokens radar (csv chain:address, ou 'tracked' pour tous les suivis)"
@@ -150,58 +154,19 @@ jobs:
         if: env.SEL == 'all' || contains(env.SEL, 'tradeflow')
         run: npm run collect:tradeflow
 
-      - name: Replay holder PnL ledger (CHOG)
+      - name: Holder ledgers — CHOG, PEPE, ONDO, BRETT, CASHCAT (HyperRPC)
         if: env.SEL == 'all' || contains(env.SEL, 'pnl')
         env:
-          THIRDWEB_SECRET_KEY: ${{ secrets.THIRDWEB_SECRET_KEY }}
           HYPERSYNC_API_KEY: ${{ secrets.HYPERSYNC_API_KEY }}
+          # manual runs may take a bigger bite of a first index (job cap 6h)
+          LEDGER_BUDGET_MIN: ${{ inputs.ledger_budget_min }}
         run: npm run collect:pnl
-
-      - name: Solana holder PnL (Dune)
-        if: env.SEL == 'all' || contains(env.SEL, 'pnl')
-        env:
-          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
-          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
-          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
-        run: npm run collect:solana-pnl
-
-      - name: EVM holder PnL (Dune)
-        if: env.SEL == 'all' || contains(env.SEL, 'pnl')
-        env:
-          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
-          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
-          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
-        run: npm run collect:evm-pnl
 
       - name: TON jetton % en gain (toncenter)
         if: env.SEL == 'all' || contains(env.SEL, 'pnl')
         env:
           TONCENTER_API_KEY: ${{ secrets.TONCENTER_API_KEY }}
         run: npm run collect:ton-pnl
-
-      - name: Backfill full price history (Dune)
-        if: contains(env.SEL, 'prices-dune')
-        env:
-          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
-          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
-          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
-        run: npm run backfill:prices-dune
-
-      - name: Backfill Solana % en gain history (Dune)
-        if: contains(env.SEL, 'pnl-hist')
-        env:
-          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
-          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
-          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
-        run: npm run backfill:solana-pnl-hist
-
-      - name: Backfill EVM % en gain + holders history (Dune)
-        if: contains(env.SEL, 'evm-pnl-hist')
-        env:
-          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
-          DUNE_API_KEY_2: ${{ secrets.DUNE_API_KEY_2 }}
-          DUNE_API_KEY_3: ${{ secrets.DUNE_API_KEY_3 }}
-        run: npm run backfill:evm-pnl-hist
 
       - name: Ingest into SQLite
         run: npm run ingest

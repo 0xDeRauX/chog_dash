@@ -126,6 +126,60 @@
       "date": "2026-09-24",
       "mentionCount": 11849,
       "collectedAt": "2026-09-30T12:54:06.588Z"
+    },
+    {
+      "symbol": "MON",
+      "date": "2026-09-24",
+      "mentionCount": 67598,
+      "collectedAt": "2026-09-28T14:19:13.482Z"
+    },
+    {
+      "symbol": "HYPE",
+      "date": "2026-09-24",
+      "mentionCount": 52251,
+      "collectedAt": "2026-09-28T14:19:13.482Z"
+    },
+    {
+      "symbol": "TAO",
+      "date": "2026-09-24",
+      "mentionCount": 86688,
+      "collectedAt": "2026-09-28T14:19:13.482Z"
+    },
+    {
+      "symbol": "AKT",
+      "date": "2026-09-24",
+      "mentionCount": 1067,
+      "collectedAt": "2026-09-28T14:19:13.482Z"
+    },
+    {
+      "symbol": "STRK",
+      "date": "2026-09-24",
+      "mentionCount": 3957,
+      "collectedAt": "2026-09-28T14:19:13.482Z"
+    },
+    {
+      "symbol": "ZEC",
+      "date": "2026-09-24",
+      "mentionCount": 13477,
+      "collectedAt": "2026-09-28T14:19:13.482Z"
+    },
+    {
+      "symbol": "ONDO",
+      "date": "2026-09-24",
+      "mentionCount": 9037,
+      "collectedAt": "2026-09-28T14:19:13.482Z"
+    },
+    {
+      "symbol": "XMR",
+      "date": "2026-09-24",
+      "mentionCount": 2778,
+      "collectedAt": "2026-09-28T14:19:13.482Z"
+    },
+    {
+      "symbol": "NEAR",
+      "date": "2026-09-24",
+      "mentionCount": 64785,
+      "collectedAt": "2026-09-28T14:19:13.482Z"
     }
   ]
 }

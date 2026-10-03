@@ -76,7 +76,7 @@ const METRICS = [
       what: "Nombre de holders dont le solde vaut <b>au moins $50</b> au prix du jour — filtre la poussière (airdrops abandonnés, restes de swaps) pour ne compter que les porteurs réels.",
       read: "Sa <b>croissance</b> compte plus que son niveau : +5%/semaine = de vrais nouveaux porteurs, pas des wallets à 3 centimes.",
       example: "CHOG affiche ~33K holders mais à peine ~920 valent ≥$50 (moins de 3%) : l'immense majorité tient des poussières — la vraie base « engagée » est bien plus mince, et c'est elle qu'il faut suivre.",
-      quality: "Disponible où l'on voit chaque solde : CHOG (grand livre), memes Solana (scan), tokens EVM PEPE/BRETT/ONDO (Dune) et jettons TON (transferts toncenter) — ces derniers avec <b>holders et ≥$50 reconstruits sur tout l'historique</b>. « — » ailleurs.",
+      quality: "Disponible où l'on voit chaque solde : CHOG (grand livre), memes Solana (scan), tokens EVM PEPE/ONDO/BRETT/CASHCAT (grand livre HyperRPC, tout l'historique) et jettons TON (transferts toncenter) — ces derniers avec <b>holders et ≥$50 reconstruits sur tout l'historique</b>. « — » ailleurs.",
     },
   },
   {
@@ -89,7 +89,7 @@ const METRICS = [
       what: "Part des <b>acheteurs</b> (coût moyen d'entrée réel, reconstruit depuis chaque transfert au prix du jour) dont le coût est inférieur au prix actuel. La <b>cohorte airdrop (coût $0) est exclue</b> — en gain par construction, elle figeait le % vers 79% en permanence.",
       read: "<b>>85%</b> = presque tous les acheteurs gagnent — zone historique de distribution (les tops se forment quand il n'y a plus personne à mettre en gain) · <b><40%</b> = majorité sous l'eau, vendeurs épuisés potentiels.",
       example: "CHOG à 90% en gain après une montée : chaque holder est tenté de prendre profit — la table des tranches dit qui (petits ×1-2 ou gros ×10+).",
-      quality: "CHOG : grand livre complet (airdrops séparés), série quotidienne réelle. Memes Solana (WIF/BONK/PENGU/FARTCOIN) et tokens EVM (PEPE/BRETT/ONDO) : <b>historique complet via Dune</b> — l'histogramme du coût d'entrée des holders actuels, projeté sur tout l'historique de prix (méthode « supply in profit »). Sur EVM le coût est pris au prix exact du transfert (plus précis). Jettons TON (UTYA/GROYP/GRAMMING/BUDDY/TELECLAW/CHERRY) : reconstruits via les transferts <b>toncenter</b> × prix (Dune n'indexe pas TON). La courbe passée reflète la cohorte d'<i>aujourd'hui</i> et converge vers la valeur exacte au présent ; direction et forme fiables. « — » pour les majors.",
+      quality: "CHOG, PEPE, ONDO (Ethereum), BRETT (Base) et CASHCAT (Robinhood) : <b>grand livre complet</b> — chaque transfert depuis la création du token rejoué au prix du jour, coût moyen par wallet, airdrops séparés ; série quotidienne réelle sur tout l'historique. Les dépôts/retraits CEX héritent du coût moyen (approximation). Memes Solana (WIF/BONK/PENGU/FARTCOIN/ANSEM) : historique Dune jusqu'au 25/07/2026 (tous holders), puis <b>grand livre « en avant »</b> depuis oct. 2026 : seuls les acheteurs arrivés après son démarrage ont un coût connu, les holders antérieurs forment une cohorte « coût inconnu » hors % ; le % n'est publié qu'à partir de 300 acheteurs suivis — rupture de méthode à la reprise. Jettons TON (UTYA/GROYP/GRAMMING/BUDDY/TELECLAW/CHERRY) : reconstruits via les transferts <b>toncenter</b> × prix. « — » pour les majors.",
     },
   },
   {

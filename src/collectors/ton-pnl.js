@@ -11,6 +11,7 @@
 // Free: toncenter (10 req/s with a key, ~1/s keyless) + tonapi. Emits the CHOG
 // pnl schema so the existing UI renders it unchanged.
 import fs from "fs";
+import { tonapiAllHolders } from "../lib/tonapi.js";
 import path from "path";
 import { CONFIG } from "../config.js";
 
@@ -52,16 +53,10 @@ function priceLookup(series) {
 // Every current holder's owner→balance (human units), via tonapi pagination.
 async function currentHolders(address, decimals) {
   const bal = new Map();
-  for (let offset = 0; offset < 40000; offset += 1000) {
-    const page = await taJson(`${TA}/jettons/${address}/holders?limit=1000&offset=${offset}`);
-    const addrs = page.addresses || [];
-    for (const h of addrs) {
-      const v = Number(BigInt(h.balance || "0")) / 10 ** decimals;
-      const owner = h.owner?.address?.toLowerCase(); // tonapi=lowercase, toncenter=uppercase → normalise
-      if (owner && v > 0) bal.set(owner, v);
-    }
-    if (addrs.length < 1000) break;
-    await sleep(1100);
+  for (const h of await tonapiAllHolders(address)) {
+    const v = Number(BigInt(h.balance || "0")) / 10 ** decimals;
+    const owner = h.owner?.address?.toLowerCase(); // tonapi=lowercase, toncenter=uppercase → normalise
+    if (owner && v > 0) bal.set(owner, v);
   }
   return bal;
 }

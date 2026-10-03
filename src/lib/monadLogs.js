@@ -20,15 +20,23 @@ async function paced() {
 // HyperRPC endpoints, one per chain (same free token covers eth/monad/base…).
 const rpcUrl = (chain) => `https://${chain}.rpc.hypersync.xyz/${CONFIG.HYPERSYNC_API_KEY}`;
 
-async function rpc(body, chain = "monad", tries = 4) {
+async function rpc(body, chain = "monad", tries = 6) {
   for (let t = 1; ; t++) {
     await paced(); // pacing is GLOBAL (rate limit is per token, across chains)
-    const res = await fetch(rpcUrl(chain), {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (res.ok) return res.json();
+    let res;
+    try {
+      res = await fetch(rpcUrl(chain), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) return await res.json();
+    } catch (err) {
+      // network drop / reset mid-body ("fetch failed") — retry like a 5xx
+      if (t >= tries) throw new Error(`HyperRPC ${err.message}`);
+      await sleep(4_000 * t);
+      continue;
+    }
     if (t >= tries) throw new Error(`HyperRPC HTTP ${res.status}: ${(await res.text()).slice(0, 120)}`);
     await sleep(res.status === 429 ? 20_000 : 4_000 * t);
   }
@@ -42,18 +50,27 @@ export async function headBlock(chain = "monad") {
 }
 
 // blockNumber -> "YYYY-MM-DD", by linear interpolation between anchor blocks
-// fetched in ONE batched request (HyperRPC supports JSON-RPC batching).
+// fetched in batched requests (HyperRPC supports JSON-RPC batching). Anchor
+// spacing per chain keeps the interpolation error well under a day: Monad and
+// Base tick steadily; Ethereum loses ~1% of slots at random; Robinhood (an
+// Arbitrum Orbit chain) produces blocks on demand, so it needs dense anchors.
+const ANCHOR_STEP = { monad: 400_000, base: 400_000, eth: 50_000, robinhood: 100_000 };
+const ANCHORS_PER_CALL = 100;
 export async function blockDater(minBlock, maxBlock, chain = "monad") {
   const anchors = [];
-  const STEP = 400_000;
+  const STEP = ANCHOR_STEP[chain] ?? 400_000;
   for (let b = minBlock; b <= maxBlock; b += STEP) anchors.push(b);
   if (anchors.at(-1) !== maxBlock) anchors.push(maxBlock);
-  const batch = anchors.map((b, i) => ({ jsonrpc: "2.0", id: i, method: "eth_getBlockByNumber", params: ["0x" + b.toString(16), false] }));
-  const out = await rpc(batch, chain);
-  const pts = (Array.isArray(out) ? out : [out])
-    .filter((r) => r.result)
-    .map((r) => [parseInt(r.result.number, 16), parseInt(r.result.timestamp, 16)])
-    .sort((a, b) => a[0] - b[0]);
+  const pts = [];
+  for (let i = 0; i < anchors.length; i += ANCHORS_PER_CALL) {
+    const batch = anchors.slice(i, i + ANCHORS_PER_CALL)
+      .map((b, j) => ({ jsonrpc: "2.0", id: j, method: "eth_getBlockByNumber", params: ["0x" + b.toString(16), false] }));
+    const out = await rpc(batch, chain);
+    for (const r of Array.isArray(out) ? out : [out]) {
+      if (r.result) pts.push([parseInt(r.result.number, 16), parseInt(r.result.timestamp, 16)]);
+    }
+  }
+  pts.sort((a, b) => a[0] - b[0]);
   if (pts.length < 2) throw new Error("blockDater: not enough anchors");
   return (bn) => {
     let i = pts.findIndex(([b]) => b >= bn);
@@ -64,39 +81,44 @@ export async function blockDater(minBlock, maxBlock, chain = "monad") {
   };
 }
 
-// Streams Transfer logs for a contract from `fromBlock` to the chain head.
-// Yields normalized events shaped like thirdweb Insight's (block_number,
-// topics[], data, transaction_hash, log_index) in ascending block order.
-export async function* transferLogs(contract, topic0, fromBlock, chain = "monad") {
-  const head = await headBlock(chain);
-  const getLogs = async (start, end) => rpc({
+// Streams Transfer logs for a contract from `fromBlock` to `toBlock` (default:
+// the chain head), as { logs, upTo, head } windows in ascending block order.
+// Logs are normalized like thirdweb Insight's (block_number, topics[], data,
+// transaction_hash, log_index). HyperRPC caps a response at 50K logs and its
+// error names a range that fits ("this block range should work: [a, b]") — the
+// window adapts to that hint instead of blind bisection, so a dense token
+// (PEPE: ~1 log/block over 9M blocks) costs ~1 call per 50K logs.
+export async function* transferLogs(contract, topic0, fromBlock, chain = "monad", toBlock = null) {
+  const head = toBlock ?? await headBlock(chain);
+  const getLogs = (start, end) => rpc({
     jsonrpc: "2.0", id: 1, method: "eth_getLogs",
     params: [{ address: contract, topics: [topic0], fromBlock: "0x" + start.toString(16), toBlock: "0x" + end.toString(16) }],
   }, chain);
-  // dense periods (token launch) exceed the 50K-logs-per-response cap →
-  // bisect the window until it fits
-  async function* fetchRange(start, end) {
+  let start = fromBlock, span = SPAN;
+  while (start <= head) {
+    const end = Math.min(start + span - 1, head);
     const r = await getLogs(start, end);
     if (r.error) {
       const msg = JSON.stringify(r.error);
-      if ((r.error.code === -32005 || /more than \d+ logs/i.test(msg)) && end > start) {
-        const mid = Math.floor((start + end) / 2);
-        yield* fetchRange(start, mid);
-        yield* fetchRange(mid + 1, end);
-        return;
-      }
-      throw new Error(`eth_getLogs: ${msg.slice(0, 120)}`);
+      const tooMany = r.error.code === -32005 || /more than \d+ logs/i.test(msg);
+      // a server-side timeout on a wide window is also solved by narrowing it
+      const timedOut = /timed out|timeout/i.test(msg);
+      if ((!tooMany && !timedOut) || end <= start) throw new Error(`eth_getLogs: ${msg.slice(0, 160)}`);
+      const hint = msg.match(/should work: \[0x([0-9a-f]+), 0x([0-9a-f]+)\]/i);
+      const hintEnd = hint ? parseInt(hint[2], 16) : NaN;
+      span = hintEnd >= start && hintEnd < end ? hintEnd - start + 1 : Math.max(1, Math.floor(span / 2));
+      continue;
     }
-    yield (r.result || []).map((l) => ({
+    const logs = (r.result || []).map((l) => ({
       block_number: parseInt(l.blockNumber, 16),
       log_index: parseInt(l.logIndex, 16),
       transaction_hash: l.transactionHash,
       topics: l.topics,
       data: l.data,
     })).sort((a, b) => a.block_number - b.block_number || a.log_index - b.log_index);
-  }
-  for (let start = fromBlock; start <= head; start += SPAN + 1) {
-    const end = Math.min(start + SPAN, head);
-    for await (const logs of fetchRange(start, end)) yield { logs, upTo: end, head };
+    yield { logs, upTo: end, head };
+    start = end + 1;
+    // sparse window → widen again (bounded by SPAN); dense → keep the fitting size
+    if (logs.length < 25_000) span = Math.min(SPAN, Math.ceil(span * 1.5));
   }
 }

@@ -11,6 +11,8 @@
 //                   accounts of the mint), streamed, counting balance > 0.
 //                   Keyless and stateless (full re-count each run).
 import fs from "fs";
+import { tonapiAllHolders } from "../lib/tonapi.js";
+import { updateSolanaLedger } from "./solana-ledger.js";
 import path from "path";
 import { CONFIG } from "../config.js";
 import { hyperRpcAvailable, transferLogs } from "../lib/monadLogs.js";
@@ -61,8 +63,11 @@ const SOL_ATTEMPTS = 6;
 // Stream the RPC response and count accounts with a non-zero u64 amount. The
 // response can exceed 512MB (e.g. BONK), past V8's max string length, so we
 // never hold it whole: scan chunks for each account's sliced data and drop the
-// processed prefix. dataSlice(offset 64, length 8) => only the amount field.
+// processed prefix. dataSlice(offset 32, length 40) => owner (32B) + amount
+// (u64 LE): the owner feeds the forward PnL ledger (solana-ledger.js), summed
+// per owner since one wallet can hold several token accounts.
 async function streamNonZero(res, thrRaw = null) {
+  const owners = new Map();
   const reader = res.body.getReader();
   const dec = new TextDecoder();
   const MARK = '"data":["';
@@ -79,11 +84,13 @@ async function streamNonZero(res, thrRaw = null) {
       const b64 = buf.slice(start, end);
       if (b64) {
         const b = Buffer.from(b64, "base64");
-        if (b.length >= 8) {
-          const v = b.readBigUInt64LE(0);
+        if (b.length >= 40) {
+          const v = b.readBigUInt64LE(32);
           if (v > 0n) {
             holders++;
             if (thrRaw) counts[tierBucket(v, thrRaw)]++;
+            const o = b.toString("hex", 0, 32);
+            owners.set(o, (owners.get(o) || 0n) + v);
           }
         }
       }
@@ -91,7 +98,7 @@ async function streamNonZero(res, thrRaw = null) {
     }
     buf = buf.slice(last);
   }
-  return { holders, tiers: thrRaw ? tiersObj(counts) : null };
+  return { holders, tiers: thrRaw ? tiersObj(counts) : null, owners };
 }
 
 async function solanaHolders(cfg, priceUsd) {
@@ -102,7 +109,7 @@ async function solanaHolders(cfg, priceUsd) {
   if (program === SPL_TOKEN) filters.unshift({ dataSize: 165 });
   const body = JSON.stringify({
     jsonrpc: "2.0", id: 1, method: "getProgramAccounts",
-    params: [program, { encoding: "base64", dataSlice: { offset: 64, length: 8 }, filters }],
+    params: [program, { encoding: "base64", dataSlice: { offset: 32, length: 40 }, filters }],
   });
   // The scan reads every balance anyway — bucketing by $ value is free.
   const thrRaw = cfg.decimals != null ? tierThresholdsRaw(priceUsd, cfg.decimals) : null;
@@ -114,12 +121,12 @@ async function solanaHolders(cfg, priceUsd) {
         method: "POST", headers: { "Content-Type": "application/json" }, body,
       });
       if (!res.ok) { lastErr = new Error(`HTTP ${res.status} @ ${rpc}`); await sleep(8000 * (attempt + 1)); continue; }
-      const { holders, tiers } = await streamNonZero(res, thrRaw);
+      const { holders, tiers, owners } = await streamNonZero(res, thrRaw);
       // These tokens always have holders; a 0 means the RPC returned an error
       // body or truncated (some providers cap large getProgramAccounts) — retry
       // rather than record a bogus 0.
       if (holders === 0) { lastErr = new Error(`empty result @ ${rpc}`); await sleep(8000 * (attempt + 1)); continue; }
-      return { holders, tiers };
+      return { holders, tiers, owners };
     } catch (e) {
       lastErr = e; await sleep(8000 * (attempt + 1));
     }
@@ -349,17 +356,10 @@ async function tonapiHolders(cfg, priceUsd) {
   if (!thrRaw) return { holders: total, tiers: null }; // no price → count only
 
   const counts = newTierCounts();
-  const LIMIT = 1000, CAP = 20000; // full breakdown for these small memecoins
-  let seen = 0, offset = 0;
-  for (; offset < CAP; offset += LIMIT) {
-    const page = await tonapiFetch(`${base}/jettons/${cfg.address}/holders?limit=${LIMIT}&offset=${offset}`);
-    const addrs = page.addresses || [];
-    for (const h of addrs) {
-      const v = BigInt(h.balance || "0");
-      if (v > 0n) { seen++; counts[tierBucket(v, thrRaw)]++; }
-    }
-    if (addrs.length < LIMIT) break;
-    await sleep(1100); // free tier ~1 req/s
+  let seen = 0;
+  for (const h of await tonapiAllHolders(cfg.address)) {
+    const v = BigInt(h.balance || "0");
+    if (v > 0n) { seen++; counts[tierBucket(v, thrRaw)]++; }
   }
   return { holders: total ?? seen, tiers: tiersObj(counts) };
 }
@@ -379,7 +379,13 @@ export async function collectHoldersForAsset(asset, priceUsd) {
     return { symbol: asset.symbol, holders, calls, flows, tiers };
   }
   if (cfg.source === "solana") {
-    const { holders, tiers } = await solanaHolders(cfg, priceUsd);
+    const { holders, tiers, owners } = await solanaHolders(cfg, priceUsd);
+    // Same scan feeds the forward PnL ledger (a failure there must not cost
+    // the holder count). The owner map is dropped right after.
+    try {
+      const r = updateSolanaLedger(asset, owners, priceUsd, new Date().toISOString().slice(0, 10));
+      if (!r.skipped) console.log(`  ${asset.symbol} grand livre: ${r.wallets} wallets, ${r.row.buyers} acheteurs suivis depuis ${r.startDate}, ${r.row.pctInProfit ?? "—"}% en gain`);
+    } catch (e) { console.error(`  ${asset.symbol} grand livre: ${e.message}`); }
     return { symbol: asset.symbol, holders, tiers };
   }
   if (cfg.source === "coinmetrics") {

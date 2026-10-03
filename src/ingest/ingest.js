@@ -173,10 +173,17 @@ export function ingestAll() {
     ON CONFLICT(asset_id, date) DO UPDATE SET members = excluded.members
   `);
   let telegramRows = 0;
+  // Pre-Oct-2026 files (no `source`) came from CoinGecko community_data, which
+  // froze on 2026-08-13. Keep that history only up to the freeze, and only for
+  // assets whose t.me channel continues the same count — elsewhere CoinGecko
+  // tracked a different chat and the series would jump at the source switch.
+  const CG_TG_CONTINUOUS = new Set(["WIF", "BRETT", "MON", "HYPE", "CASHCAT", "UTYA", "GRAMMING", "ONDO"]);
+  const CG_TG_FROZEN_AFTER = "2026-08-13";
   for (const file of readRawFiles("telegram")) {
     for (const r of file.results) {
       const asset = getAssetId.get(r.symbol);
       if (!asset || r.members == null) continue;
+      if (!file.source && (!CG_TG_CONTINUOUS.has(r.symbol) || file.date > CG_TG_FROZEN_AFTER)) continue;
       upsertTelegram.run({ assetId: asset.id, date: file.date, members: r.members });
       telegramRows++;
     }

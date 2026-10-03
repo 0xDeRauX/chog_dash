@@ -7,7 +7,7 @@
 import { ASSETS, CONFIG } from "../src/config.js";
 import { collectAllRecent, DAILY_LOOKBACK_DAYS } from "../src/collectors/xMentions.js";
 import { loadPromoted } from "../src/collectors/chainradar.js";
-import { writeRaw } from "../src/lib/rawStore.js";
+import { writeRaw, readRaw } from "../src/lib/rawStore.js";
 
 if (!CONFIG.X_BEARER_TOKEN) {
   console.error("Missing X_BEARER_TOKEN");
@@ -26,18 +26,17 @@ for (const r of results) {
   }
 }
 
+// MERGE into the existing day file: an asset whose request failed this run
+// (e.g. X credits ran out mid-run on 2026-09-30) keeps its previously collected
+// count instead of being dropped from the file.
 const collectedAt = new Date().toISOString();
 for (const [date, arr] of [...byDate].sort()) {
-  const resultsForDate = arr.map((a) => ({
-    symbol: a.symbol,
-    date,
-    mentionCount: a.mentionCount,
-    collectedAt,
-  }));
-  writeRaw("x-mentions", date, { date, results: resultsForDate });
+  const merged = new Map((readRaw("x-mentions", date)?.results || []).map((r) => [r.symbol, r]));
+  for (const a of arr) merged.set(a.symbol, { symbol: a.symbol, date, mentionCount: a.mentionCount, collectedAt });
+  writeRaw("x-mentions", date, { date, results: [...merged.values()] });
 }
 
-console.log(`Collected ${days} day(s) × ${results.length} assets → ${byDate.size} date file(s):`);
+console.log(`Collected ${days} day(s) × ${results.length}/${ASSETS.length} assets → ${byDate.size} date file(s):`);
 for (const [date, arr] of [...byDate].sort()) {
   const chog = arr.find((a) => a.symbol === "CHOG");
   console.log(`  ${date}: ${arr.length} assets${chog ? ` (CHOG ${chog.mentionCount})` : ""}`);
@@ -67,4 +66,9 @@ if (promoted.length) {
     writeRaw("radar-mentions", date, { date, results: arr });
   }
   console.log(`Radar: mentions collectées pour ${promoted.length} tokens promus (${[...rByDate.keys()].length} jours).`);
+}
+
+if (results.length < ASSETS.length) {
+  console.error(`Mentions: ${ASSETS.length - results.length} actif(s) en échec (crédit X épuisé ?) — voir « Skipped » ci-dessus.`);
+  process.exit(1);
 }

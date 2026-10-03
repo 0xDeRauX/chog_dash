@@ -13,7 +13,7 @@ export const ASSETS = [
   // ---- memes -------------------------------------------------------------
   {
     group: "memes",
-    symbol: "CHOG",
+    symbol: "CHOG", telegram: "chogportal",
     flow: { net: "monad", addr: "0x350035555e10d9afaf1566aaebfced5ba6c27777" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     gtNetwork: "monad", // GeckoTerminal: aggregate 24h trades -> real $ buy/sell split
     chain: "monad",
@@ -28,18 +28,21 @@ export const ASSETS = [
   },
   {
     group: "memes",
-    symbol: "PEPE",
+    symbol: "PEPE", telegram: "pepecoineth",
     flow: { net: "eth", addr: "0x6982508145454ce325ddbe47a25d4ec3d2311933" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     binance: "PEPEUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "ethereum",
     coingeckoId: "pepe",
     xQuery: '("PEPE" OR "$PEPE" OR "@pepecoineth") -is:retweet',
     // Ethereum runs a public Blockscout that returns holder count in one call.
+    // Full transfer ledger via Envio HyperRPC → holders, $-tranches, % en gain
+    // (replaced Dune, suspended Oct 2026). See src/collectors/pnl.js.
+    ledger: { chain: "eth", contract: "0x6982508145454ce325ddbe47a25d4ec3d2311933", startBlock: 17046000, decimals: 18 },
     holders: { source: "blockscout", base: "https://eth.blockscout.com", contract: "0x6982508145454ce325ddbe47a25d4ec3d2311933" },
   },
   {
     group: "memes",
-    symbol: "WIF",
+    symbol: "WIF", telegram: "dogwifcoin",
     flow: { net: "solana", addr: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     binance: "WIFUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "solana",
@@ -51,7 +54,7 @@ export const ASSETS = [
   },
   {
     group: "memes",
-    symbol: "BONK",
+    symbol: "BONK", telegram: "Official_Bonk_Inu",
     flow: { net: "solana", addr: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     binance: "BONKUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "solana",
@@ -62,7 +65,7 @@ export const ASSETS = [
   },
   {
     group: "memes",
-    symbol: "BRETT",
+    symbol: "BRETT", telegram: "basedbrett",
     flow: { net: "base", addr: "0x532f27101965dd16442E59d40670FaF5eBB142E4" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     gtNetwork: "base",
     chain: "base",
@@ -70,6 +73,9 @@ export const ASSETS = [
     xQuery: '("BRETT" OR "$BRETT" OR "@BasedBrett") -is:retweet',
     // Base runs a public Blockscout with a holder count. (Note: some ISPs, e.g.
     // SFR, wrongly block base.blockscout.com — it resolves fine from CI.)
+    // Full transfer ledger via Envio HyperRPC → holders, $-tranches, % en gain
+    // (replaced Dune, suspended Oct 2026). See src/collectors/pnl.js.
+    ledger: { chain: "base", contract: "0x532f27101965dd16442e59d40670faf5ebb142e4", startBlock: 9000000, decimals: 18 },
     holders: { source: "blockscout", base: "https://base.blockscout.com", contract: "0x532f27101965dd16442E59d40670FaF5eBB142E4" },
   },
   {
@@ -108,14 +114,16 @@ export const ASSETS = [
   },
   {
     group: "memes",
-    symbol: "CASHCAT",
+    symbol: "CASHCAT", telegram: "cashcat_robinhood",
     flow: { net: "robinhood", addr: "0x020bfc650a365f8bb26819deaabf3e21291018b4" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     chain: "robinhood",
     coingeckoId: "cash-cat",
     xQuery: '("$CASHCAT" OR "Cash Cat" OR "CashCat") -is:retweet',
-    // Robinhood Chain (chainId 4663) runs a public Blockscout with a holder
-    // count in one call — same path as PEPE/BRETT.
-    holders: { source: "blockscout", base: "https://robinhoodchain.blockscout.com", contract: "0x020bfc650a365f8bb26819deaabf3e21291018b4" },
+    // Holders: robinhoodchain.blockscout.com went behind a Cloudflare challenge
+    // (Aug 2026), so the count, $-tranches and % en gain now all come from the
+    // full transfer ledger via Envio HyperRPC (chain "robinhood", id 4663).
+    // startBlock = 3 days before the first pool (2026-06-29).
+    ledger: { chain: "robinhood", contract: "0x020bfc650a365f8bb26819deaabf3e21291018b4", startBlock: 220000, decimals: 18 },
   },
 
   // ---- majors ------------------------------------------------------------
@@ -152,7 +160,7 @@ export const ASSETS = [
   },
   {
     group: "majors",
-    symbol: "GRAM",
+    symbol: "GRAM", telegram: "toncoin",
     // GRAM = Toncoin (The Open Network) — the token Telegram originally launched
     // as "Gram". Native L1 coin, so like the other majors it has no free holder
     // API (a wrapped-TON contract on Ethereum would misrepresent the real base),
@@ -170,7 +178,7 @@ export const ASSETS = [
   // where listed, else GeckoTerminal OHLCV (gtPrice). Buy/sell via GeckoTerminal
   // TON pools. No Dune on TON → % en gain stays "—".
   {
-    group: "memes", symbol: "UTYA", chain: "ton", coingeckoId: "utya",
+    group: "memes", symbol: "UTYA", telegram: "utyaduck", chain: "ton", coingeckoId: "utya",
     flow: { net: "ton", addr: "EQBaCgUwOoc6gHCNln_oJzb0mVs79YG7wYoavh-o1ItaneLA" }, gtNetwork: "ton",
     xQuery: '("$UTYA" OR "UtyaDuck" OR "@TonUtyacoin") -is:retweet',
     holders: { source: "tonapi", address: "EQBaCgUwOoc6gHCNln_oJzb0mVs79YG7wYoavh-o1ItaneLA", decimals: 9 },
@@ -182,25 +190,25 @@ export const ASSETS = [
     holders: { source: "tonapi", address: "EQAtwo6qMNwtr0iTA9eKVZ32cuACFJ0VKd78GrBWOe83-X1P", decimals: 9 },
   },
   {
-    group: "memes", symbol: "GRAMMING", chain: "ton", coingeckoId: "gramming",
+    group: "memes", symbol: "GRAMMING", telegram: "gramming_chat", chain: "ton", coingeckoId: "gramming",
     flow: { net: "ton", addr: "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW" }, gtNetwork: "ton",
     xQuery: '("$GRAMMING" OR "@grammingx" OR "gramming_chat") -is:retweet',
     holders: { source: "tonapi", address: "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW", decimals: 9 },
   },
   {
-    group: "memes", symbol: "BUDDY", chain: "ton",
+    group: "memes", symbol: "BUDDY", telegram: "buddybearonton", chain: "ton",
     flow: { net: "ton", addr: "EQDZvDW7Cf33YjMpeVr771PMrYgymGFyibTdcL4y-unuFtmA" }, gtNetwork: "ton",
     xQuery: '("$BUDDY" OR "BuddyBearOnTon" OR "@BuddyBearOnTON") -is:retweet',
     holders: { source: "tonapi", address: "EQDZvDW7Cf33YjMpeVr771PMrYgymGFyibTdcL4y-unuFtmA", decimals: 9 },
   },
   {
-    group: "memes", symbol: "TELECLAW", chain: "ton",
+    group: "memes", symbol: "TELECLAW", telegram: "teleclawbull", chain: "ton",
     flow: { net: "ton", addr: "EQD01TwE1plYpYKvRwWOLwAzzAJaDKwpB2bR3nfg-wkJJwks" }, gtNetwork: "ton",
     xQuery: '("$TELECLAW" OR "@Teleclawonton" OR "teleclawonton") -is:retweet',
     holders: { source: "tonapi", address: "EQD01TwE1plYpYKvRwWOLwAzzAJaDKwpB2bR3nfg-wkJJwks", decimals: 9 },
   },
   {
-    group: "memes", symbol: "CHERRY", chain: "ton",
+    group: "memes", symbol: "CHERRY", telegram: "HotCherryTG", chain: "ton",
     flow: { net: "ton", addr: "EQBKRSNRkeP1-2jcg5T_f__0s5Hj-vrbfNLMQy8dnZs7xd_p" }, gtNetwork: "ton",
     xQuery: '("$CHERRY" OR "@HotCherryTG" OR "HotCherryTG") -is:retweet',
     holders: { source: "tonapi", address: "EQBKRSNRkeP1-2jcg5T_f__0s5Hj-vrbfNLMQy8dnZs7xd_p", decimals: 9 },
@@ -223,12 +231,13 @@ export const ASSETS = [
     coingeckoId: "sui",
     xQuery: '("$SUI" OR "@SuiNetwork") -is:retweet',
     discordInvite: "sui",
-    // Blockvision exposes native SUI holders via coin/detail (full coinType).
-    holders: { source: "blockvision-sui", coinType: "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI" },
+    // Holders: Blockvision's coin/detail used to expose native SUI holders, but
+    // the Sui indexing API went Pro-only (Oct 2026, 30 trial calls) — no free
+    // source left, so no `holders` (the Jul 2026 points stay as history).
   },
   {
     group: "majors",
-    symbol: "MON",
+    symbol: "MON", telegram: "monad_xyz",
     binancePerp: "MONUSDT", // no spot pair -> perp taker klines for buy/sell volume
     chain: "monad",
     coingeckoId: "monad",
@@ -237,7 +246,7 @@ export const ASSETS = [
   },
   {
     group: "majors",
-    symbol: "HYPE",
+    symbol: "HYPE", telegram: "hyperliquid_announcements",
     binancePerp: "HYPEUSDT", // no spot pair -> perp taker klines for buy/sell volume
     chain: "hyperliquid",
     coingeckoId: "hyperliquid",
@@ -290,7 +299,7 @@ export const ASSETS = [
   },
   {
     group: "majors",
-    symbol: "ONDO",
+    symbol: "ONDO", telegram: "ondofinance",
     flow: { net: "eth", addr: "0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3" }, // on-chain buy/sell (GeckoTerminal, tous pools DEX)
     binance: "ONDOUSDT", // spot pair for buy/sell volume (taker klines)
     chain: "ethereum",
@@ -299,6 +308,9 @@ export const ASSETS = [
     xQuery: '("$ONDO" OR "Ondo Finance" OR "@OndoFinance") -is:retweet',
     discordInvite: "ondofinance",
     // ERC-20 on Ethereum → Blockscout holder count.
+    // Full transfer ledger via Envio HyperRPC → holders, $-tranches, % en gain
+    // (replaced Dune, suspended Oct 2026). See src/collectors/pnl.js.
+    ledger: { chain: "eth", contract: "0xfaba6f8e4a5e8ab82f62fe7c39859fa577269be3", startBlock: 15000000, decimals: 18 },
     holders: { source: "blockscout", base: "https://eth.blockscout.com", contract: "0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3" },
   },
   {
@@ -353,10 +365,6 @@ export const CONFIG = {
   X_BEARER_TOKEN: process.env.X_BEARER_TOKEN,
   THIRDWEB_SECRET_KEY: process.env.THIRDWEB_SECRET_KEY,
   HYPERSYNC_API_KEY: process.env.HYPERSYNC_API_KEY,
-  DUNE_API_KEY: process.env.DUNE_API_KEY, // Dune Analytics (Solana PnL, full price history) // Envio HyperRPC (Monad logs)
-  // Extra Dune keys for credit rotation — the free tier has a daily datapoint
-  // budget per key, so heavy backfills spread across DUNE_API_KEY, _2, _3…
-  DUNE_API_KEYS: [process.env.DUNE_API_KEY, process.env.DUNE_API_KEY_2, process.env.DUNE_API_KEY_3].filter(Boolean),
   TONCENTER_API_KEY: process.env.TONCENTER_API_KEY, // TON jetton transfers for % en gain (10 req/s vs 1 keyless)
   // Optional dedicated Solana RPC for the SPL holder counts. Note: Helius's free
   // tier rejects the large getProgramAccounts these need (e.g. BONK ~485MB), so
