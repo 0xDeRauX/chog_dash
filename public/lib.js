@@ -173,7 +173,18 @@ function spearman(pairs, minN = 12) {
 }
 // date -> forward simple return over k calendar days (small gap tolerance so a
 // missing weekend/collection day doesn't drop the point).
+// Memoized per (prices array, k): the Signals page asks for the same series ×
+// horizon once per signal/IC/backtest (~1 s of date math per load). Callers
+// only read the returned Map.
+const _fwdCache = new WeakMap();
 function forwardReturns(prices, k) {
+  if (!prices) return new Map();
+  let byK = _fwdCache.get(prices);
+  if (!byK) _fwdCache.set(prices, (byK = new Map()));
+  if (!byK.has(k)) byK.set(k, computeForwardReturns(prices, k));
+  return byK.get(k);
+}
+function computeForwardReturns(prices, k) {
   const by = new Map((prices || []).map((p) => [p.date, p.price]));
   const out = new Map();
   for (const p of prices || []) {
@@ -824,8 +835,15 @@ function velocitySeries(assets) {
   const g7 = (series, key) => {
     const s = (series || []).filter((p) => p[key] != null);
     const out = new Map();
+    // series are date-sorted, so the "first point ≥ date−7" only moves forward:
+    // one pointer instead of a scan from the start per point (that scan was
+    // O(n²) date parsing — 5.6 s of every page load once holder histories
+    // reached ~1 500 days)
+    let j = 0;
     for (let i = 0; i < s.length; i++) {
-      const past = s.find((p) => p.date >= dateAddDays(s[i].date, -7));
+      const from = dateAddDays(s[i].date, -7);
+      while (j < i && s[j].date < from) j++;
+      const past = s[j];
       if (past && past.date < s[i].date && past[key] > 0) out.set(s[i].date, (s[i][key] / past[key] - 1) * 100);
     }
     return out;
