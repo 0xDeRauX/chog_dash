@@ -111,9 +111,10 @@ jobs:
         env:
           THIRDWEB_SECRET_KEY: ${{ secrets.THIRDWEB_SECRET_KEY }}
           HYPERSYNC_API_KEY: ${{ secrets.HYPERSYNC_API_KEY }}
-          # first index of the EVM ledgers takes hours at 5 req/min: spread it
-          # over several daily runs (state cached), then ~1 min/day
-          LEDGER_BUDGET_MIN: "45"
+          # a cap, not a duration: the first index of the EVM ledgers (~5h at
+          # 5 req/min) spreads over 2-3 runs (state cached), then ~1 min/day.
+          # Stays well under the 6h job limit.
+          LEDGER_BUDGET_MIN: "150"
         run: npm run collect:pnl
 
       - name: TON jetton % en gain (toncenter)
