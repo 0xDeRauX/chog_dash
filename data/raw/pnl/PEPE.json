@@ -1,8 +1,8 @@
 {
  "symbol": "PEPE",
  "source": "ledger",
- "indexedToBlock": 26119127,
- "indexedToDate": "2026-10-03",
+ "indexedToBlock": 26127031,
+ "indexedToDate": "2026-10-04",
  "series": [
   {
    "date": "2023-04-14",
@@ -29190,6 +29190,29 @@
    },
    "realizedUsd": -276945,
    "realizedBigUsd": -275339
+  },
+  {
+   "date": "2026-10-04",
+   "holders": 468563,
+   "airdrop": 49143,
+   "buyers": 419420,
+   "inProfit": 125412,
+   "pctInProfit": 29.9,
+   "x10": 6098,
+   "x2_10": 50965,
+   "x1_2": 68349,
+   "l0_50": 118095,
+   "l50": 175913,
+   "holdersOnchain": 592590,
+   "tiers": {
+    "lt50": 444870,
+    "t50_500": 107625,
+    "t500_5k": 33088,
+    "t5k_50k": 5940,
+    "gt50k": 1067
+   },
+   "realizedUsd": -134642,
+   "realizedBigUsd": -138452
   }
  ]
 }
