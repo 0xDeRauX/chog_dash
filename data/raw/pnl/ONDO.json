@@ -1,8 +1,8 @@
 {
  "symbol": "ONDO",
  "source": "ledger",
- "indexedToBlock": 26127025,
- "indexedToDate": "2026-10-04",
+ "indexedToBlock": 26133719,
+ "indexedToDate": "2026-10-05",
  "series": [
   {
    "date": "2022-06-28",
@@ -35883,6 +35883,29 @@
    },
    "realizedUsd": 2706842,
    "realizedBigUsd": 2590075
+  },
+  {
+   "date": "2026-10-05",
+   "holders": 178454,
+   "airdrop": 10506,
+   "buyers": 167948,
+   "inProfit": 56634,
+   "pctInProfit": 33.72,
+   "x10": 799,
+   "x2_10": 6711,
+   "x1_2": 49124,
+   "l0_50": 85323,
+   "l50": 25991,
+   "holdersOnchain": 213938,
+   "tiers": {
+    "lt50": 98278,
+    "t50_500": 60830,
+    "t500_5k": 45832,
+    "t5k_50k": 8160,
+    "gt50k": 838
+   },
+   "realizedUsd": 1856786,
+   "realizedBigUsd": 1731788
   }
  ]
 }
