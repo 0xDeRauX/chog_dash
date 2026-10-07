@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-07",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "invite": "chog",
+      "memberCount": 42331,
+      "onlineCount": 1786,
+      "guildName": "Chog"
+    },
+    {
+      "symbol": "BONK",
+      "invite": "qaQa6M6mN2",
+      "memberCount": 32860,
+      "onlineCount": 2196,
+      "guildName": "Bonk"
+    },
+    {
+      "symbol": "PENGU",
+      "invite": "pudgypenguins",
+      "memberCount": 159754,
+      "onlineCount": 10632,
+      "guildName": "Pudgy Penguins"
+    },
+    {
+      "symbol": "SOL",
+      "invite": "solana",
+      "memberCount": 149049,
+      "onlineCount": 6943,
+      "guildName": "Solana Tech"
+    },
+    {
+      "symbol": "XRP",
+      "invite": "xrpl",
+      "memberCount": 16771,
+      "onlineCount": 1075,
+      "guildName": "XRP Ledger"
+    },
+    {
+      "symbol": "SUI",
+      "invite": "sui",
+      "memberCount": 886973,
+      "onlineCount": 14652,
+      "guildName": "Sui"
+    },
+    {
+      "symbol": "MON",
+      "invite": "monad",
+      "memberCount": 623255,
+      "onlineCount": 14260,
+      "guildName": "Monad"
+    },
+    {
+      "symbol": "HYPE",
+      "invite": "hyperliquid",
+      "memberCount": 91979,
+      "onlineCount": 12483,
+      "guildName": "Hyperliquid"
+    },
+    {
+      "symbol": "AKT",
+      "invite": "akash",
+      "memberCount": 24798,
+      "onlineCount": 1288,
+      "guildName": "Akash Network Devs"
+    },
+    {
+      "symbol": "ZEC",
+      "invite": "zcash",
+      "memberCount": 9133,
+      "onlineCount": 831,
+      "guildName": "Zcash"
+    },
+    {
+      "symbol": "ONDO",
+      "invite": "ondofinance",
+      "memberCount": 16107,
+      "onlineCount": 1346,
+      "guildName": "Ondo Finance"
+    },
+    {
+      "symbol": "NEAR",
+      "invite": "nearprotocol",
+      "memberCount": 75489,
+      "onlineCount": 2643,
+      "guildName": "NEAR"
+    }
+  ]
+}

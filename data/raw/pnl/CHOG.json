@@ -1,8 +1,8 @@
 {
  "symbol": "CHOG",
  "source": "ledger",
- "indexedToBlock": 111053828,
- "indexedToDate": "2026-10-05",
+ "indexedToBlock": 111342126,
+ "indexedToDate": "2026-10-06",
  "series": [
   {
    "date": "2025-11-25",
@@ -7243,25 +7243,48 @@
   },
   {
    "date": "2026-10-05",
-   "holders": 27120,
+   "holders": 27119,
    "airdrop": 22193,
-   "buyers": 4927,
-   "inProfit": 2752,
-   "pctInProfit": 55.86,
+   "buyers": 4926,
+   "inProfit": 2751,
+   "pctInProfit": 55.85,
    "x10": 64,
    "x2_10": 1060,
-   "x1_2": 1628,
+   "x1_2": 1627,
    "l0_50": 2175,
    "l50": 0,
-   "holdersOnchain": 33700,
+   "holdersOnchain": 33698,
    "tiers": {
-    "lt50": 32573,
+    "lt50": 32572,
     "t50_500": 698,
     "t500_5k": 352,
-    "t5k_50k": 71,
+    "t5k_50k": 70,
     "gt50k": 6
    },
    "realizedUsd": 5280,
+   "realizedBigUsd": 0
+  },
+  {
+   "date": "2026-10-06",
+   "holders": 27000,
+   "airdrop": 22184,
+   "buyers": 4816,
+   "inProfit": 2378,
+   "pctInProfit": 49.38,
+   "x10": 60,
+   "x2_10": 497,
+   "x1_2": 1821,
+   "l0_50": 2320,
+   "l50": 118,
+   "holdersOnchain": 33706,
+   "tiers": {
+    "lt50": 32643,
+    "t50_500": 675,
+    "t500_5k": 319,
+    "t5k_50k": 64,
+    "gt50k": 5
+   },
+   "realizedUsd": 1792,
    "realizedBigUsd": 0
   }
  ]
