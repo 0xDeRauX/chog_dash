@@ -1,8 +1,8 @@
 {
  "symbol": "BRETT",
  "source": "ledger",
- "indexedToBlock": 52296154,
- "indexedToDate": "2026-10-06",
+ "indexedToBlock": 52339584,
+ "indexedToDate": "2026-10-07",
  "series": [
   {
    "date": "2024-02-24",
@@ -21667,7 +21667,7 @@
     "t5k_50k": 834,
     "gt50k": 84
    },
-   "realizedUsd": -238509,
+   "realizedUsd": -238510,
    "realizedBigUsd": -5373
   },
   {
@@ -21690,8 +21690,8 @@
     "t5k_50k": 838,
     "gt50k": 85
    },
-   "realizedUsd": -213307,
-   "realizedBigUsd": -5919
+   "realizedUsd": -213151,
+   "realizedBigUsd": -5922
   },
   {
    "date": "2026-09-24",
@@ -21713,76 +21713,76 @@
     "t5k_50k": 774,
     "gt50k": 79
    },
-   "realizedUsd": -141642,
+   "realizedUsd": -141080,
    "realizedBigUsd": -52896
   },
   {
    "date": "2026-09-25",
-   "holders": 179442,
+   "holders": 179443,
    "airdrop": 11645,
-   "buyers": 167797,
+   "buyers": 167798,
    "inProfit": 4871,
    "pctInProfit": 2.9,
    "x10": 237,
    "x2_10": 143,
    "x1_2": 4491,
-   "l0_50": 4546,
+   "l0_50": 4547,
    "l50": 158380,
-   "holdersOnchain": 905087,
+   "holdersOnchain": 905088,
    "tiers": {
     "lt50": 872169,
     "t50_500": 25826,
-    "t500_5k": 6168,
+    "t500_5k": 6169,
     "t5k_50k": 840,
     "gt50k": 84
    },
-   "realizedUsd": -86479,
-   "realizedBigUsd": -24435
+   "realizedUsd": -86189,
+   "realizedBigUsd": -24471
   },
   {
    "date": "2026-09-26",
    "holders": 179914,
-   "airdrop": 11689,
-   "buyers": 168225,
+   "airdrop": 11688,
+   "buyers": 168226,
    "inProfit": 5283,
    "pctInProfit": 3.14,
    "x10": 238,
    "x2_10": 149,
    "x1_2": 4896,
-   "l0_50": 4491,
+   "l0_50": 4492,
    "l50": 158451,
    "holdersOnchain": 906811,
    "tiers": {
-    "lt50": 873479,
-    "t50_500": 26092,
+    "lt50": 873478,
+    "t50_500": 26093,
     "t500_5k": 6295,
     "t5k_50k": 854,
     "gt50k": 91
    },
-   "realizedUsd": -72807,
+   "realizedUsd": -72581,
    "realizedBigUsd": -7604
   },
   {
    "date": "2026-09-27",
-   "holders": 180969,
+   "holders": 180970,
    "airdrop": 11865,
-   "buyers": 169104,
+   "buyers": 169105,
    "inProfit": 5955,
    "pctInProfit": 3.52,
    "x10": 244,
    "x2_10": 154,
    "x1_2": 5557,
-   "l0_50": 4459,
+   "l0_50": 4460,
    "l50": 158690,
-   "holdersOnchain": 908371,
+   "holdersOnchain": 908372,
    "tiers": {
     "lt50": 874069,
     "t50_500": 26733,
-    "t500_5k": 6568,
+    "t500_5k": 6569,
     "t5k_50k": 902,
     "gt50k": 99
    },
-   "realizedUsd": -1000393,
+   "realizedUsd": -999547,
    "realizedBigUsd": -863324
   },
   {
@@ -21805,7 +21805,7 @@
     "t5k_50k": 829,
     "gt50k": 83
    },
-   "realizedUsd": -85657,
+   "realizedUsd": -85474,
    "realizedBigUsd": -3834
   },
   {
@@ -21828,13 +21828,13 @@
     "t5k_50k": 827,
     "gt50k": 83
    },
-   "realizedUsd": -77074,
+   "realizedUsd": -76975,
    "realizedBigUsd": -3452
   },
   {
    "date": "2026-09-30",
-   "holders": 180896,
-   "airdrop": 11722,
+   "holders": 180895,
+   "airdrop": 11721,
    "buyers": 169174,
    "inProfit": 6242,
    "pctInProfit": 3.69,
@@ -21843,85 +21843,85 @@
    "x1_2": 5851,
    "l0_50": 4618,
    "l50": 158314,
-   "holdersOnchain": 908451,
+   "holdersOnchain": 908450,
    "tiers": {
-    "lt50": 874935,
+    "lt50": 874934,
     "t50_500": 26205,
     "t500_5k": 6352,
     "t5k_50k": 867,
     "gt50k": 92
    },
-   "realizedUsd": -52930,
+   "realizedUsd": -52976,
    "realizedBigUsd": 169
   },
   {
    "date": "2026-10-01",
-   "holders": 180939,
-   "airdrop": 11726,
+   "holders": 180938,
+   "airdrop": 11725,
    "buyers": 169213,
-   "inProfit": 6266,
+   "inProfit": 6267,
    "pctInProfit": 3.7,
    "x10": 239,
    "x2_10": 153,
-   "x1_2": 5874,
-   "l0_50": 4671,
+   "x1_2": 5875,
+   "l0_50": 4670,
    "l50": 158276,
-   "holdersOnchain": 908663,
+   "holdersOnchain": 908661,
    "tiers": {
-    "lt50": 875162,
+    "lt50": 875160,
     "t50_500": 26191,
     "t500_5k": 6352,
     "t5k_50k": 865,
     "gt50k": 93
    },
-   "realizedUsd": -229712,
+   "realizedUsd": -229554,
    "realizedBigUsd": -125157
   },
   {
    "date": "2026-10-02",
-   "holders": 181406,
+   "holders": 181405,
    "airdrop": 11860,
-   "buyers": 169546,
-   "inProfit": 6640,
+   "buyers": 169545,
+   "inProfit": 6641,
    "pctInProfit": 3.92,
    "x10": 242,
    "x2_10": 154,
-   "x1_2": 6244,
-   "l0_50": 4514,
+   "x1_2": 6245,
+   "l0_50": 4512,
    "l50": 158392,
-   "holdersOnchain": 908834,
+   "holdersOnchain": 908833,
    "tiers": {
     "lt50": 874842,
-    "t50_500": 26515,
+    "t50_500": 26514,
     "t500_5k": 6490,
     "t5k_50k": 888,
     "gt50k": 99
    },
-   "realizedUsd": -263701,
-   "realizedBigUsd": -129732
+   "realizedUsd": -263695,
+   "realizedBigUsd": -129971
   },
   {
    "date": "2026-10-03",
-   "holders": 180710,
+   "holders": 180709,
    "airdrop": 11712,
-   "buyers": 168998,
+   "buyers": 168997,
    "inProfit": 5929,
    "pctInProfit": 3.51,
    "x10": 241,
    "x2_10": 155,
    "x1_2": 5533,
-   "l0_50": 4982,
+   "l0_50": 4981,
    "l50": 158087,
-   "holdersOnchain": 908901,
+   "holdersOnchain": 908900,
    "tiers": {
-    "lt50": 875782,
+    "lt50": 875781,
     "t50_500": 25930,
     "t500_5k": 6262,
     "t5k_50k": 838,
     "gt50k": 89
    },
-   "realizedUsd": -242468,
-   "realizedBigUsd": -171719
+   "realizedUsd": -242092,
+   "realizedBigUsd": -171755
   },
   {
    "date": "2026-10-04",
@@ -21935,62 +21935,85 @@
    "x1_2": 5572,
    "l0_50": 4964,
    "l50": 158042,
-   "holdersOnchain": 908950,
+   "holdersOnchain": 908948,
    "tiers": {
-    "lt50": 875836,
+    "lt50": 875834,
     "t50_500": 25925,
     "t500_5k": 6261,
     "t5k_50k": 839,
     "gt50k": 89
    },
-   "realizedUsd": -86642,
-   "realizedBigUsd": -19063
+   "realizedUsd": -86717,
+   "realizedBigUsd": -19154
   },
   {
    "date": "2026-10-05",
-   "holders": 180693,
+   "holders": 180691,
    "airdrop": 11726,
-   "buyers": 168967,
+   "buyers": 168965,
    "inProfit": 5899,
    "pctInProfit": 3.49,
    "x10": 244,
    "x2_10": 156,
    "x1_2": 5499,
-   "l0_50": 5063,
+   "l0_50": 5061,
    "l50": 158005,
-   "holdersOnchain": 908964,
+   "holdersOnchain": 908961,
    "tiers": {
-    "lt50": 875874,
-    "t50_500": 25911,
-    "t500_5k": 6254,
+    "lt50": 875873,
+    "t50_500": 25910,
+    "t500_5k": 6253,
     "t5k_50k": 836,
     "gt50k": 89
    },
-   "realizedUsd": -142429,
+   "realizedUsd": -142475,
    "realizedBigUsd": -54514
   },
   {
    "date": "2026-10-06",
-   "holders": 180900,
+   "holders": 180897,
    "airdrop": 11764,
-   "buyers": 169136,
+   "buyers": 169133,
    "inProfit": 6266,
    "pctInProfit": 3.7,
    "x10": 245,
    "x2_10": 162,
    "x1_2": 5859,
-   "l0_50": 4840,
+   "l0_50": 4837,
    "l50": 158030,
-   "holdersOnchain": 908990,
+   "holdersOnchain": 908987,
    "tiers": {
-    "lt50": 875642,
-    "t50_500": 26091,
-    "t500_5k": 6312,
+    "lt50": 875641,
+    "t50_500": 26090,
+    "t500_5k": 6311,
     "t5k_50k": 852,
     "gt50k": 93
    },
-   "realizedUsd": -86525,
+   "realizedUsd": -86375,
    "realizedBigUsd": -1856
+  },
+  {
+   "date": "2026-10-07",
+   "holders": 179458,
+   "airdrop": 11523,
+   "buyers": 167935,
+   "inProfit": 3194,
+   "pctInProfit": 1.9,
+   "x10": 241,
+   "x2_10": 150,
+   "x1_2": 2803,
+   "l0_50": 7323,
+   "l50": 157418,
+   "holdersOnchain": 908996,
+   "tiers": {
+    "lt50": 877473,
+    "t50_500": 24860,
+    "t500_5k": 5800,
+    "t5k_50k": 782,
+    "gt50k": 81
+   },
+   "realizedUsd": -101279,
+   "realizedBigUsd": -7203
   }
  ]
 }
