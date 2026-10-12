@@ -1,8 +1,8 @@
 {
  "symbol": "ONDO",
  "source": "ledger",
- "indexedToBlock": 26169508,
- "indexedToDate": "2026-10-10",
+ "indexedToBlock": 26177471,
+ "indexedToDate": "2026-10-11",
  "series": [
   {
    "date": "2022-06-28",
@@ -35904,123 +35904,146 @@
     "t5k_50k": 8160,
     "gt50k": 837
    },
-   "realizedUsd": 1871055,
-   "realizedBigUsd": 1745310
+   "realizedUsd": 1893643,
+   "realizedBigUsd": 1765948
   },
   {
    "date": "2026-10-06",
-   "holders": 178629,
+   "holders": 178631,
    "airdrop": 10534,
-   "buyers": 168095,
-   "inProfit": 58241,
+   "buyers": 168097,
+   "inProfit": 58242,
    "pctInProfit": 34.65,
    "x10": 809,
    "x2_10": 7097,
-   "x1_2": 50335,
-   "l0_50": 86077,
+   "x1_2": 50336,
+   "l0_50": 86078,
    "l50": 23777,
-   "holdersOnchain": 214127,
+   "holdersOnchain": 214129,
    "tiers": {
-    "lt50": 97819,
+    "lt50": 97821,
     "t50_500": 60535,
     "t500_5k": 46518,
     "t5k_50k": 8390,
     "gt50k": 865
    },
-   "realizedUsd": 2022955,
+   "realizedUsd": 2022974,
    "realizedBigUsd": 1784589
   },
   {
    "date": "2026-10-07",
-   "holders": 178796,
+   "holders": 178794,
    "airdrop": 10503,
-   "buyers": 168293,
-   "inProfit": 51626,
+   "buyers": 168291,
+   "inProfit": 51625,
    "pctInProfit": 30.68,
    "x10": 777,
    "x2_10": 5708,
-   "x1_2": 45141,
-   "l0_50": 84172,
+   "x1_2": 45140,
+   "l0_50": 84171,
    "l50": 32495,
-   "holdersOnchain": 214469,
+   "holdersOnchain": 214467,
    "tiers": {
     "lt50": 100428,
     "t50_500": 61087,
-    "t500_5k": 44499,
+    "t500_5k": 44498,
     "t5k_50k": 7655,
-    "gt50k": 800
+    "gt50k": 799
    },
-   "realizedUsd": 2369639,
-   "realizedBigUsd": 2141043
+   "realizedUsd": 2369724,
+   "realizedBigUsd": 2141052
   },
   {
    "date": "2026-10-08",
-   "holders": 179124,
+   "holders": 179122,
    "airdrop": 10581,
-   "buyers": 168543,
-   "inProfit": 54814,
+   "buyers": 168541,
+   "inProfit": 54812,
    "pctInProfit": 32.52,
    "x10": 796,
    "x2_10": 6278,
-   "x1_2": 47740,
+   "x1_2": 47738,
    "l0_50": 86139,
    "l50": 27590,
-   "holdersOnchain": 214719,
+   "holdersOnchain": 214717,
    "tiers": {
     "lt50": 99359,
-    "t50_500": 61011,
+    "t50_500": 61010,
     "t500_5k": 45488,
     "t5k_50k": 8026,
-    "gt50k": 835
+    "gt50k": 834
    },
-   "realizedUsd": -1051210,
-   "realizedBigUsd": -1302039
+   "realizedUsd": -1051372,
+   "realizedBigUsd": -1302121
   },
   {
    "date": "2026-10-09",
-   "holders": 179369,
+   "holders": 179368,
    "airdrop": 10616,
-   "buyers": 168753,
-   "inProfit": 55182,
+   "buyers": 168752,
+   "inProfit": 55180,
    "pctInProfit": 32.7,
    "x10": 803,
    "x2_10": 6273,
-   "x1_2": 48106,
-   "l0_50": 86029,
+   "x1_2": 48104,
+   "l0_50": 86030,
    "l50": 27542,
-   "holdersOnchain": 214965,
+   "holdersOnchain": 214964,
    "tiers": {
     "lt50": 99401,
     "t50_500": 61108,
     "t500_5k": 45570,
-    "t5k_50k": 8045,
-    "gt50k": 841
+    "t5k_50k": 8046,
+    "gt50k": 839
    },
-   "realizedUsd": 242864,
+   "realizedUsd": 242887,
    "realizedBigUsd": 171969
   },
   {
    "date": "2026-10-10",
-   "holders": 179606,
+   "holders": 179604,
    "airdrop": 10666,
-   "buyers": 168940,
-   "inProfit": 59493,
-   "pctInProfit": 35.22,
+   "buyers": 168938,
+   "inProfit": 59491,
+   "pctInProfit": 35.21,
    "x10": 820,
    "x2_10": 7125,
-   "x1_2": 51548,
+   "x1_2": 51546,
    "l0_50": 85753,
    "l50": 23694,
-   "holdersOnchain": 215177,
+   "holdersOnchain": 215175,
    "tiers": {
     "lt50": 98294,
-    "t50_500": 60787,
+    "t50_500": 60786,
     "t500_5k": 46755,
     "t5k_50k": 8467,
-    "gt50k": 874
+    "gt50k": 873
    },
-   "realizedUsd": 1499492,
-   "realizedBigUsd": 1439604
+   "realizedUsd": 1499643,
+   "realizedBigUsd": 1438884
+  },
+  {
+   "date": "2026-10-11",
+   "holders": 179766,
+   "airdrop": 10704,
+   "buyers": 169062,
+   "inProfit": 56735,
+   "pctInProfit": 33.56,
+   "x10": 815,
+   "x2_10": 6601,
+   "x1_2": 49319,
+   "l0_50": 85890,
+   "l50": 26437,
+   "holdersOnchain": 215375,
+   "tiers": {
+    "lt50": 99139,
+    "t50_500": 61200,
+    "t500_5k": 46005,
+    "t5k_50k": 8183,
+    "gt50k": 848
+   },
+   "realizedUsd": -427679,
+   "realizedBigUsd": -519681
   }
  ]
 }
