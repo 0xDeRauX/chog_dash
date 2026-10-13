@@ -1,6 +1,6 @@
 {
  "symbol": "TELECLAW",
- "indexedToDate": "2026-10-12",
+ "indexedToDate": "2026-10-13",
  "source": "toncenter",
  "series": [
   {
@@ -3592,13 +3592,29 @@
    "holders": 573,
    "airdrop": 0,
    "buyers": 573,
+   "inProfit": 97,
+   "pctInProfit": 16.9,
+   "x10": 33,
+   "x2_10": 11,
+   "x1_2": 53,
+   "l0_50": 91,
+   "l50": 385,
+   "realizedUsd": 0,
+   "realizedBigUsd": 0,
+   "source": "ton-hist"
+  },
+  {
+   "date": "2026-10-13",
+   "holders": 573,
+   "airdrop": 0,
+   "buyers": 573,
    "inProfit": 93,
    "pctInProfit": 16.2,
    "x10": 33,
    "x2_10": 11,
    "x1_2": 49,
-   "l0_50": 85,
-   "l50": 395,
+   "l0_50": 78,
+   "l50": 402,
    "realizedUsd": 0,
    "realizedBigUsd": 0,
    "source": "ton-hist"
