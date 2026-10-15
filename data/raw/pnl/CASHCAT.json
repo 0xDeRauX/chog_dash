@@ -1,8 +1,8 @@
 {
  "symbol": "CASHCAT",
  "source": "ledger",
- "indexedToBlock": 88369723,
- "indexedToDate": "2026-10-13",
+ "indexedToBlock": 89213486,
+ "indexedToDate": "2026-10-14",
  "series": [
   {
    "date": "2026-06-26",
@@ -2513,26 +2513,49 @@
   },
   {
    "date": "2026-10-13",
-   "holders": 87011,
+   "holders": 87009,
    "airdrop": 25365,
-   "buyers": 61646,
+   "buyers": 61644,
    "inProfit": 12459,
    "pctInProfit": 20.21,
    "x10": 1560,
    "x2_10": 2951,
    "x1_2": 7948,
-   "l0_50": 38234,
+   "l0_50": 38232,
    "l50": 10953,
-   "holdersOnchain": 112870,
+   "holdersOnchain": 112867,
    "tiers": {
-    "lt50": 103345,
+    "lt50": 103343,
     "t50_500": 5673,
-    "t500_5k": 2736,
+    "t500_5k": 2735,
     "t5k_50k": 878,
     "gt50k": 238
    },
-   "realizedUsd": -454315,
-   "realizedBigUsd": -358914
+   "realizedUsd": -454342,
+   "realizedBigUsd": -358912
+  },
+  {
+   "date": "2026-10-14",
+   "holders": 88235,
+   "airdrop": 25577,
+   "buyers": 62658,
+   "inProfit": 21361,
+   "pctInProfit": 34.09,
+   "x10": 1606,
+   "x2_10": 4372,
+   "x1_2": 15383,
+   "l0_50": 36412,
+   "l50": 4885,
+   "holdersOnchain": 113482,
+   "tiers": {
+    "lt50": 103374,
+    "t50_500": 5940,
+    "t500_5k": 2916,
+    "t5k_50k": 992,
+    "gt50k": 260
+   },
+   "realizedUsd": 118059,
+   "realizedBigUsd": 36948
   }
  ]
 }

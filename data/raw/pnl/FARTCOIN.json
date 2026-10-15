@@ -2,7 +2,7 @@
  "symbol": "FARTCOIN",
  "source": "ledger-forward",
  "ledgerStart": "2026-10-03",
- "indexedToDate": "2026-10-14",
+ "indexedToDate": "2026-10-15",
  "series": [
   {
    "date": "2024-12-10",
@@ -10272,6 +10272,22 @@
    "l0_50": 2069,
    "l50": 0,
    "realizedUsd": -6487,
+   "realizedBigUsd": 0,
+   "source": "ledger-forward"
+  },
+  {
+   "date": "2026-10-15",
+   "holders": 124809,
+   "airdrop": 121650,
+   "buyers": 3159,
+   "inProfit": 39,
+   "pctInProfit": 1.23,
+   "x10": 0,
+   "x2_10": 0,
+   "x1_2": 39,
+   "l0_50": 3120,
+   "l50": 0,
+   "realizedUsd": -10790,
    "realizedBigUsd": 0,
    "source": "ledger-forward"
   }
