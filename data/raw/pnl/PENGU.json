@@ -2,7 +2,7 @@
  "symbol": "PENGU",
  "source": "ledger-forward",
  "ledgerStart": "2026-10-03",
- "indexedToDate": "2026-10-19",
+ "indexedToDate": "2026-10-20",
  "series": [
   {
    "date": "2024-12-17",
@@ -10233,6 +10233,22 @@
    "l0_50": 6841,
    "l50": 0,
    "realizedUsd": -80381,
+   "realizedBigUsd": 0,
+   "source": "ledger-forward"
+  },
+  {
+   "date": "2026-10-20",
+   "holders": 372456,
+   "airdrop": 364537,
+   "buyers": 7919,
+   "inProfit": 830,
+   "pctInProfit": 10.48,
+   "x10": 0,
+   "x2_10": 0,
+   "x1_2": 830,
+   "l0_50": 7089,
+   "l50": 0,
+   "realizedUsd": -84129,
    "realizedBigUsd": 0,
    "source": "ledger-forward"
   }
