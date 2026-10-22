@@ -1,8 +1,8 @@
 {
  "symbol": "PEPE",
  "source": "ledger",
- "indexedToBlock": 26240984,
- "indexedToDate": "2026-10-20",
+ "indexedToBlock": 26248193,
+ "indexedToDate": "2026-10-21",
  "series": [
   {
    "date": "2023-04-14",
@@ -29561,19 +29561,19 @@
   },
   {
    "date": "2026-10-20",
-   "holders": 471201,
+   "holders": 471199,
    "airdrop": 50098,
-   "buyers": 421103,
-   "inProfit": 124455,
+   "buyers": 421101,
+   "inProfit": 124456,
    "pctInProfit": 29.55,
    "x10": 6072,
    "x2_10": 50765,
-   "x1_2": 67618,
-   "l0_50": 116234,
+   "x1_2": 67619,
+   "l0_50": 116231,
    "l50": 180414,
-   "holdersOnchain": 595959,
+   "holdersOnchain": 595957,
    "tiers": {
-    "lt50": 448979,
+    "lt50": 448977,
     "t50_500": 107291,
     "t500_5k": 32824,
     "t5k_50k": 5837,
@@ -29581,6 +29581,29 @@
    },
    "realizedUsd": -2431717,
    "realizedBigUsd": -2345685
+  },
+  {
+   "date": "2026-10-21",
+   "holders": 471930,
+   "airdrop": 50181,
+   "buyers": 421749,
+   "inProfit": 138948,
+   "pctInProfit": 32.95,
+   "x10": 6385,
+   "x2_10": 52744,
+   "x1_2": 79819,
+   "l0_50": 126154,
+   "l50": 156647,
+   "holdersOnchain": 596320,
+   "tiers": {
+    "lt50": 443429,
+    "t50_500": 110882,
+    "t500_5k": 34631,
+    "t5k_50k": 6284,
+    "gt50k": 1094
+   },
+   "realizedUsd": -656613,
+   "realizedBigUsd": -660373
   }
  ]
 }
