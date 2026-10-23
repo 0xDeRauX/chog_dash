@@ -1,8 +1,8 @@
 {
  "symbol": "CASHCAT",
  "source": "ledger",
- "indexedToBlock": 95114166,
- "indexedToDate": "2026-10-21",
+ "indexedToBlock": 95934604,
+ "indexedToDate": "2026-10-22",
  "series": [
   {
    "date": "2026-06-26",
@@ -2717,6 +2717,29 @@
    },
    "realizedUsd": 104612,
    "realizedBigUsd": 37958
+  },
+  {
+   "date": "2026-10-22",
+   "holders": 86864,
+   "airdrop": 25373,
+   "buyers": 61491,
+   "inProfit": 12899,
+   "pctInProfit": 20.98,
+   "x10": 1542,
+   "x2_10": 2906,
+   "x1_2": 8451,
+   "l0_50": 37983,
+   "l50": 10609,
+   "holdersOnchain": 113272,
+   "tiers": {
+    "lt50": 103664,
+    "t50_500": 5695,
+    "t500_5k": 2790,
+    "t5k_50k": 891,
+    "gt50k": 232
+   },
+   "realizedUsd": -269415,
+   "realizedBigUsd": -235837
   }
  ]
 }
