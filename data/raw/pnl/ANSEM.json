@@ -2,7 +2,7 @@
  "symbol": "ANSEM",
  "source": "ledger-forward",
  "ledgerStart": "2026-10-03",
- "indexedToDate": "2026-10-28",
+ "indexedToDate": "2026-10-29",
  "series": [
   {
    "date": "2026-07-25",
@@ -432,6 +432,22 @@
    "l0_50": 8000,
    "l50": 935,
    "realizedUsd": -578161,
+   "realizedBigUsd": 0,
+   "source": "ledger-forward"
+  },
+  {
+   "date": "2026-10-29",
+   "holders": 103298,
+   "airdrop": 94439,
+   "buyers": 8859,
+   "inProfit": 997,
+   "pctInProfit": 11.25,
+   "x10": 0,
+   "x2_10": 0,
+   "x1_2": 997,
+   "l0_50": 6902,
+   "l50": 960,
+   "realizedUsd": -619012,
    "realizedBigUsd": 0,
    "source": "ledger-forward"
   }
