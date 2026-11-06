@@ -1,0 +1,242 @@
+{
+  "date": "2026-11-06",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "coingeckoId": "chog",
+      "priceUsd": 0.00086895,
+      "change24h": -18.281445376413487,
+      "marketCap": 856022.3126698089,
+      "volume24h": 15775.500881477827
+    },
+    {
+      "symbol": "PEPE",
+      "coingeckoId": "pepe",
+      "priceUsd": 0.00000504,
+      "change24h": 1.9661812593369485,
+      "marketCap": 2119735450.9774776,
+      "volume24h": 494990324.6084745
+    },
+    {
+      "symbol": "WIF",
+      "coingeckoId": "dogwifcoin",
+      "priceUsd": 0.166018,
+      "change24h": -2.7359815451938316,
+      "marketCap": 165839904.13983506,
+      "volume24h": 33228330.026714407
+    },
+    {
+      "symbol": "BONK",
+      "coingeckoId": "bonk",
+      "priceUsd": 0.00000289,
+      "change24h": -3.2950489477146565,
+      "marketCap": 254700172.13377693,
+      "volume24h": 34738084.544395365
+    },
+    {
+      "symbol": "BRETT",
+      "coingeckoId": "based-brett",
+      "priceUsd": 0.0039856,
+      "change24h": -5.278185551163214,
+      "marketCap": 39695284.18822069,
+      "volume24h": 4998773.549523632
+    },
+    {
+      "symbol": "PENGU",
+      "coingeckoId": "pudgy-penguins",
+      "priceUsd": 0.00667755,
+      "change24h": -5.930287596311374,
+      "marketCap": 419753697.54946685,
+      "volume24h": 111415742.06752619
+    },
+    {
+      "symbol": "FARTCOIN",
+      "coingeckoId": "fartcoin",
+      "priceUsd": 0.1197,
+      "change24h": -1.2106129526003608,
+      "marketCap": 119689739.07007883,
+      "volume24h": 16852414.475139886
+    },
+    {
+      "symbol": "ANSEM",
+      "coingeckoId": "the-black-bull",
+      "priceUsd": 0.048197,
+      "change24h": -0.33318205607605234,
+      "marketCap": 20134521.766267885,
+      "volume24h": 1721359.5417140694
+    },
+    {
+      "symbol": "CASHCAT",
+      "coingeckoId": "cash-cat",
+      "priceUsd": 0.094414,
+      "change24h": -8.78409988672228,
+      "marketCap": 93371180.60433622,
+      "volume24h": 14439614.756838044
+    },
+    {
+      "symbol": "BTC",
+      "coingeckoId": "bitcoin",
+      "priceUsd": 75642,
+      "change24h": -4.841320542227081,
+      "marketCap": 1521033803969.829,
+      "volume24h": 44267122087.43786
+    },
+    {
+      "symbol": "ETH",
+      "coingeckoId": "ethereum",
+      "priceUsd": 2232.48,
+      "change24h": -6.364120556553587,
+      "marketCap": 272871415448.32565,
+      "volume24h": 17692583862.0663
+    },
+    {
+      "symbol": "SOL",
+      "coingeckoId": "solana",
+      "priceUsd": 90.07,
+      "change24h": -5.376662295961659,
+      "marketCap": 53314325892.53245,
+      "volume24h": 3719450993.0224595
+    },
+    {
+      "symbol": "GRAM",
+      "coingeckoId": "the-open-network",
+      "priceUsd": 1.099,
+      "change24h": -3.396869680059407,
+      "marketCap": 3133708357.3488274,
+      "volume24h": 49445236.00594814
+    },
+    {
+      "symbol": "UTYA",
+      "coingeckoId": "utya",
+      "priceUsd": 0.01922818,
+      "change24h": 1.9933510515542965,
+      "marketCap": 19229591.647536263,
+      "volume24h": 404006.81716301775
+    },
+    {
+      "symbol": "GROYP",
+      "coingeckoId": "groyper-3",
+      "priceUsd": 0.03375614,
+      "change24h": -4.536631781239444,
+      "marketCap": 1614973.411580798,
+      "volume24h": 12619.476599122987
+    },
+    {
+      "symbol": "GRAMMING",
+      "coingeckoId": "gramming",
+      "priceUsd": 0.00004234,
+      "change24h": 3.140293759636427,
+      "marketCap": 42358.77422453095,
+      "volume24h": 605.3799852837967
+    },
+    {
+      "symbol": "BUDDY",
+      "priceUsd": null,
+      "change24h": null,
+      "marketCap": null,
+      "volume24h": null
+    },
+    {
+      "symbol": "TELECLAW",
+      "priceUsd": null,
+      "change24h": null,
+      "marketCap": null,
+      "volume24h": null
+    },
+    {
+      "symbol": "CHERRY",
+      "priceUsd": null,
+      "change24h": null,
+      "marketCap": null,
+      "volume24h": null
+    },
+    {
+      "symbol": "XRP",
+      "coingeckoId": "ripple",
+      "priceUsd": 1.18,
+      "change24h": -9.314346985659066,
+      "marketCap": 75060589970.31133,
+      "volume24h": 2716779177.871013
+    },
+    {
+      "symbol": "SUI",
+      "coingeckoId": "sui",
+      "priceUsd": 0.863366,
+      "change24h": -5.078914920623396,
+      "marketCap": 3573510415.086811,
+      "volume24h": 538941635.494556
+    },
+    {
+      "symbol": "MON",
+      "coingeckoId": "monad",
+      "priceUsd": 0.01725441,
+      "change24h": -3.669715063112137,
+      "marketCap": 204513385.19559422,
+      "volume24h": 15604766.792216027
+    },
+    {
+      "symbol": "HYPE",
+      "coingeckoId": "hyperliquid",
+      "priceUsd": 78.27,
+      "change24h": -3.936205605839077,
+      "marketCap": 18737858593.823418,
+      "volume24h": 1387055598.7126276
+    },
+    {
+      "symbol": "TAO",
+      "coingeckoId": "bittensor",
+      "priceUsd": 223.46,
+      "change24h": -3.2637300146476957,
+      "marketCap": 2620454677.7933283,
+      "volume24h": 129000672.96734439
+    },
+    {
+      "symbol": "AKT",
+      "coingeckoId": "akash-network",
+      "priceUsd": 0.649633,
+      "change24h": 1.4959754516284591,
+      "marketCap": 194540183.79579657,
+      "volume24h": 8197538.829190665
+    },
+    {
+      "symbol": "STRK",
+      "coingeckoId": "starknet",
+      "priceUsd": 0.04069123,
+      "change24h": -5.693370497333512,
+      "marketCap": 311891302.60543764,
+      "volume24h": 46046894.363261715
+    },
+    {
+      "symbol": "ZEC",
+      "coingeckoId": "zcash",
+      "priceUsd": 1318.61,
+      "change24h": 1.1198554655542763,
+      "marketCap": 22450052628.259773,
+      "volume24h": 1434222136.2332702
+    },
+    {
+      "symbol": "ONDO",
+      "coingeckoId": "ondo-finance",
+      "priceUsd": 0.374094,
+      "change24h": -6.287097294504209,
+      "marketCap": 1821586652.0990348,
+      "volume24h": 182174758.24565136
+    },
+    {
+      "symbol": "XMR",
+      "coingeckoId": "monero",
+      "priceUsd": 620.35,
+      "change24h": -2.372327972902855,
+      "marketCap": 11679516119.661102,
+      "volume24h": 151501999.6684317
+    },
+    {
+      "symbol": "NEAR",
+      "coingeckoId": "near",
+      "priceUsd": 3.72,
+      "change24h": -5.636632541625321,
+      "marketCap": 4881580745.139159,
+      "volume24h": 649213545.6402687
+    }
+  ]
+}

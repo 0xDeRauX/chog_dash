@@ -1,0 +1,103 @@
+{
+  "date": "2026-11-06",
+  "results": [
+    {
+      "symbol": "CHOG",
+      "invite": "chog",
+      "memberCount": 41674,
+      "onlineCount": 1716,
+      "guildName": "Chog"
+    },
+    {
+      "symbol": "BONK",
+      "invite": "qaQa6M6mN2",
+      "memberCount": 32565,
+      "onlineCount": 2063,
+      "guildName": "Bonk"
+    },
+    {
+      "symbol": "PENGU",
+      "invite": "pudgypenguins",
+      "memberCount": 156748,
+      "onlineCount": 10161,
+      "guildName": "Pudgy Penguins"
+    },
+    {
+      "symbol": "ETH",
+      "invite": "ethereum-org",
+      "memberCount": 44574,
+      "onlineCount": 2350,
+      "guildName": "ethereum.org"
+    },
+    {
+      "symbol": "SOL",
+      "invite": "solana",
+      "memberCount": 146307,
+      "onlineCount": 6930,
+      "guildName": "Solana Tech"
+    },
+    {
+      "symbol": "XRP",
+      "invite": "xrpl",
+      "memberCount": 16755,
+      "onlineCount": 1081,
+      "guildName": "XRP Ledger"
+    },
+    {
+      "symbol": "SUI",
+      "invite": "sui",
+      "memberCount": 879361,
+      "onlineCount": 13518,
+      "guildName": "Sui"
+    },
+    {
+      "symbol": "MON",
+      "invite": "monad",
+      "memberCount": 617362,
+      "onlineCount": 13708,
+      "guildName": "Monad"
+    },
+    {
+      "symbol": "HYPE",
+      "invite": "hyperliquid",
+      "memberCount": 93366,
+      "onlineCount": 12352,
+      "guildName": "Hyperliquid"
+    },
+    {
+      "symbol": "AKT",
+      "invite": "akash",
+      "memberCount": 24821,
+      "onlineCount": 1313,
+      "guildName": "Akash Network Devs"
+    },
+    {
+      "symbol": "STRK",
+      "invite": "starknet",
+      "memberCount": 16350,
+      "onlineCount": 806,
+      "guildName": "Starknet"
+    },
+    {
+      "symbol": "ZEC",
+      "invite": "zcash",
+      "memberCount": 8818,
+      "onlineCount": 809,
+      "guildName": "Zcash"
+    },
+    {
+      "symbol": "ONDO",
+      "invite": "ondofinance",
+      "memberCount": 16129,
+      "onlineCount": 1346,
+      "guildName": "Ondo Finance"
+    },
+    {
+      "symbol": "NEAR",
+      "invite": "nearprotocol",
+      "memberCount": 75723,
+      "onlineCount": 2612,
+      "guildName": "NEAR"
+    }
+  ]
+}
