@@ -2,7 +2,7 @@
  "symbol": "BONK",
  "source": "ledger-forward",
  "ledgerStart": "2026-10-03",
- "indexedToDate": "2026-11-08",
+ "indexedToDate": "2026-11-09",
  "series": [
   {
    "date": "2022-12-30",
@@ -22759,6 +22759,22 @@
    "l0_50": 6695,
    "l50": 0,
    "realizedUsd": -62232,
+   "realizedBigUsd": 0,
+   "source": "ledger-forward"
+  },
+  {
+   "date": "2026-11-09",
+   "holders": 469494,
+   "airdrop": 462281,
+   "buyers": 7213,
+   "inProfit": 325,
+   "pctInProfit": 4.51,
+   "x10": 0,
+   "x2_10": 0,
+   "x1_2": 325,
+   "l0_50": 6888,
+   "l50": 0,
+   "realizedUsd": -60876,
    "realizedBigUsd": 0,
    "source": "ledger-forward"
   }

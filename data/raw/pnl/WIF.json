@@ -2,7 +2,7 @@
  "symbol": "WIF",
  "source": "ledger-forward",
  "ledgerStart": "2026-10-03",
- "indexedToDate": "2026-11-08",
+ "indexedToDate": "2026-11-09",
  "series": [
   {
    "date": "2023-12-15",
@@ -16809,6 +16809,22 @@
    "l0_50": 6751,
    "l50": 0,
    "realizedUsd": -24948,
+   "realizedBigUsd": 0,
+   "source": "ledger-forward"
+  },
+  {
+   "date": "2026-11-09",
+   "holders": 151872,
+   "airdrop": 144919,
+   "buyers": 6953,
+   "inProfit": 131,
+   "pctInProfit": 1.88,
+   "x10": 0,
+   "x2_10": 0,
+   "x1_2": 131,
+   "l0_50": 6822,
+   "l50": 0,
+   "realizedUsd": -25088,
    "realizedBigUsd": 0,
    "source": "ledger-forward"
   }
