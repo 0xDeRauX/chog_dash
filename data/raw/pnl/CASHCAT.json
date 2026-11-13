@@ -1,8 +1,8 @@
 {
  "symbol": "CASHCAT",
  "source": "ledger",
- "indexedToBlock": 112649979,
- "indexedToDate": "2026-11-11",
+ "indexedToBlock": 113452019,
+ "indexedToDate": "2026-11-12",
  "series": [
   {
    "date": "2026-06-26",
@@ -3157,49 +3157,72 @@
   },
   {
    "date": "2026-11-10",
-   "holders": 84256,
-   "airdrop": 24764,
-   "buyers": 59492,
-   "inProfit": 6499,
+   "holders": 84250,
+   "airdrop": 24762,
+   "buyers": 59488,
+   "inProfit": 6497,
    "pctInProfit": 10.92,
-   "x10": 1391,
-   "x2_10": 669,
-   "x1_2": 4439,
-   "l0_50": 20885,
+   "x10": 1390,
+   "x2_10": 670,
+   "x1_2": 4437,
+   "l0_50": 20883,
    "l50": 32108,
-   "holdersOnchain": 113797,
+   "holdersOnchain": 113788,
    "tiers": {
-    "lt50": 105415,
+    "lt50": 105410,
     "t50_500": 5216,
-    "t500_5k": 2303,
+    "t500_5k": 2300,
     "t5k_50k": 686,
-    "gt50k": 177
+    "gt50k": 176
    },
-   "realizedUsd": -801020,
+   "realizedUsd": -815744,
    "realizedBigUsd": -478175
   },
   {
    "date": "2026-11-11",
-   "holders": 83525,
+   "holders": 83520,
    "airdrop": 24651,
-   "buyers": 58874,
-   "inProfit": 5513,
+   "buyers": 58869,
+   "inProfit": 5511,
    "pctInProfit": 9.36,
    "x10": 1366,
-   "x2_10": 587,
-   "x1_2": 3560,
-   "l0_50": 18435,
+   "x2_10": 586,
+   "x1_2": 3559,
+   "l0_50": 18432,
    "l50": 34926,
-   "holdersOnchain": 113753,
+   "holdersOnchain": 113746,
    "tiers": {
-    "lt50": 105755,
-    "t50_500": 5013,
-    "t500_5k": 2169,
+    "lt50": 105752,
+    "t50_500": 5012,
+    "t500_5k": 2167,
     "t5k_50k": 658,
-    "gt50k": 158
+    "gt50k": 157
    },
-   "realizedUsd": -1183038,
-   "realizedBigUsd": -812032
+   "realizedUsd": -1191485,
+   "realizedBigUsd": -812108
+  },
+  {
+   "date": "2026-11-12",
+   "holders": 82499,
+   "airdrop": 24484,
+   "buyers": 58015,
+   "inProfit": 4063,
+   "pctInProfit": 7,
+   "x10": 1320,
+   "x2_10": 401,
+   "x1_2": 2342,
+   "l0_50": 10024,
+   "l50": 43928,
+   "holdersOnchain": 113739,
+   "tiers": {
+    "lt50": 106211,
+    "t50_500": 4782,
+    "t500_5k": 2021,
+    "t5k_50k": 586,
+    "gt50k": 139
+   },
+   "realizedUsd": -1019505,
+   "realizedBigUsd": -714477
   }
  ]
 }
