@@ -1,6 +1,6 @@
 {
  "symbol": "TELECLAW",
- "indexedToDate": "2026-11-13",
+ "indexedToDate": "2026-11-14",
  "source": "toncenter",
  "series": [
   {
@@ -3079,9 +3079,21 @@
    "date": "2026-11-13",
    "holders": 576,
    "tiers": {
-    "lt50": 459,
-    "t50_500": 105,
+    "lt50": 453,
+    "t50_500": 111,
     "t500_5k": 11,
+    "t5k_50k": 1,
+    "gt50k": 0
+   },
+   "source": "ton-hist"
+  },
+  {
+   "date": "2026-11-14",
+   "holders": 576,
+   "tiers": {
+    "lt50": 461,
+    "t50_500": 105,
+    "t500_5k": 9,
     "t5k_50k": 1,
     "gt50k": 0
    },
